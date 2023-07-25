@@ -7,11 +7,5 @@
         "excludedTypes": "Request"
       }
     }
-  },
-  "extensions": {
-    "http": {
-      "routePrefix": "",
-      "maxConcurrentRequests": 100
-    }
   }
 }
