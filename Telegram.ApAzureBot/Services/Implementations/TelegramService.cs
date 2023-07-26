@@ -29,13 +29,13 @@ namespace Telegram.ApAzureBot.Services.Implementations
             _bot = new TelegramBotClient(token);
         }
 
-        public Task SetWebHook(HttpRequestData request, CancellationToken cToken)
+        public Task SetWebhook(HttpRequestData request, CancellationToken cToken)
         {
             var url = request.Url.ToString().Replace(Functions.StartFunction, Functions.HandleFunction, true, CultureInfo.InvariantCulture);
             return _bot.SetWebhookAsync(url, cancellationToken: cToken);
         }
 
-        public async Task SendMessage(HttpRequestData request, CancellationToken cToken)
+        public async Task SendResponse(HttpRequestData request, CancellationToken cToken)
         {
             var requestData = await request.ReadAsStringAsync();
 

@@ -16,10 +16,10 @@ namespace Telegram.ApAzureBot
 
         [Function(StartFunction)]
         public Task Start([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData request, CancellationToken cToken) =>
-            _telegramService.SetWebHook(request, cToken);
+            _telegramService.SetWebhook(request, cToken);
 
         [Function(HandleFunction)]
         public Task Handle([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequestData request, CancellationToken cToken) =>
-            _telegramService.SendMessage(request, cToken);
+            _telegramService.SendResponse(request, cToken);
     }
 }
