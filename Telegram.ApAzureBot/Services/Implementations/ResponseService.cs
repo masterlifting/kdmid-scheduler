@@ -1,7 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 
-using System.Data;
-
 using Telegram.ApAzureBot.Services.Interfaces;
 using Telegram.Bot.Types;
 
@@ -10,26 +8,29 @@ namespace Telegram.ApAzureBot.Services.Implementations
     internal sealed class ResponseService : IResponseService
     {
         ILogger _logger;
-        public ResponseService(ILoggerFactory loggerFactory)
+        private readonly IWebService _webService;
+
+        public ResponseService(ILogger<ResponseService> logger, IWebService webService)
         {
-            _logger = loggerFactory.CreateLogger<ResponseService>();
+            _logger = logger;
+            _webService = webService;
         }
 
-        public string Create(Update request)
+        public Task<string> CheckMidRf(Update request)
         {
+            var message = request.Message?.Text ?? throw new ArgumentNullException(nameof(request));
+            
             try
             {
-                var message = request.Message?.Text ?? throw new ArgumentNullException(nameof(request));
-
-                var result = new DataTable().Compute(message, null)?.ToString();
-
-                return result is null
-                    ? throw new ArgumentNullException(result, nameof(result))
-                    : result;
+                return message switch
+                {
+                    "/midrf" => _webService.CheckSerbianMidRf(),
+                    _ => Task.FromResult("I don't know what you want from me 😢")
+                };
             }
             catch
             {
-                return $"Dear human, I can solve math for you, try '2 + 2 * 3' 👀";
+                return Task.FromResult($"While handling '{message}', something went wrong.");
             }
         }
     }

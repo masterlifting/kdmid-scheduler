@@ -17,9 +17,9 @@ namespace Telegram.ApAzureBot.Services.Implementations
         private readonly TelegramBotClient _bot;
         private readonly ILogger _logger;
         private readonly IResponseService _responseService;
-        public TelegramService(ILoggerFactory loggerFactory, IResponseService responseService)
+        public TelegramService(ILogger<TelegramService> logger, IResponseService responseService)
         {
-            _logger = loggerFactory.CreateLogger<ResponseService>();
+            _logger = logger;
             _responseService = responseService;
 
             var token = Environment.GetEnvironmentVariable("TelegramBotToken", EnvironmentVariableTarget.Process);
@@ -34,7 +34,6 @@ namespace Telegram.ApAzureBot.Services.Implementations
             var url = request.Url.ToString().Replace(Functions.StartFunction, Functions.HandleFunction, true, CultureInfo.InvariantCulture);
             return _bot.SetWebhookAsync(url, cancellationToken: cToken);
         }
-
         public async Task SendResponse(HttpRequestData request, CancellationToken cToken)
         {
             var requestData = await request.ReadAsStringAsync();
@@ -51,7 +50,7 @@ namespace Telegram.ApAzureBot.Services.Implementations
                 return;
             }
 
-            var responseData = _responseService.Create(update);
+            var responseData = await _responseService.CheckMidRf(update);
 
             await _bot.SendTextMessageAsync(update.Message.Chat.Id, responseData, cancellationToken: cToken);
         }
