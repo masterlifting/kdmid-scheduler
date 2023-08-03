@@ -1,0 +1,4 @@
+[submodule "Submodules/Net.Shared.Web"]
+	path = Submodules/Net.Shared.Web
+	url = https://github.com/masterlifting/Net.Shared.Web
+	branch = dev

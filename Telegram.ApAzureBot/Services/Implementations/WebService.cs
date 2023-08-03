@@ -9,27 +9,24 @@ public sealed class WebService : IWebService
     private readonly ILogger _logger;
     private readonly IHttpClientFactory _httpClientFactory;
 
-    private readonly string _serbianMidRfQueueId;
-    private readonly string _serbianMidRfQueueCd;
+    private readonly string _serbianMidRfSecret;
 
     public WebService(ILogger<WebService> logger, IHttpClientFactory httpClientFactory)
     {
-        _serbianMidRfQueueId = Environment.GetEnvironmentVariable("SerbianMidRfQueueId", EnvironmentVariableTarget.Process);
-        ArgumentNullException.ThrowIfNull(_serbianMidRfQueueId);
+        _serbianMidRfSecret = Environment.GetEnvironmentVariable("SerbianMidRfSecret", EnvironmentVariableTarget.Process);
         
-        _serbianMidRfQueueCd = Environment.GetEnvironmentVariable("SerbianMidRfQueueCd", EnvironmentVariableTarget.Process);
-        ArgumentNullException.ThrowIfNull(_serbianMidRfQueueCd);
-
+        ArgumentNullException.ThrowIfNull(_serbianMidRfSecret);
+        
         _logger = logger;
         _httpClientFactory = httpClientFactory;
     }
 
-    public Task<string> CheckSerbianMidRf()
+    public async Task<string> CheckSerbianMidRf()
     {
         var client = _httpClientFactory.CreateClient("midrf");
 
-        var url = client.BaseAddress + $"id={_serbianMidRfQueueId}&cd={_serbianMidRfQueueCd}";
+        var page = await client.GetStringAsync(client.BaseAddress + _serbianMidRfSecret);
 
-        return Task.FromResult("The function is not implemented yet.");
+        return "The function is not implemented yet.";
     }
 }
