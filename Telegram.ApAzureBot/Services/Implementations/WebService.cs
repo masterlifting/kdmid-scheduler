@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using HtmlAgilityPack;
+
+using Microsoft.Extensions.Logging;
 
 using Telegram.ApAzureBot.Services.Interfaces;
 
@@ -26,6 +28,8 @@ public sealed class WebService : IWebService
         var client = _httpClientFactory.CreateClient("midrf");
 
         var page = await client.GetStringAsync(client.BaseAddress + _serbianMidRfSecret);
+
+        var htmlDoc = new HtmlDocument();
 
         return "The function is not implemented yet.";
     }

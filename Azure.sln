@@ -10,6 +10,18 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{B5436D96-040E-42E9-AE13-5E55F991E2A9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Net.Shared.Web", "Submodules\Net.Shared.Web\src\Net.Shared.Web\Net.Shared.Web.csproj", "{DAD21B0A-DB27-413F-8C0B-30AEB5F61B9E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Web", "Web", "{6CB296F4-7D1E-4037-A578-7BB348E1612B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Net.Shared.Web.Abstractions", "Submodules\Net.Shared.Web\src\Net.Shared.Web.Abstractions\Net.Shared.Web.Abstractions.csproj", "{E8521B92-96D1-419B-BD8D-634C36244F1D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Net.Shared.Web.Models", "Submodules\Net.Shared.Web\src\Net.Shared.Web.Models\Net.Shared.Web.Models.csproj", "{5000CD81-3E9D-450E-8EF7-6306DCF52001}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Net.Shared.Exceptions", "Submodules\Net.Shared.Exceptions\src\Net.Shared.Exceptions\Net.Shared.Exceptions.csproj", "{E700316E-5C61-44D1-8D58-9C2C5F92E394}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,9 +32,32 @@ Global
 		{9B1F8623-2211-482D-B0C2-A9BBECE0A33D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9B1F8623-2211-482D-B0C2-A9BBECE0A33D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9B1F8623-2211-482D-B0C2-A9BBECE0A33D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DAD21B0A-DB27-413F-8C0B-30AEB5F61B9E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DAD21B0A-DB27-413F-8C0B-30AEB5F61B9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DAD21B0A-DB27-413F-8C0B-30AEB5F61B9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DAD21B0A-DB27-413F-8C0B-30AEB5F61B9E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8521B92-96D1-419B-BD8D-634C36244F1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8521B92-96D1-419B-BD8D-634C36244F1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8521B92-96D1-419B-BD8D-634C36244F1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8521B92-96D1-419B-BD8D-634C36244F1D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5000CD81-3E9D-450E-8EF7-6306DCF52001}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5000CD81-3E9D-450E-8EF7-6306DCF52001}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5000CD81-3E9D-450E-8EF7-6306DCF52001}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5000CD81-3E9D-450E-8EF7-6306DCF52001}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E700316E-5C61-44D1-8D58-9C2C5F92E394}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E700316E-5C61-44D1-8D58-9C2C5F92E394}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E700316E-5C61-44D1-8D58-9C2C5F92E394}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E700316E-5C61-44D1-8D58-9C2C5F92E394}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{DAD21B0A-DB27-413F-8C0B-30AEB5F61B9E} = {6CB296F4-7D1E-4037-A578-7BB348E1612B}
+		{6CB296F4-7D1E-4037-A578-7BB348E1612B} = {B5436D96-040E-42E9-AE13-5E55F991E2A9}
+		{E8521B92-96D1-419B-BD8D-634C36244F1D} = {6CB296F4-7D1E-4037-A578-7BB348E1612B}
+		{5000CD81-3E9D-450E-8EF7-6306DCF52001} = {6CB296F4-7D1E-4037-A578-7BB348E1612B}
+		{E700316E-5C61-44D1-8D58-9C2C5F92E394} = {B5436D96-040E-42E9-AE13-5E55F991E2A9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2EB72F4B-1D54-4234-905E-0EDA63D1A982}

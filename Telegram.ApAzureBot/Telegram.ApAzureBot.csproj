@@ -13,6 +13,9 @@
     <PackageReference Include="Telegram.Bot" Version="19.0.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Submodules\Net.Shared.Web\src\Net.Shared.Web\Net.Shared.Web.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <None Update="host.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
