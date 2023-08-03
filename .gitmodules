@@ -2,3 +2,7 @@
 	path = Submodules/Net.Shared.Web
 	url = https://github.com/masterlifting/Net.Shared.Web
 	branch = dev
+[submodule "Submodules/Net.Shared.Exceptions"]
+	path = Submodules/Net.Shared.Exceptions
+	url = https://github.com/masterlifting/Net.Shared.Exceptions
+	branch = dev
