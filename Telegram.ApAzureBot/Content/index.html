@@ -1,0 +1,190 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Запись на прием</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" type="text/css" href="css/Styles.css?v=01" />
+    <link rel="stylesheet" type="text/css" href="css/StyleSheet.css?v=01" />
+    <style type="text/css">
+      #wait_answer {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        visibility: hidden;
+        display: block;
+        height: 65px;
+        width: 65px;
+        background-image: url(_images/GEARS_AN.GIF);
+        background-repeat: no-repeat;
+        z-index: 100;
+      }
+    </style>
+    <script type="text/javascript">
+      <!--
+      function onClickButton() {
+        var item = document.getElementById("wait_answer");
+        item.style.visibility = "visible";
+      }
+      //-->
+    </script>
+  </head>
+  <body>
+    <div id="body">
+      <div id="top">
+        <span> </span>
+      </div>
+
+      <div id="hdr">
+        <div id="hdr2">
+          <div class="gerb"></div>
+          <span class="header">
+            <div class="text">
+              Консульский отдел Посольства<br />Российской Федерации<br />
+              в Сербии (Белград) <br /><br />
+              <span style="font-size: 15px; color: #fff"
+                >Система электронной записи на прием</span
+              >
+            </div>
+          </span>
+        </div>
+      </div>
+
+      <div id="desk">
+        <form
+          name="aspnetForm"
+          method="post"
+          action="OrderInfo.aspx?id=54437&amp;cd=9CFA9945"
+          id="aspnetForm"
+          onsubmit="WaitAnswer()"
+        >
+          <input
+            type="hidden"
+            name="__VIEWSTATE"
+            id="__VIEWSTATE"
+            value="/wEPDwUKLTc5Nzk3MjA1NQ9kFgJmD2QWAgIFD2QWAgIBDxYCHghvbnN1Ym1pdAUMV2FpdEFuc3dlcigpFgICAw9kFgQCBg8PFgIeDEVycm9yTWVzc2FnZQUMRXJyb3JNZXNzYWdlZGQCEQ8PFgIeCEltYWdlVXJsBRh+L0NvZGVJbWFnZS5hc3B4P2lkPWMzMDVkZGQsq0aoQMs0a2UiNUKdPfVQuibZeg=="
+          />
+
+          <input
+            type="hidden"
+            name="__EVENTVALIDATION"
+            id="__EVENTVALIDATION"
+            value="/wEWBQLax4agCQLmjdfGDQKLs7ufCwK5ysLjCwKj8MqYCG6wdbkggtFHM8sLORAA36tzcBtR"
+          />
+
+          <table>
+            <tr>
+              <td id="left-panel">
+                <div class="box_instruction" style="display: none">
+                  <p>
+                    Заполните поля информацией, полученной при оформлении
+                    записи, из распечатки «Подтверждения записи на прием»,
+                    нажмите кнопку «Далее».
+                  </p>
+                </div>
+                <div class="box_instruction" style="display: none">
+                  <p>
+                    Для проверки наличия свободного времени для записи на прием
+                    нажмите на кнопку «Записаться на прием»
+                  </p>
+                </div>
+              </td>
+              <td id="center-panel">
+                <script>
+                  document.getElementsByClassName(
+                    "box_instruction"
+                  )[0].style.display = "";
+                  document.getElementsByClassName(
+                    "box_instruction"
+                  )[1].style.display = "none";
+                </script>
+
+                <h1>
+                  <span id="ctl00_MainContent_Label_Header"
+                    ><h1>ИНФОРМАЦИЯ О ЗАЯВКЕ</h1></span
+                  >
+                </h1>
+                <br />
+                <p>Номер заявки</p>
+                <div class="inp" style="margin-left: 20px">
+                  <input
+                    name="ctl00$MainContent$txtID"
+                    type="text"
+                    value="54437"
+                    id="ctl00_MainContent_txtID"
+                  />
+                </div>
+                <p>Защитный код</p>
+                <div class="inp" style="margin-left: 20px">
+                  <input
+                    name="ctl00$MainContent$txtUniqueID"
+                    type="text"
+                    value="9CFA9945"
+                    id="ctl00_MainContent_txtUniqueID"
+                  />
+                  <p></p>
+                </div>
+                <br />
+
+                <div
+                  style="
+                    margin-bottom: 10px;
+                    margin-top: 5px;
+                    font-size: 13px;
+                    font-weight: bold;
+                  "
+                >
+                  Введите символы с картинки.
+                </div>
+                <div class="inp" style="margin-top: 10px">
+                  <img
+                    id="ctl00_MainContent_imgSecNum"
+                    src="CodeImage.aspx?id=c305"
+                    alt="Необходимо включить загрузку картинок в браузере."
+                    border="0"
+                    style="width: 140px"
+                  /><input
+                    name="ctl00$MainContent$txtCode"
+                    type="text"
+                    id="ctl00_MainContent_txtCode"
+                  />
+                </div>
+                <div></div>
+                <input
+                  type="submit"
+                  name="ctl00$MainContent$ButtonA"
+                  value="Далее"
+                  onclick='javascript:WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions("ctl00$MainContent$ButtonA", "", true, "", "", false, false))'
+                  id="ctl00_MainContent_ButtonA"
+                  class="btn"
+                />
+
+                <div></div>
+              </td>
+            </tr>
+          </table>
+        </form>
+        <div id="wait_answer">
+          <p></p>
+        </div>
+        <script>
+          if (document.getElementsByClassName("inp").length == 0) {
+            document.getElementsByClassName(
+              "box_instruction"
+            )[0].style.display = "none";
+          }
+        </script>
+      </div>
+
+      <div style="clear: both"></div>
+
+      <div id="footer">
+        <div class="rightfooter">
+          <p>© Сайт КД МИД России "Запись на прием в КЗУ" <br />2014 - 2018</p>
+        </div>
+        <div style="clear: both"></div>
+      </div>
+    </div>
+  </body>
+</html>
