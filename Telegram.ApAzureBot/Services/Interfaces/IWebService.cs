@@ -1,7 +1,6 @@
-﻿namespace Telegram.ApAzureBot.Services.Interfaces
+﻿namespace Telegram.ApAzureBot.Services.Interfaces;
+
+public interface IWebService
 {
-    public interface IWebService
-    {
-        Task<string> CheckSerbianMidRf();
-    }
+    Task<string> CheckSerbianMidRf();
 }

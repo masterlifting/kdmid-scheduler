@@ -10,49 +10,48 @@ using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types;
 using Microsoft.Extensions.Logging;
 
-namespace Telegram.ApAzureBot.Services.Implementations
+namespace Telegram.ApAzureBot.Services.Implementations;
+
+internal sealed class TelegramService : ITelegramService
 {
-    internal sealed class TelegramService : ITelegramService
+    private readonly TelegramBotClient _bot;
+    private readonly ILogger _logger;
+    private readonly IResponseService _responseService;
+    public TelegramService(ILogger<TelegramService> logger, IResponseService responseService)
     {
-        private readonly TelegramBotClient _bot;
-        private readonly ILogger _logger;
-        private readonly IResponseService _responseService;
-        public TelegramService(ILogger<TelegramService> logger, IResponseService responseService)
+        _logger = logger;
+        _responseService = responseService;
+
+        var token = Environment.GetEnvironmentVariable("TelegramBotToken", EnvironmentVariableTarget.Process);
+
+        ArgumentNullException.ThrowIfNull(token, "Telegram token was not found.");
+
+        _bot = new TelegramBotClient(token);
+    }
+
+    public Task SetWebhook(HttpRequestData request, CancellationToken cToken)
+    {
+        var url = request.Url.ToString().Replace(Functions.StartFunction, Functions.HandleFunction, true, CultureInfo.InvariantCulture);
+        return _bot.SetWebhookAsync(url, cancellationToken: cToken);
+    }
+    public async Task SendResponse(HttpRequestData request, CancellationToken cToken)
+    {
+        var requestData = await request.ReadAsStringAsync();
+
+        ArgumentNullException.ThrowIfNull(requestData, "Telegram request data were not found.");
+
+        var update = JsonConvert.DeserializeObject<Update>(requestData);
+
+        ArgumentNullException.ThrowIfNull(update, "Update is null");
+
+        if (update.Type != UpdateType.Message || update.Message!.Type != MessageType.Text)
         {
-            _logger = logger;
-            _responseService = responseService;
-
-            var token = Environment.GetEnvironmentVariable("TelegramBotToken", EnvironmentVariableTarget.Process);
-
-            ArgumentNullException.ThrowIfNull(token, "Telegram token was not found.");
-
-            _bot = new TelegramBotClient(token);
+            _logger.LogWarning("Telegram Update type is not supported: {0}", update.Type);
+            return;
         }
 
-        public Task SetWebhook(HttpRequestData request, CancellationToken cToken)
-        {
-            var url = request.Url.ToString().Replace(Functions.StartFunction, Functions.HandleFunction, true, CultureInfo.InvariantCulture);
-            return _bot.SetWebhookAsync(url, cancellationToken: cToken);
-        }
-        public async Task SendResponse(HttpRequestData request, CancellationToken cToken)
-        {
-            var requestData = await request.ReadAsStringAsync();
+        var responseData = await _responseService.CheckMidRf(update);
 
-            ArgumentNullException.ThrowIfNull(requestData, "Telegram request data were not found.");
-
-            var update = JsonConvert.DeserializeObject<Update>(requestData);
-
-            ArgumentNullException.ThrowIfNull(update, "Update is null");
-
-            if (update.Type != UpdateType.Message || update.Message!.Type != MessageType.Text)
-            {
-                _logger.LogWarning("Telegram Update type is not supported: {0}", update.Type);
-                return;
-            }
-
-            var responseData = await _responseService.CheckMidRf(update);
-
-            await _bot.SendTextMessageAsync(update.Message.Chat.Id, responseData, cancellationToken: cToken);
-        }
+        await _bot.SendTextMessageAsync(update.Message.Chat.Id, responseData, cancellationToken: cToken);
     }
 }

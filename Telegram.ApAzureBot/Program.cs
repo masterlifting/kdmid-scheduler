@@ -1,4 +1,4 @@
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 using Telegram.ApAzureBot.Services.Implementations;
@@ -9,9 +9,9 @@ var host = new HostBuilder()
     {
         builder.Services.AddLogging();
 
-        builder.Services.AddHttpClient("mid_rf", c =>
+        builder.Services.AddHttpClient("midrf", c =>
         {
-            c.BaseAddress = new Uri("https://mid.rf/");
+            c.BaseAddress = new Uri("https://belgrad.kdmid.ru/queue/OrderInfo.aspx?");
         });
         builder.Services.AddTransient<IWebService, WebService>();
         builder.Services.AddTransient<ITelegramService, TelegramService>();
