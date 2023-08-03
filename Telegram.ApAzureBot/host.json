@@ -7,5 +7,57 @@
         "excludedTypes": "Request"
       }
     }
+  },
+  "secondRequestHeaders": {
+    "POST": "/queue/OrderInfo.aspx?id=54437&cd=9CFA9945 HTTP/1.1",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Accept-Language": "en,ru;q=0.9",
+    "Cache-Control": "max-age=0",
+    "Connection": "keep-alive",
+    "Content-Length": "548",
+    "Content-Type": "application/x-www-form-urlencoded",
+    "Cookie": "w3qniias=queueid=afe38585-dbce-4968-82d9-19c3b2f9b8e6; __ddg1_=JYLx81ArDvCUuEYNhdYc; ASP.NET_SessionId=13cycc55gfc0mw55wog1dw2d",
+    "DNT": "1",
+    "Host": "belgrad.kdmid.ru",
+    "Origin": "https://belgrad.kdmid.ru",
+    "Referer": "https://belgrad.kdmid.ru/queue/OrderInfo.aspx?id=54437&cd=9CFA9945",
+    "Sec-Fetch-Dest": "document",
+    "Sec-Fetch-Mode": "navigate",
+    "Sec-Fetch-Site": "same-origin",
+    "Sec-Fetch-User": "?1",
+    "Upgrade-Insecure-Requests": "1",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36 Edg/115.0.1901.188",
+    "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Microsoft Edge\";v=\"115\", \"Chromium\";v=\"115\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\""
+  },
+  "thirdRequestHeaders": {
+    "Method": "POST",
+    "Url": "/queue/OrderInfo.aspx?id=54437&cd=9CFA9945",
+    "Headers": {
+      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+      "Accept-Encoding": "gzip, deflate, br",
+      "Accept-Language": "en,ru;q=0.9",
+      "Cache-Control": "max-age=0",
+      "Connection": "keep-alive",
+      "Content-Length": "1060",
+      "Content-Type": "application/x-www-form-urlencoded",
+      "Cookie": "w3qniias=queueid=afe38585-dbce-4968-82d9-19c3b2f9b8e6; __ddg1_=JYLx81ArDvCUuEYNhdYc; ASP.NET_SessionId=13cycc55gfc0mw55wog1dw2d",
+      "DNT": "1",
+      "Host": "belgrad.kdmid.ru",
+      "Origin": "https://belgrad.kdmid.ru",
+      "Referer": "https://belgrad.kdmid.ru/queue/OrderInfo.aspx?id=54437&cd=9CFA9945",
+      "Sec-Fetch-Dest": "document",
+      "Sec-Fetch-Mode": "navigate",
+      "Sec-Fetch-Site": "same-origin",
+      "Sec-Fetch-User": "?1",
+      "Upgrade-Insecure-Requests": "1",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36 Edg/115.0.1901.188",
+      "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Microsoft Edge\";v=\"115\", \"Chromium\";v=\"115\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": "\"Windows\""
+    }
   }
+
 }
