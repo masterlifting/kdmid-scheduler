@@ -1,6 +1,9 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Web;
+
+using Microsoft.Extensions.Logging;
 
 using Telegram.ApAzureBot.Services.Interfaces;
+using Telegram.Bot;
 using Telegram.Bot.Types;
 
 namespace Telegram.ApAzureBot.Services.Implementations;
@@ -8,29 +11,92 @@ namespace Telegram.ApAzureBot.Services.Implementations;
 internal sealed class ResponseService : IResponseService
 {
     ILogger _logger;
-    private readonly IWebService _webService;
+    private readonly IServiceProvider _serviceProvider;
 
-    public ResponseService(ILogger<ResponseService> logger, IWebService webService)
+    public ResponseService(ILogger<ResponseService> logger, IServiceProvider serviceProvider)
     {
         _logger = logger;
-        _webService = webService;
+        _serviceProvider = serviceProvider;
     }
 
-    public Task<string> CheckMidRf(Update request)
+    public Task SetResponse(TelegramBotClient bot, Message message)
     {
-        var message = request.Message?.Text ?? throw new ArgumentNullException(nameof(request));
-        
-        try
+        if (string.IsNullOrWhiteSpace(message.Text))
+            return bot.SendTextMessageAsync(message.Chat.Id, "Please, send me a text message.");
+
+        var text = message.Text.Trim().ToLower();
+
+        return text.StartsWith('/')
+            ? ProcessCommand(bot, message.Chat.Id, text)
+            : ProcessResponse(bot, message.Chat.Id, text);
+    }
+
+    private Task ProcessCommand(TelegramBotClient bot, long chatId, string command)
+    {
+        if (!Uri.TryCreate(text, UriKind.Absolute, out var uri))
         {
-            return message switch
+            await bot.SendTextMessageAsync(message.Chat.Id, "Please, send me a valid command.");
+            return;
+        }
+
+        if (!uri.Scheme.Equals(pattern, StringComparison.OrdinalIgnoreCase))
+            throw new ArgumentException("Invalid url", nameof(url));
+
+        var segments = uri.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+        if (segments.Length < 1)
+            throw new ArgumentException("Invalid url", nameof(url));
+
+        var commandName = segments[^1].ToLower();
+
+        ViewServiceCommandType? commandType = commandName switch
+        {
+            "add" => ViewServiceCommandType.Add,
+            "delete" => ViewServiceCommandType.Delete,
+            "launch" => ViewServiceCommandType.Launch,
+            "navigate" => ViewServiceCommandType.Navigate,
+            _ => null
+        };
+
+        if (!commandType.HasValue)
+            return (null, null);
+
+        var queryParams = HttpUtility.ParseQueryString(uri.Query);
+
+        var commandParams = new Dictionary<string, object>(queryParams.Count, StringComparer.OrdinalIgnoreCase);
+
+        for (int i = 0; i < queryParams.Count; i++)
+        {
+            var paramKey = queryParams.GetKey(i);
+
+            if (paramKey is null)
+                continue;
+
+            var paramValues = queryParams.GetValues(paramKey);
+
+            if (paramValues?.Any() == true)
             {
-                "midrf" => _webService.CheckSerbianMidRf(),
-                _ => Task.FromResult("I don't know what you want from me 😢")
-            };
+                if (paramValues.Length == 1)
+                    commandParams.Add(paramKey, paramValues[0]);
+                else
+                    continue;
+            }
         }
-        catch
+
+        var routeKey = string.Join("/", segments[0..^1].Prepend(uri.Host)).ToLower();
+
+        var command = new ViewServiceCommand()
         {
-            return Task.FromResult($"While handling '{message}', something went wrong 😢");
-        }
+            Key = routeKey,
+            Name = routeKey + '/' + commandName,
+            Type = commandType.Value,
+            Params = commandParams
+        };
+
+        return (null, text);
+    }
+    private Task ProcessResponse(TelegramBotClient bot, long chatId, string response)
+    {
+        return bot.SendTextMessageAsync(chatId, "This way is not implemented yet.");
     }
 }

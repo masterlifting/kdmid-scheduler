@@ -50,8 +50,6 @@ internal sealed class TelegramService : ITelegramService
             return;
         }
 
-        var responseData = await _responseService.CheckMidRf(update);
-
-        await _bot.SendTextMessageAsync(update.Message.Chat.Id, responseData, cancellationToken: cToken);
+        await _responseService.SetResponse(_bot, update.Message);
     }
 }

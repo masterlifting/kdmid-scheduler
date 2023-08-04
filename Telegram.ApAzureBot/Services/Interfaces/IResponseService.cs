@@ -1,8 +1,9 @@
-﻿using Telegram.Bot.Types;
+﻿using Telegram.Bot;
+using Telegram.Bot.Types;
 
 namespace Telegram.ApAzureBot.Services.Interfaces;
 
 public interface IResponseService
 {
-    Task<string> CheckMidRf(Update request);
+    Task SetResponse(TelegramBotClient bot, Message message);
 }

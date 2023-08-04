@@ -11,9 +11,9 @@ public class Functions
     internal const string HandleFunction = "handle";
 
     private readonly ITelegramService _telegramService;
-    private readonly IWebService _webService;
+    private readonly IMidRfService _webService;
 
-    public Functions(ITelegramService telegramService, IWebService webService)
+    public Functions(ITelegramService telegramService, IMidRfService webService)
     {
         _telegramService = telegramService;
         _webService = webService;
@@ -22,7 +22,8 @@ public class Functions
     [Function(StartFunction)]
     public async Task Start([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData request, CancellationToken cToken)
     {
-        var a = await _webService.CheckSerbianMidRf();
+        _ = await _webService.CheckSerbianMidRf();
+        
         await _telegramService.SetWebhook(request, cToken);
     }
 

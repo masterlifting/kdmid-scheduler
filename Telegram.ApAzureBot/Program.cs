@@ -14,7 +14,7 @@ var host = new HostBuilder()
         {
             c.BaseAddress = new Uri("https://belgrad.kdmid.ru/queue/");
         });
-        builder.Services.AddTransient<IWebService, WebService>();
+        builder.Services.AddTransient<IMidRfService, MidRfService>();
         builder.Services.AddTransient<ITelegramService, TelegramService>();
         builder.Services.AddTransient<IResponseService, ResponseService>();
     })
