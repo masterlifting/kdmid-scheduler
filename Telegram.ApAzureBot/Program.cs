@@ -16,9 +16,12 @@ var host = new HostBuilder()
         });
         
         builder.Services.AddSingleton<MemoryCache>();
-        
-        //TODO: For production it should be replaced with Scoped
-        builder.Services.AddSingleton<ITelegramService, TelegramService>();
+
+        #if DEBUG
+            builder.Services.AddSingleton<ITelegramService, TelegramService>();
+        #else
+            builder.Services.AddScoped<ITelegramService, TelegramService>();
+        #endif
 
         builder.Services.AddTransient<IResponseService, ResponseService>();
         

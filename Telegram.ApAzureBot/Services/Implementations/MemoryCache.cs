@@ -2,7 +2,7 @@
 
 namespace Telegram.ApAzureBot.Services.Implementations;
 
-public class MemoryCache
+public sealed class MemoryCache
 {
     private readonly ConcurrentDictionary<long, Dictionary<string,string>> _storage = new();
 

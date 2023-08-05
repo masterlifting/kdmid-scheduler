@@ -132,15 +132,15 @@ public sealed class KdmidService : IKdmidService
     public Task Captcha(long chatId, string city, string parameters, CancellationToken cToken)
     {
         if (parameters.Length < 6)
-            throw new NotSupportedException("The captcha is not recognized.");
+            throw new NotSupportedException("The captcha is not valid.");
 
         var requestFormModel = _cache.TryGetValue(chatId, GetRequestFormDataKey(city), out var value)
-            ? value!
+            ? value!.AsSpan()
             : throw new NotSupportedException("The request form model is not found.");
 
         requestFormModel = requestFormModel.Replace("\"ctl00$MainContent$txtCode\": \"\",", $"\"ctl00$MainContent$txtCode\": \"{parameters}\",");
 
-        var content = new StringContent(requestFormModel, Encoding.UTF8, "application/json");
+        var content = new StringContent(requestFormModel.ToString(), Encoding.UTF8, "application/json");
 
         var response =
             /*/
