@@ -1,9 +1,9 @@
-﻿using Telegram.Bot;
-using Telegram.Bot.Types;
+﻿using Telegram.Bot.Types;
 
 namespace Telegram.ApAzureBot.Services.Interfaces;
 
 public interface IResponseService
 {
-    Task SetResponse(TelegramBotClient bot, Message message);
+    Task Process(Message message, CancellationToken cToken);
+    Task SetResponse(string message);
 }

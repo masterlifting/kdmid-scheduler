@@ -14,7 +14,8 @@ namespace Telegram.ApAzureBot.Services.Implementations;
 
 internal sealed class TelegramService : ITelegramService
 {
-    private readonly TelegramBotClient _bot;
+    public TelegramBotClient Bot { get; }
+    
     private readonly ILogger _logger;
     private readonly IResponseService _responseService;
     public TelegramService(ILogger<TelegramService> logger, IResponseService responseService)
@@ -26,13 +27,13 @@ internal sealed class TelegramService : ITelegramService
 
         ArgumentNullException.ThrowIfNull(token, "Telegram token was not found.");
 
-        _bot = new TelegramBotClient(token);
+        Bot = new TelegramBotClient(token);
     }
 
     public Task SetWebhook(HttpRequestData request, CancellationToken cToken)
     {
         var url = request.Url.ToString().Replace(Functions.StartFunction, Functions.HandleFunction, true, CultureInfo.InvariantCulture);
-        return _bot.SetWebhookAsync(url, cancellationToken: cToken);
+        return Bot.SetWebhookAsync(url, cancellationToken: cToken);
     }
     public async Task SendResponse(HttpRequestData request, CancellationToken cToken)
     {
@@ -50,6 +51,6 @@ internal sealed class TelegramService : ITelegramService
             return;
         }
 
-        await _responseService.SetResponse(_bot, update.Message);
+        await _responseService.Process(update.Message, cToken);
     }
 }

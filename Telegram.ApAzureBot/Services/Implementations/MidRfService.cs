@@ -1,100 +1,154 @@
-﻿using System.Net.Http;
+﻿using System.Net;
+using System.Net.Http;
+using System.Text;
 
 using HtmlAgilityPack;
 
 using Microsoft.Extensions.Logging;
 
 using Telegram.ApAzureBot.Services.Interfaces;
+using Telegram.Bot;
 
 namespace Telegram.ApAzureBot.Services.Implementations;
 
 public sealed class MidRfService : IMidRfService
 {
+    private const string IdentifierKey = "midrf.identifier";
+    private const string RequestFormModelKey = "midrf.requestFormModel";
+
     private readonly ILogger _logger;
-    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly MemoryCache _cache;
+    private readonly HttpClient _httpClient;
+    private readonly ITelegramService _telegramService;
 
-    private readonly string _serbianMidRfSecretQueryParameters;
+    private readonly Dictionary<string, Func<long, string, CancellationToken, Task>> _functions;
 
-    public MidRfService(ILogger<MidRfService> logger, IHttpClientFactory httpClientFactory)
+    public MidRfService(ILogger<MidRfService> logger, MemoryCache cache, IHttpClientFactory httpClientFactory, ITelegramService telegramService)
     {
-        var serbianMidRfSecretQueryParameters = Environment.GetEnvironmentVariable("SerbianMidRfSecretQueryParameters", EnvironmentVariableTarget.Process);
-
-        ArgumentNullException.ThrowIfNull(serbianMidRfSecretQueryParameters);
-
-        _serbianMidRfSecretQueryParameters = serbianMidRfSecretQueryParameters;
-
         _logger = logger;
-        _httpClientFactory = httpClientFactory;
+        _cache = cache;
+        _telegramService = telegramService;
+
+        _httpClient = httpClientFactory.CreateClient(Constants.MidRfHttpClientName);
+
+        _functions = new()
+        {
+            { "schedule", Schedule },
+            { "captcha", Captcha },
+            { "confirm", Confirm },
+        };
     }
 
-    public async Task<string> CheckSerbianMidRf(string[] parameters)
+    public Task Process(long chatId, ReadOnlySpan<char> message, CancellationToken cToken)
     {
-        var client = _httpClientFactory.CreateClient(Constants.MidRfHttpClientName);
+        if (message.Length == 0)
+            throw new NotSupportedException("The message for midrf is empty.");
 
-        if(parameters.Length == 0)
-            return ProcessCaptcha(client, client.BaseAddress + _serbianMidRfSecretQueryParameters);
+        var nextCommandStartIndex = message.IndexOf('?');
 
-        //await Task.Delay(10000);
+        var command = nextCommandStartIndex > 0
+            ? message[0..nextCommandStartIndex]
+            : message;
 
-        var captcha =
-            //await client.GetByteArrayAsync(client.BaseAddress + captchaQueryParameter);
-            File.ReadAllBytes(Environment.CurrentDirectory + "/CodeImage.jpeg");
+        var parameters = nextCommandStartIndex > 0
+            ? message[(nextCommandStartIndex + 1)..]
+            : string.Empty;
 
-        var captchaResult = "123456";
-
-        //File.WriteAllBytes(Environment.CurrentDirectory + "/captcha.jpeg", captcha);
-
-        //First Post,200
-
-        //Second Post -> 302 - нет мест, 200 - есть места
-
-        return "The function is not implemented yet.";
+        return !_functions.TryGetValue(command.ToString(), out var function)
+            ? throw new NotSupportedException("The midrf function is not supported.")
+            : function(chatId, parameters.ToString(), cToken);
     }
 
-    private async Task<byte[]> ProcessCaptcha(HttpClient httpClient)
+    public Task Schedule(long chatId, string parameters, CancellationToken cToken)
     {
+        var url = _httpClient.BaseAddress + "OrderInfo.aspx?" + parameters;
+
         var page =
-            //await client.GetStringAsync(client.BaseAddress + _serbianMidRfSecretQueryParameters);
+            /*/
+            await _httpClient.GetStringAsync(url, cToken);
+            /*/
             File.ReadAllText(Environment.CurrentDirectory + "/firstResponse.html");
+            //*/
+
+        _cache.AddOrUpdate(chatId, IdentifierKey, parameters);
 
         var htmlDocument = new HtmlDocument();
-
         htmlDocument.LoadHtml(page);
 
-        var captchaQueryParameter = htmlDocument.DocumentNode
-            .SelectNodes("//img")
-            .Where(x => x is not null)
-            .Select(x => x.GetAttributeValue("src", ""))
-            .FirstOrDefault(x => x.Contains("CodeImage", StringComparison.OrdinalIgnoreCase));
+        string? captchaUrl = null;
 
-        ArgumentNullException.ThrowIfNull(captchaQueryParameter);
+        StringBuilder requestFormModelBuilder = new();
 
-        var captcha =
-            //await client.GetByteArrayAsync(url);
-            File.ReadAllBytes(Environment.CurrentDirectory + "/CodeImage.jpeg");
+        requestFormModelBuilder.Append('{');
 
-        return captcha;
+        foreach (var node in htmlDocument.DocumentNode.SelectNodes("//input | //img"))
+        {
+            if (node.Name == "input")
+            {
+                string inputName = node.GetAttributeValue("name", "");
+                string inputValue = node.GetAttributeValue("value", "");
+
+                requestFormModelBuilder.Append($"\"{inputName}\": \"{inputValue}\",");
+            }
+            else if (node.Name == "img")
+            {
+                string captchaUrlPart = node.GetAttributeValue("src", "");
+
+                if (captchaUrlPart.Contains("CodeImage", StringComparison.OrdinalIgnoreCase))
+                {
+                    captchaUrl = _httpClient.BaseAddress + captchaUrlPart;
+                }
+            }
+        }
+
+        requestFormModelBuilder.Append('}');
+        
+        var requestFormModel = requestFormModelBuilder.ToString();
+
+        _cache.AddOrUpdate(chatId, RequestFormModelKey, requestFormModel);
+
+        if (captchaUrl is null)
+            throw new NotSupportedException("The captcha url is null.");
+        else
+        {
+            var captcha =
+                /*/
+                await _httpClient.GetByteArrayAsync(captchaUrl, cToken);
+                /*/
+                File.ReadAllBytes(Environment.CurrentDirectory + "/CodeImage.jpeg");
+                //*/
+
+            using var stream = new MemoryStream(captcha);
+
+            var photo = Bot.Types.InputFile.FromStream(stream, "Solve the captcha");
+
+            return _telegramService.Bot.SendPhotoAsync(chatId, photo, cancellationToken: cToken);
+        }
     }
-
-    public sealed class FormDataFirstModel
+    public Task Captcha(long chatId, string parameters, CancellationToken cToken)
     {
-        public string? __EVENTTARGET { get; set; }
-        public string? __EVENTARGUMENT { get; set; }
-        public string __VIEWSTATE { get; set; } = null!;
-        public string __EVENTVALIDATION { get; set; } = null!;
-        public string ctl00_MainContent_txtID { get; set; } = null!;
-        public string ctl00_MainContent_txtUniqueID { get; set; } = null!;
-        public string ctl00_MainContent_txtCode { get; set; } = null!;
-        public string ctl00_MainContent_ButtonA { get; set; } = null!;
-    }
-    public class FormDataSecondModel
-    {
-        public string? __EVENTTARGET { get; set; }
-        public string? __EVENTARGUMENT { get; set; }
-        public string __VIEWSTATE { get; set; } = null!;
-        public string __EVENTVALIDATION { get; set; } = null!;
-        public string ctl00_MainContent_ButtonB_x { get; set; } = "143";
-        public string ctl00_MainContent_ButtonB_y { get; set; } = "26";
-    }
+        if (parameters.Length < 7)
+            throw new NotSupportedException("The captcha is not recognized.");
 
+        var requestFormModel = _cache.TryGetValue(chatId, RequestFormModelKey, out var value)
+            ? value!
+            : throw new NotSupportedException("The request form model is not found.");
+
+        requestFormModel = requestFormModel.Replace("\"ctl00$MainContent$txtCode\": \"\",", $"\"ctl00$MainContent$txtCode\": \"{parameters}\",");
+
+        var content = new StringContent(requestFormModel, Encoding.UTF8, "application/json");
+
+        var response =
+            /*/
+            await _httpClient.PostAsync(_httpClient.BaseAddress + "OrderInfo.aspx", content, cToken);
+            /*/    
+            new HttpResponseMessage() { StatusCode = HttpStatusCode.OK };
+            //*/
+        
+        throw new NotImplementedException();
+    }
+    public Task Confirm(long chatId, string parameters, CancellationToken cToken)
+    {
+        throw new NotImplementedException();
+    }
 }

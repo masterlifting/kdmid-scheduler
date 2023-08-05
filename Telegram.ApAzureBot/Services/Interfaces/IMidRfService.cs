@@ -1,8 +1,8 @@
 ﻿namespace Telegram.ApAzureBot.Services.Interfaces;
 
-public interface IMidRfService
+public interface IMidRfService : IProcessService
 {
-    Task<byte[]> CheckSchedule(string message);
-    Task<string> SetCaptcha(string message);
-    Task<string> Schedule(string message);
+    Task Schedule(long chatId, string parameters, CancellationToken cToken);
+    Task Captcha(long chatId, string parameters, CancellationToken cToken);
+    Task Confirm(long chatId, string parameters, CancellationToken cToken);
 }
