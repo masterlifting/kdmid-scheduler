@@ -6,7 +6,8 @@ namespace Telegram.ApAzureBot.Services.Interfaces;
 
 public interface ITelegramService
 {
-    TelegramBotClient Bot { get; }
+    ITelegramBotClient Client { get; }
     Task SetWebhook(HttpRequestData request, CancellationToken cToken);
-    Task SendResponse(HttpRequestData request, CancellationToken cToken);
+    Task Listen(HttpRequestData request, CancellationToken cToken);
+    Task Send(HttpRequestData request, CancellationToken cToken);
 }

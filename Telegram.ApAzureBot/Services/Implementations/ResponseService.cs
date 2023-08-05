@@ -1,65 +1,54 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 using Telegram.ApAzureBot.Services.Interfaces;
+using Telegram.Bot;
 using Telegram.Bot.Types;
 
 namespace Telegram.ApAzureBot.Services.Implementations;
 
 internal sealed class ResponseService : IResponseService
 {
-    ILogger _logger;
     private readonly IServiceProvider _serviceProvider;
     private readonly Dictionary<string, Lazy<IProcessService>> _services;
 
-    public ResponseService(ILogger<ResponseService> logger, IServiceProvider serviceProvider)
+    public ResponseService(IServiceProvider serviceProvider)
     {
-        _logger = logger;
         _serviceProvider = serviceProvider;
         _services = new()
         {
-            {"midrf", new(() => _serviceProvider.GetRequiredService<IMidRfService>())},
+            {Constants.Kdmid, new(() => _serviceProvider.GetRequiredService<IKdmidService>())},
         };
     }
 
     public Task Process(Message message, CancellationToken cToken)
     {
-        if (string.IsNullOrWhiteSpace(message.Text) || message.Text.Length < 2)
-           throw new NotSupportedException(nameof(message));
+        try
+        {
+            if (string.IsNullOrWhiteSpace(message.Text) || message.Text.Length < 2)
+                throw new NotSupportedException("This message is not supported.");
 
-        var text = message.Text.Trim().ToLower().AsSpan();
+            var text = message.Text.Trim().ToLower().AsSpan();
 
-        return text.StartsWith("/")
-            ? ProcessCommand(message.Chat.Id, text, cToken)
-            : ProcessResponse(message.Chat.Id, text);
+            return text.StartsWith("/")
+                ? Process(message.Chat.Id, text[1..], cToken)
+                : throw new NotSupportedException("This message is not command.");
+        }
+        catch (Exception exception)
+        {
+            var telegramService = _serviceProvider.GetRequiredService<ITelegramService>();
+            return telegramService.Client.SendTextMessageAsync(message.Chat.Id, exception.Message, cancellationToken: cToken);
+        }
     }
-
-    public Task SetResponse(string message)
-    {
-        if (string.IsNullOrWhiteSpace(message) || message.Length < 2)
-            throw new NotSupportedException(nameof(message));
-
-        var text = message.Trim().ToLower().AsSpan();
-
-        return text.StartsWith("/")
-            ? ProcessCommand( default, text[1..], default)
-            : ProcessResponse( default, text);
-    }
-
-    private Task ProcessCommand(long chatId, ReadOnlySpan<char> command, CancellationToken cToken)
+    private Task Process(long chatId, ReadOnlySpan<char> command, CancellationToken cToken)
     {
         var nextCommandStartIndex = command.IndexOf('/');
 
-        var commandName = nextCommandStartIndex > 0 
-            ? command[0..nextCommandStartIndex] 
+        var commandName = nextCommandStartIndex > 0
+            ? command[0..nextCommandStartIndex]
             : command;
-        
+
         return !_services.TryGetValue(commandName.ToString(), out var service)
-            ? throw new NotSupportedException("This service is not supported.")
-            : service.Value.Process(chatId, command[(nextCommandStartIndex + 1)..],cToken);
-    }
-    private Task ProcessResponse(long chatId, ReadOnlySpan<char> response)
-    {
-        throw new NotImplementedException("This way is not implemented yet.");
+            ? throw new NotSupportedException("The service is not supported.")
+            : service.Value.Process(chatId, command[(nextCommandStartIndex + 1)..], cToken);
     }
 }

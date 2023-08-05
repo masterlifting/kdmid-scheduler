@@ -1,35 +1,30 @@
 ﻿using System.Net;
-using System.Net.Http;
 using System.Text;
 
 using HtmlAgilityPack;
-
-using Microsoft.Extensions.Logging;
 
 using Telegram.ApAzureBot.Services.Interfaces;
 using Telegram.Bot;
 
 namespace Telegram.ApAzureBot.Services.Implementations;
 
-public sealed class MidRfService : IMidRfService
+public sealed class KdmidService : IKdmidService
 {
-    private const string IdentifierKey = "midrf.identifier";
-    private const string RequestFormModelKey = "midrf.requestFormModel";
+    private static string GetIdentifierKey(string city) => $"{Constants.Kdmid}.{city}.identifier";
+    private static string GetRequestFormDataKey(string city) => $"{Constants.Kdmid}.{city}.requestFormData";
 
-    private readonly ILogger _logger;
     private readonly MemoryCache _cache;
     private readonly HttpClient _httpClient;
     private readonly ITelegramService _telegramService;
 
-    private readonly Dictionary<string, Func<long, string, CancellationToken, Task>> _functions;
+    private readonly Dictionary<string, Func<long, string, string, CancellationToken, Task>> _functions;
 
-    public MidRfService(ILogger<MidRfService> logger, MemoryCache cache, IHttpClientFactory httpClientFactory, ITelegramService telegramService)
+    public KdmidService(MemoryCache cache, IHttpClientFactory httpClientFactory, ITelegramService telegramService)
     {
-        _logger = logger;
         _cache = cache;
         _telegramService = telegramService;
 
-        _httpClient = httpClientFactory.CreateClient(Constants.MidRfHttpClientName);
+        _httpClient = httpClientFactory.CreateClient(Constants.Kdmid);
 
         _functions = new()
         {
@@ -42,7 +37,16 @@ public sealed class MidRfService : IMidRfService
     public Task Process(long chatId, ReadOnlySpan<char> message, CancellationToken cToken)
     {
         if (message.Length == 0)
-            throw new NotSupportedException("The message for midrf is empty.");
+            throw new NotSupportedException("The command is not found.");
+
+        var cityIndex = message.IndexOf('/');
+
+        if (cityIndex < 0)
+            throw new NotSupportedException("The city for the command is not found.");
+
+        var city = message[0..cityIndex];
+
+        message = message[(cityIndex + 1)..];
 
         var nextCommandStartIndex = message.IndexOf('?');
 
@@ -55,11 +59,11 @@ public sealed class MidRfService : IMidRfService
             : string.Empty;
 
         return !_functions.TryGetValue(command.ToString(), out var function)
-            ? throw new NotSupportedException("The midrf function is not supported.")
-            : function(chatId, parameters.ToString(), cToken);
+            ? throw new NotSupportedException("The process of the command is not supported.")
+            : function(chatId, city.ToString(), parameters.ToString(), cToken);
     }
 
-    public Task Schedule(long chatId, string parameters, CancellationToken cToken)
+    public Task Schedule(long chatId, string city, string parameters, CancellationToken cToken)
     {
         var url = _httpClient.BaseAddress + "OrderInfo.aspx?" + parameters;
 
@@ -70,7 +74,7 @@ public sealed class MidRfService : IMidRfService
             File.ReadAllText(Environment.CurrentDirectory + "/firstResponse.html");
             //*/
 
-        _cache.AddOrUpdate(chatId, IdentifierKey, parameters);
+        _cache.AddOrUpdate(chatId, GetIdentifierKey(city), parameters);
 
         var htmlDocument = new HtmlDocument();
         htmlDocument.LoadHtml(page);
@@ -105,7 +109,7 @@ public sealed class MidRfService : IMidRfService
         
         var requestFormModel = requestFormModelBuilder.ToString();
 
-        _cache.AddOrUpdate(chatId, RequestFormModelKey, requestFormModel);
+        _cache.AddOrUpdate(chatId, GetRequestFormDataKey(city), requestFormModel);
 
         if (captchaUrl is null)
             throw new NotSupportedException("The captcha url is null.");
@@ -120,17 +124,17 @@ public sealed class MidRfService : IMidRfService
 
             using var stream = new MemoryStream(captcha);
 
-            var photo = Bot.Types.InputFile.FromStream(stream, "Solve the captcha");
+            var photo = Bot.Types.InputFile.FromStream(stream, "captcha.jpeg");
 
-            return _telegramService.Bot.SendPhotoAsync(chatId, photo, cancellationToken: cToken);
+            return _telegramService.Client.SendPhotoAsync(chatId, photo, caption: $"/{Constants.Kdmid}/{city}/captcha?number", cancellationToken: cToken);
         }
     }
-    public Task Captcha(long chatId, string parameters, CancellationToken cToken)
+    public Task Captcha(long chatId, string city, string parameters, CancellationToken cToken)
     {
-        if (parameters.Length < 7)
+        if (parameters.Length < 6)
             throw new NotSupportedException("The captcha is not recognized.");
 
-        var requestFormModel = _cache.TryGetValue(chatId, RequestFormModelKey, out var value)
+        var requestFormModel = _cache.TryGetValue(chatId, GetRequestFormDataKey(city), out var value)
             ? value!
             : throw new NotSupportedException("The request form model is not found.");
 
@@ -147,7 +151,7 @@ public sealed class MidRfService : IMidRfService
         
         throw new NotImplementedException();
     }
-    public Task Confirm(long chatId, string parameters, CancellationToken cToken)
+    public Task Confirm(long chatId, string city, string parameters, CancellationToken cToken)
     {
         throw new NotImplementedException();
     }

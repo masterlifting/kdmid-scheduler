@@ -8,26 +8,22 @@ namespace Telegram.ApAzureBot;
 public class Functions
 {
     internal const string StartFunction = "setup";
+    internal const string ListenFunction = "listen";
     internal const string HandleFunction = "handle";
 
     private readonly ITelegramService _telegramService;
-    private readonly IResponseService _webService;
 
-    public Functions(ITelegramService telegramService, IResponseService webService)
-    {
-        _telegramService = telegramService;
-        _webService = webService;
-    }
+    public Functions(ITelegramService telegramService) => _telegramService = telegramService;
 
     [Function(StartFunction)]
-    public async Task Start([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData request, CancellationToken cToken)
-    {
-        await _webService.SetResponse("/midrf/schedule?id=54437&cd=9CFA9945");
-        
-        //await _telegramService.SetWebhook(request, cToken);
-    }
+    public Task Start([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData request, CancellationToken cToken) => 
+        _telegramService.SetWebhook(request, cToken);
+
+    [Function(ListenFunction)]
+    public Task Listen([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData request, CancellationToken cToken) =>
+        _telegramService.Listen(request, cToken);
 
     [Function(HandleFunction)]
     public Task Handle([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequestData request, CancellationToken cToken) =>
-        _telegramService.SendResponse(request, cToken);
+        _telegramService.Send(request, cToken);
 }

@@ -2,5 +2,5 @@
 
 internal static class Constants
 {
-    internal const string MidRfHttpClientName = "midrf";
+    internal const string Kdmid = "kdmid";
 }

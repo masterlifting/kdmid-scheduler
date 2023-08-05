@@ -14,8 +14,8 @@ namespace Telegram.ApAzureBot.Services.Implementations;
 
 internal sealed class TelegramService : ITelegramService
 {
-    public TelegramBotClient Bot { get; }
-    
+    public ITelegramBotClient Client { get; }
+
     private readonly ILogger _logger;
     private readonly IResponseService _responseService;
     public TelegramService(ILogger<TelegramService> logger, IResponseService responseService)
@@ -27,15 +27,15 @@ internal sealed class TelegramService : ITelegramService
 
         ArgumentNullException.ThrowIfNull(token, "Telegram token was not found.");
 
-        Bot = new TelegramBotClient(token);
+        Client = new TelegramBotClient(token);
     }
 
     public Task SetWebhook(HttpRequestData request, CancellationToken cToken)
     {
         var url = request.Url.ToString().Replace(Functions.StartFunction, Functions.HandleFunction, true, CultureInfo.InvariantCulture);
-        return Bot.SetWebhookAsync(url, cancellationToken: cToken);
+        return Client.SetWebhookAsync(url, cancellationToken: cToken);
     }
-    public async Task SendResponse(HttpRequestData request, CancellationToken cToken)
+    public async Task Send(HttpRequestData request, CancellationToken cToken)
     {
         var requestData = await request.ReadAsStringAsync();
 
@@ -47,10 +47,24 @@ internal sealed class TelegramService : ITelegramService
 
         if (update.Type != UpdateType.Message || update.Message!.Type != MessageType.Text)
         {
-            _logger.LogWarning("Telegram Update type is not supported: {0}", update.Type);
-            return;
+            await Client.SendTextMessageAsync(update.Message!.Chat.Id, "The message type is not supported.", cancellationToken: cToken);
         }
 
         await _responseService.Process(update.Message, cToken);
     }
+    public Task Listen(HttpRequestData request, CancellationToken cToken)
+    {
+        Client.StartReceiving(HandleUpdate, HandleError, cancellationToken: cToken);
+        return Task.CompletedTask;
+    }
+
+    private Task HandleError(ITelegramBotClient client, Exception exception, CancellationToken cToken)
+    {
+        _logger.LogError(exception, "Error occurred while receiving a message.");
+        return Task.CompletedTask;
+    }
+    private Task HandleUpdate(ITelegramBotClient client, Update update, CancellationToken cToken) =>
+        update.Type != UpdateType.Message || update.Message!.Type != MessageType.Text
+            ? Client.SendTextMessageAsync(update.Message!.Chat.Id, "The message type is not supported.", cancellationToken: cToken)
+            : _responseService.Process(update.Message, cToken);
 }

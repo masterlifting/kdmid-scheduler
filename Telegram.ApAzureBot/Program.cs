@@ -10,17 +10,19 @@ var host = new HostBuilder()
     {
         builder.Services.AddLogging();
 
-        builder.Services.AddHttpClient(Constants.MidRfHttpClientName, c =>
+        builder.Services.AddHttpClient(Constants.Kdmid, c =>
         {
             c.BaseAddress = new Uri("https://belgrad.kdmid.ru/queue/");
         });
         
         builder.Services.AddSingleton<MemoryCache>();
+        
+        //TODO: For production it should be replaced with Scoped
+        builder.Services.AddSingleton<ITelegramService, TelegramService>();
 
-        builder.Services.AddScoped<ITelegramService, TelegramService>();
         builder.Services.AddTransient<IResponseService, ResponseService>();
         
-        builder.Services.AddTransient<IMidRfService, MidRfService>();
+        builder.Services.AddTransient<IKdmidService, KdmidService>();
     })
     .Build();
 

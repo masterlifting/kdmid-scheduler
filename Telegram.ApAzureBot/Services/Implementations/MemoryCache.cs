@@ -4,7 +4,7 @@ namespace Telegram.ApAzureBot.Services.Implementations;
 
 public class MemoryCache
 {
-    private ConcurrentDictionary<long, Dictionary<string,string>> _storage = new();
+    private readonly ConcurrentDictionary<long, Dictionary<string,string>> _storage = new();
 
     public void AddOrUpdate(long chatId, string key, string value)
     {
@@ -27,5 +27,10 @@ public class MemoryCache
 
         value = null;
         return false;
+    }
+
+    public void Remove(long chatId)
+    {
+        _storage.TryRemove(chatId, out _);
     }
 }
