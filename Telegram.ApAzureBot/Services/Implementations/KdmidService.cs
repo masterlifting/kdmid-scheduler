@@ -72,7 +72,7 @@ public sealed class KdmidService : IKdmidService
             await _httpClient.GetStringAsync(url, cToken);
             /*/
             File.ReadAllText(Environment.CurrentDirectory + "/firstResponse.html");
-            //*/
+        //*/
 
         _cache.AddOrUpdate(chatId, GetIdentifierKey(city), parameters);
 
@@ -106,7 +106,7 @@ public sealed class KdmidService : IKdmidService
         }
 
         requestFormModelBuilder.Append('}');
-        
+
         var requestFormModel = requestFormModelBuilder.ToString();
 
         _cache.AddOrUpdate(chatId, GetRequestFormDataKey(city), requestFormModel);
@@ -120,7 +120,7 @@ public sealed class KdmidService : IKdmidService
                 await _httpClient.GetByteArrayAsync(captchaUrl, cToken);
                 /*/
                 File.ReadAllBytes(Environment.CurrentDirectory + "/CodeImage.jpeg");
-                //*/
+            //*/
 
             using var stream = new MemoryStream(captcha);
 
@@ -138,17 +138,30 @@ public sealed class KdmidService : IKdmidService
             ? value!.AsSpan()
             : throw new NotSupportedException("The request form model is not found.");
 
-        requestFormModel = requestFormModel.Replace("\"ctl00$MainContent$txtCode\": \"\",", $"\"ctl00$MainContent$txtCode\": \"{parameters}\",");
+        var searchString = "\"ctl00$MainContent$txtCode\": \"\",";
+        var replacementString = $"\"ctl00$MainContent$txtCode\": \"{parameters}\",";
+
+        int replacementIndex = requestFormModel.IndexOf(searchString);
+
+        if (replacementIndex != -1)
+        {
+            var newRequestFormModel = new char[requestFormModel.Length + replacementString.Length - searchString.Length];
+            requestFormModel[..replacementIndex].CopyTo(newRequestFormModel);
+            replacementString.AsSpan().CopyTo(newRequestFormModel.AsSpan(replacementIndex));
+            requestFormModel[(replacementIndex + searchString.Length)..].CopyTo(newRequestFormModel.AsSpan(replacementIndex + replacementString.Length));
+
+            requestFormModel = newRequestFormModel.AsSpan();
+        }
 
         var content = new StringContent(requestFormModel.ToString(), Encoding.UTF8, "application/json");
 
         var response =
             /*/
             await _httpClient.PostAsync(_httpClient.BaseAddress + "OrderInfo.aspx", content, cToken);
-            /*/    
+            /*/
             new HttpResponseMessage() { StatusCode = HttpStatusCode.OK };
-            //*/
-        
+        //*/
+
         throw new NotImplementedException();
     }
     public Task Confirm(long chatId, string city, string parameters, CancellationToken cToken)
