@@ -14,7 +14,7 @@ public sealed class MemoryCache
         }
         else
         {
-            _storage.TryAdd(chatId, new Dictionary<string, string>() { { key, value } });
+            _storage.TryAdd(chatId, new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { { key, value } });
         }
     }
 
