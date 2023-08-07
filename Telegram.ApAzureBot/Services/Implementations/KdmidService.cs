@@ -63,7 +63,7 @@ public sealed class KdmidService : IKdmidService
             : function(chatId, city.ToString(), parameters.ToString(), cToken);
     }
 
-    public Task Schedule(long chatId, string city, string parameters, CancellationToken cToken)
+    public async Task Schedule(long chatId, string city, string parameters, CancellationToken cToken)
     {
         var url = _httpClient.BaseAddress + "OrderInfo.aspx?" + parameters;
 
@@ -71,8 +71,8 @@ public sealed class KdmidService : IKdmidService
             /*/
             await _httpClient.GetStringAsync(url, cToken);
             /*/
-            File.ReadAllText(Environment.CurrentDirectory + "/firstResponse.html");
-        //*/
+            File.ReadAllText(Environment.CurrentDirectory + "/Content/firstResponse.html");
+            //*/
 
         _cache.AddOrUpdate(chatId, GetIdentifierKey(city), parameters);
 
@@ -119,47 +119,62 @@ public sealed class KdmidService : IKdmidService
                 /*/
                 await _httpClient.GetByteArrayAsync(captchaUrl, cToken);
                 /*/
-                File.ReadAllBytes(Environment.CurrentDirectory + "/CodeImage.jpeg");
-            //*/
+                File.ReadAllBytes(Environment.CurrentDirectory + "/Content/CodeImage.jpeg");
+                //*/
 
             using var stream = new MemoryStream(captcha);
 
             var photo = Bot.Types.InputFile.FromStream(stream, "captcha.jpeg");
 
-            return _telegramService.Client.SendPhotoAsync(chatId, photo, caption: $"/{Constants.Kdmid}/{city}/captcha?number", cancellationToken: cToken);
+            await _telegramService.Client.SendPhotoAsync(chatId, photo, caption: $"/{Constants.Kdmid}/{city}/captcha?number", cancellationToken: cToken);
         }
     }
-    public Task Captcha(long chatId, string city, string parameters, CancellationToken cToken)
+    public async Task Captcha(long chatId, string city, string parameters, CancellationToken cToken)
     {
         if (parameters.Length < 6)
             throw new NotSupportedException("The captcha is not valid.");
 
-        var requestFormModel = _cache.TryGetValue(chatId, GetRequestFormDataKey(city), out var value)
-            ? value!.AsSpan()
-            : throw new NotSupportedException("The request form model is not found.");
+        if(!_cache.TryGetValue(chatId, GetRequestFormDataKey(city), out var requestFormModel))
+            throw new NotSupportedException("The request form model is not found. Try from the beginning.");
 
         var searchString = "\"ctl00$MainContent$txtCode\": \"\",";
         var replacementString = $"\"ctl00$MainContent$txtCode\": \"{parameters}\",";
 
-        int replacementIndex = requestFormModel.IndexOf(searchString);
+        var stringContent = requestFormModel!.Replace(searchString, replacementString);
 
-        if (replacementIndex != -1)
-        {
-            var newRequestFormModel = new char[requestFormModel.Length + replacementString.Length - searchString.Length];
-            requestFormModel[..replacementIndex].CopyTo(newRequestFormModel);
-            replacementString.AsSpan().CopyTo(newRequestFormModel.AsSpan(replacementIndex));
-            requestFormModel[(replacementIndex + searchString.Length)..].CopyTo(newRequestFormModel.AsSpan(replacementIndex + replacementString.Length));
+        //*/
+        var content = new StringContent(stringContent, Encoding.UTF8, "application/x-www-form-urlencoded");
 
-            requestFormModel = newRequestFormModel.AsSpan();
-        }
+        if(!_cache.TryGetValue(chatId, GetIdentifierKey(city), out var requestIdentifier))
+            throw new NotSupportedException("The identifier is not found. Try from the beginning.");
 
-        var content = new StringContent(requestFormModel.ToString(), Encoding.UTF8, "application/json");
+        var request = new HttpRequestMessage(HttpMethod.Post, _httpClient.BaseAddress + "OrderInfo.aspx?" + requestIdentifier);
+        
+        request.Headers.Add("Accept-Encoding", "gzip, deflate, br");
+        request.Headers.Add("Accept-Language", "en,ru;q=0.9");
+        request.Headers.Add("Cache-Control", "max-age=0");
+        request.Headers.Add("Connection", "keep-alive");
+        request.Headers.Add("DNT", "1");
+        request.Headers.Add("Host", "belgrad.kdmid.ru");
+        request.Headers.Add("Origin", "https://belgrad.kdmid.ru");
+        request.Headers.Add("Referer", $"https://belgrad.kdmid.ru/queue/OrderInfo.aspx?{requestIdentifier}");
+        request.Headers.Add("Sec-Fetch-Dest", "document");
+        request.Headers.Add("Sec-Fetch-Mode", "navigate");
+        request.Headers.Add("Sec-Fetch-Site", "same-origin");
+        request.Headers.Add("Sec-Fetch-User", "?1");
+        request.Headers.Add("Upgrade-Insecure-Requests", "1");
+        request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36 Edg/115.0.1901.188");
+        request.Headers.Add("sec-ch-ua", "\"Not/A)Brand\";v=\"99\", \"Microsoft Edge\";v=\"115\", \"Chromium\";v=\"115\"");
+        request.Headers.Add("sec-ch-ua-mobile", "?0");
+        request.Headers.Add("sec-ch-ua-platform", "Windows");
 
-        var response =
-            /*/
-            await _httpClient.PostAsync(_httpClient.BaseAddress + "OrderInfo.aspx", content, cToken);
-            /*/
-            new HttpResponseMessage() { StatusCode = HttpStatusCode.OK };
+        request.Content = content;
+
+        var response = await _httpClient.SendAsync(request, cToken);
+
+        var page = await response.Content.ReadAsStringAsync();
+        /*/
+        new HttpResponseMessage() { StatusCode = HttpStatusCode.OK };
         //*/
 
         throw new NotImplementedException();

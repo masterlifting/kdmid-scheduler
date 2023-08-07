@@ -20,23 +20,24 @@ internal sealed class ResponseService : IResponseService
         };
     }
 
-    public Task Process(Message message, CancellationToken cToken)
+    public async Task Process(Message message, CancellationToken cToken)
     {
         try
         {
-            if (string.IsNullOrWhiteSpace(message.Text) || message.Text.Length < 2)
+            if (string.IsNullOrWhiteSpace(message.Text) || message.Text.Length < 4)
                 throw new NotSupportedException("This message is not supported.");
 
-            var text = message.Text.Trim().ToLower().AsSpan();
+            var text = message.Text.Trim().ToLower();
 
-            return text.StartsWith("/")
-                ? Process(message.Chat.Id, text[1..], cToken)
-                : throw new NotSupportedException("This message is not command.");
+            if(!text.StartsWith("/"))
+                throw new NotSupportedException("This message is not command.");
+
+            await Process(message.Chat.Id, text[1..].AsSpan(), cToken);
         }
         catch (Exception exception)
         {
             var telegramService = _serviceProvider.GetRequiredService<ITelegramService>();
-            return telegramService.Client.SendTextMessageAsync(message.Chat.Id, exception.Message, cancellationToken: cToken);
+            await telegramService.Client.SendTextMessageAsync(message.Chat.Id, "Error: " + exception.Message, cancellationToken: cToken);
         }
     }
     private Task Process(long chatId, ReadOnlySpan<char> command, CancellationToken cToken)
