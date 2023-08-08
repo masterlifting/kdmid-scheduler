@@ -10,10 +10,7 @@ var host = new HostBuilder()
     {
         builder.Services.AddLogging();
 
-        builder.Services.AddHttpClient(Constants.Kdmid, c =>
-        {
-            c.BaseAddress = new Uri("https://belgrad.kdmid.ru/queue/");
-        });
+        builder.Services.AddHttpClient(Constants.Kdmid);
         
         builder.Services.AddSingleton<MemoryCache>();
 

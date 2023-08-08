@@ -25,12 +25,12 @@ internal sealed class ResponseService : IResponseService
         try
         {
             if (string.IsNullOrWhiteSpace(message.Text) || message.Text.Length < 4)
-                throw new NotSupportedException("This message is not supported.");
+                throw new NotSupportedException("Message is not supported.");
 
             var text = message.Text.Trim().ToLower();
 
             if(!text.StartsWith("/"))
-                throw new NotSupportedException("This message is not command.");
+                throw new NotSupportedException("Message is not a command.");
 
             await Process(message.Chat.Id, text[1..].AsSpan(), cToken);
         }
@@ -49,7 +49,7 @@ internal sealed class ResponseService : IResponseService
             : command;
 
         return !_services.TryGetValue(commandName.ToString(), out var service)
-            ? throw new NotSupportedException("The service is not supported.")
+            ? throw new NotSupportedException("Service is not supported.")
             : service.Value.Process(chatId, command[(nextCommandStartIndex + 1)..], cToken);
     }
 }
