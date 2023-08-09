@@ -20,8 +20,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Net.Shared.Web.Models", "Su
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Net.Shared.Exceptions", "Submodules\Net.Shared.Exceptions\src\Net.Shared.Exceptions\Net.Shared.Exceptions.csproj", "{E700316E-5C61-44D1-8D58-9C2C5F92E394}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Telegram.ApAzureBot.Http", "Telegram.ApAzureBot.Http\Telegram.ApAzureBot.Http.csproj", "{4B324508-B38E-4582-AB42-0ECD441763FA}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Telegram.ApAzureBot.Worker", "Telegram.ApAzureBot.Worker\Telegram.ApAzureBot.Worker.csproj", "{E9180528-2E4B-4B54-8C22-85E573B18354}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Main", "Main", "{B0310DC9-03EF-4CA7-8B0A-4FA01DE09488}"
@@ -29,6 +27,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Telegram.ApAzureBot.Core", "Telegram.ApAzureBot.Core\Telegram.ApAzureBot.Core.csproj", "{3C6363F1-8DCF-4390-B813-997C96EA0DCF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Telegram.ApAzureBot.Infrastructure", "Telegram.ApAzureBot.Infrastructure\Telegram.ApAzureBot.Infrastructure.csproj", "{33C12825-224E-4B36-B4C2-B77874D60B29}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Telegram.ApAzureBot.Api", "Telegram.ApAzureBot.Api\Telegram.ApAzureBot.Api.csproj", "{C57A30E2-788C-4B85-99D3-D0902A542DB0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -52,10 +52,6 @@ Global
 		{E700316E-5C61-44D1-8D58-9C2C5F92E394}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E700316E-5C61-44D1-8D58-9C2C5F92E394}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E700316E-5C61-44D1-8D58-9C2C5F92E394}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4B324508-B38E-4582-AB42-0ECD441763FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4B324508-B38E-4582-AB42-0ECD441763FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4B324508-B38E-4582-AB42-0ECD441763FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4B324508-B38E-4582-AB42-0ECD441763FA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E9180528-2E4B-4B54-8C22-85E573B18354}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E9180528-2E4B-4B54-8C22-85E573B18354}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E9180528-2E4B-4B54-8C22-85E573B18354}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -68,6 +64,10 @@ Global
 		{33C12825-224E-4B36-B4C2-B77874D60B29}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{33C12825-224E-4B36-B4C2-B77874D60B29}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{33C12825-224E-4B36-B4C2-B77874D60B29}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C57A30E2-788C-4B85-99D3-D0902A542DB0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C57A30E2-788C-4B85-99D3-D0902A542DB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C57A30E2-788C-4B85-99D3-D0902A542DB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C57A30E2-788C-4B85-99D3-D0902A542DB0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

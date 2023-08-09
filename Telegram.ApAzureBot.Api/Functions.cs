@@ -2,9 +2,10 @@
 
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+
 using Telegram.ApAzureBot.Core.Abstractions.Services.Telegram;
 
-namespace Telegram.ApAzureBot.Http;
+namespace Telegram.ApAzureBot.Api;
 
 public class Functions
 {
@@ -19,7 +20,7 @@ public class Functions
     public Task SetReceiver([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData request, CancellationToken cToken)
     {
         var url = request.Url.ToString().Replace(SetReceiverFunction, ReceiveFunction, true, CultureInfo.InvariantCulture);
-        
+
         return _client.SetWebhook(url, cToken);
     }
 
@@ -32,8 +33,8 @@ public class Functions
 
         await _client.ReceiveMessage(data, cToken);
     }
-    
+
     [Function(ListenFunction)]
-    public Task Listen([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData _, CancellationToken cToken) => 
+    public Task Listen([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData _, CancellationToken cToken) =>
         _client.ListenBot(cToken);
 }
