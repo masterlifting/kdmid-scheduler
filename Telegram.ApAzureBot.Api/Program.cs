@@ -31,7 +31,7 @@ var host = new HostBuilder()
         builder.Services.AddTransient<IHtmlDocument, KdmidHtmlDocument>();
         builder.Services.AddTransient<IHttpClient, KdmidHttpClient>();
         builder.Services.AddTransient<ITelegramCommand, TelegramCommand>();
-        builder.Services.AddTransient<ICaptchaService, CaptchaService>();
+        builder.Services.AddTransient<ICaptchaService, AntiCaptchaService>();
         builder.Services.AddTransient<IKdmidService, KdmidService>();
     })
     .Build();

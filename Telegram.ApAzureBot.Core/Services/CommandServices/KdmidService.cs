@@ -81,7 +81,7 @@ public sealed class KdmidService : IKdmidService
 
     public async Task Schedule(long chatId, string city, string urlIdentifier, CancellationToken cToken)
     {
-        //*/
+        /*/
         var page = await _httpClient.GetStringAsync(GetRequestUrl(city, urlIdentifier), cToken);
         /*/
         var page = File.ReadAllText(Environment.CurrentDirectory + "/Content/firstResponse.html");
@@ -128,12 +128,13 @@ public sealed class KdmidService : IKdmidService
             throw new ArgumentException("Captcha is not found.");
         else
         {
-            //*/
+            /*/
             var captcha = await _httpClient.GetByteArrayAsync(captchaUrl, cToken);
-            uint captchaResult = await _captchaService.SolveInteger(captcha, cToken);
+            var captchaResult = await _captchaService.SolveInteger(captcha, cToken);
             await Captcha(chatId, city, captchaResult.ToString(), cToken);
             /*/
             var captcha = File.ReadAllBytes(Environment.CurrentDirectory + "/Content/CodeImage.jpeg");
+            var captchaResult = await _captchaService.SolveInteger(captcha, cToken);
             await _telegramClient.SendPhoto(new(chatId, captcha, "captcha.jpeg", GetCaptchaCommand(city)), cToken);
             //*/
         }
