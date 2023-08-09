@@ -9,7 +9,7 @@ using Telegram.ApAzureBot.Core.Services.Telegram;
 
 namespace Telegram.ApAzureBot.Core.Services.CommandServices;
 
-public sealed class KdmidService : IKdmidService
+public sealed class KdmidTelegramCommand : IKdmidService
 {
     private const string FormDataMediaType = "application/x-www-form-urlencoded";
     private static string GetCaptchaCommand(string city) => $"/{Constants.Kdmid}/{city}/captcha?";
@@ -29,7 +29,7 @@ public sealed class KdmidService : IKdmidService
 
     private readonly Dictionary<string, Func<long, string, string, CancellationToken, Task>> _functions;
 
-    public KdmidService(
+    public KdmidTelegramCommand(
         TelegramMemoryCache cache
         , ITelegramClient telegramClient
         , IHttpClient httpClient
@@ -81,7 +81,7 @@ public sealed class KdmidService : IKdmidService
 
     public async Task Schedule(long chatId, string city, string urlIdentifier, CancellationToken cToken)
     {
-        /*/
+        //*/
         var page = await _httpClient.GetStringAsync(GetRequestUrl(city, urlIdentifier), cToken);
         /*/
         var page = File.ReadAllText(Environment.CurrentDirectory + "/Content/firstResponse.html");
@@ -93,7 +93,7 @@ public sealed class KdmidService : IKdmidService
 
         string? captchaUrl = null;
 
-        StringBuilder requestFormBuilder = new();
+        StringBuilder formBuilder = new();
 
         foreach (var node in _htmlDocument.SelectNodes("//input | //img"))
         {
@@ -105,7 +105,7 @@ public sealed class KdmidService : IKdmidService
                 var encodedInputName = Uri.EscapeDataString(inputName);
                 var encodedInputValue = Uri.EscapeDataString(inputValue);
 
-                requestFormBuilder.Append($"&{encodedInputName}={encodedInputValue}");
+                formBuilder.Append($"&{encodedInputName}={encodedInputValue}");
             }
             else if (node.Name == "img")
             {
@@ -118,37 +118,38 @@ public sealed class KdmidService : IKdmidService
             }
         }
 
-        requestFormBuilder.Remove(0, 1);
+        formBuilder.Remove(0, 1);
 
-        var requestForm = requestFormBuilder.ToString();
+        var formData = formBuilder.ToString();
 
-        _cache.AddOrUpdate(chatId, GetRequestFormKey(city), requestForm);
+        _cache.AddOrUpdate(chatId, GetRequestFormKey(city), formData);
 
         if (captchaUrl is null)
             throw new ArgumentException("Captcha is not found.");
         else
         {
-            /*/
+            //*/
             var captcha = await _httpClient.GetByteArrayAsync(captchaUrl, cToken);
             var captchaResult = await _captchaService.SolveInteger(captcha, cToken);
             await Captcha(chatId, city, captchaResult.ToString(), cToken);
             /*/
             var captcha = File.ReadAllBytes(Environment.CurrentDirectory + "/Content/CodeImage.jpeg");
             var captchaResult = await _captchaService.SolveInteger(captcha, cToken);
-            await _telegramClient.SendPhoto(new(chatId, captcha, "captcha.jpeg", GetCaptchaCommand(city)), cToken);
+            await Captcha(chatId, city, captchaResult.ToString(), cToken);
+            //await _telegramClient.SendPhoto(new(chatId, captcha, "captcha.jpeg", GetCaptchaCommand(city)), cToken);
             //*/
         }
     }
     public async Task Captcha(long chatId, string city, string captcha, CancellationToken cToken)
     {
-        if (captcha.Length < 6 || !int.TryParse(captcha, out _))
+        if (captcha.Length < 6 || !uint.TryParse(captcha, out _))
             throw new NotSupportedException("Captcha is not valid.");
 
         if (!_cache.TryGetValue(chatId, GetUrlIdentifierKey(city), out var urlIdentifier))
-            throw new NotSupportedException("URL identifier is not found. Try from the beginning.");
+            throw new NotSupportedException("URL identifier is not found.");
 
         if (!_cache.TryGetValue(chatId, GetRequestFormKey(city), out var requestForm))
-            throw new NotSupportedException("Request data are not found. Try from the beginning.");
+            throw new NotSupportedException("Request data are not found.");
 
         const string OldReplacementString = "ctl00%24MainContent%24txtCode=";
         var newReplacementString = $"{OldReplacementString}{captcha}";
@@ -157,15 +158,15 @@ public sealed class KdmidService : IKdmidService
 
         //*/
         var content = new StringContent(requestFormData, Encoding.UTF8, FormDataMediaType);
-        var requestResponse = await _httpClient.PostAsync(GetRequestUrl(city, urlIdentifier!), content, cToken);
-        var requestPage = await requestResponse.Content.ReadAsStringAsync(cToken);
+        var postResponse = await _httpClient.PostAsync(GetRequestUrl(city, urlIdentifier!), content, cToken);
+        var postResponseResult = await postResponse.Content.ReadAsStringAsync(cToken);
         /*/
-        var requestPage = File.ReadAllText(Environment.CurrentDirectory + "/Content/secondResponse.html");
+        var postResponseResult = File.ReadAllText(Environment.CurrentDirectory + "/Content/secondResponse.html");
         //*/
 
-        _htmlDocument.LoadHtml(requestPage);
+        _htmlDocument.LoadHtml(postResponseResult);
 
-        StringBuilder confirmFormBuilder = new();
+        StringBuilder formBuilder = new();
 
         foreach (var node in _htmlDocument.SelectNodes("//input"))
         {
@@ -177,28 +178,28 @@ public sealed class KdmidService : IKdmidService
 
             if (!encodedInputName.Equals("ctl00%24MainContent%24ButtonB", StringComparison.OrdinalIgnoreCase))
             {
-                confirmFormBuilder.Append($"&{encodedInputName}={encodedInputValue}");
+                formBuilder.Append($"&{encodedInputName}={encodedInputValue}");
             }
             else
             {
-                confirmFormBuilder.Append($"&{encodedInputName}.x=100");
-                confirmFormBuilder.Append($"&{encodedInputName}.y=20");
+                formBuilder.Append($"&{encodedInputName}.x=100");
+                formBuilder.Append($"&{encodedInputName}.y=20");
             }
         }
 
-        confirmFormBuilder.Remove(0, 1);
+        formBuilder.Remove(0, 1);
 
-        var confirmFormData = confirmFormBuilder.ToString();
+        var formData = formBuilder.ToString();
 
         //*/
-        content = new StringContent(confirmFormData, Encoding.UTF8, FormDataMediaType);
-        var confirmResponse = await _httpClient.PostAsync(GetRequestUrl(city, urlIdentifier!), content, cToken);
-        var confirmPage = await confirmResponse.Content.ReadAsStringAsync(cToken);
+        content = new StringContent(formData, Encoding.UTF8, FormDataMediaType);
+        postResponse = await _httpClient.PostAsync(GetRequestUrl(city, urlIdentifier!), content, cToken);
+        postResponseResult = await postResponse.Content.ReadAsStringAsync(cToken);
         /*/
-        var confirmPage = File.ReadAllText(Environment.CurrentDirectory + "/Content/thirdResponse_Ok.html");
+        postResponseResult = File.ReadAllText(Environment.CurrentDirectory + "/Content/thirdResponse.html");
         //*/
 
-        _htmlDocument.LoadHtml(confirmPage);
+        _htmlDocument.LoadHtml(postResponseResult);
 
         var scheduleTable = _htmlDocument
             .SelectSingleNode("//td[@id='center-panel']")
@@ -211,7 +212,7 @@ public sealed class KdmidService : IKdmidService
         }
         else
         {
-            StringBuilder resultFormBuilder = new();
+            formBuilder.Clear();
 
             foreach (var node in _htmlDocument.SelectNodes("//input"))
             {
@@ -221,14 +222,14 @@ public sealed class KdmidService : IKdmidService
                 var encodedInputName = Uri.EscapeDataString(inputName);
                 var encodedInputValue = Uri.EscapeDataString(inputValue);
 
-                resultFormBuilder.Append($"&{encodedInputName}={encodedInputValue}");
+                formBuilder.Append($"&{encodedInputName}={encodedInputValue}");
             }
 
-            resultFormBuilder.Remove(0, 1);
+            formBuilder.Remove(0, 1);
 
-            var resultForm = resultFormBuilder.ToString();
+            formData = formBuilder.ToString();
 
-            _cache.AddOrUpdate(chatId, GetResultFormKey(city), resultForm);
+            _cache.AddOrUpdate(chatId, GetResultFormKey(city), formData);
 
             await _telegramClient.SendMessage(new(chatId, "Making appointments are found. Choose one of them:"), cToken);
 
@@ -249,13 +250,13 @@ public sealed class KdmidService : IKdmidService
     public async Task Confirm(long chatId, string city, string confirmResult, CancellationToken cToken)
     {
         if (!_cache.TryGetValue(chatId, GetUrlIdentifierKey(city), out var urlIdentifier))
-            throw new NotSupportedException("URL identifier is not found. Try from the beginning.");
+            throw new NotSupportedException("URL identifier is not found.");
 
         if (!_cache.TryGetValue(chatId, GetConfirmValueKey(city, confirmResult), out var confirmValue))
-            throw new NotSupportedException("Confirm value is not found. Try from the beginning.");
+            throw new NotSupportedException("Confirm value is not found.");
 
         if (!_cache.TryGetValue(chatId, GetResultFormKey(city), out var resultForm))
-            throw new NotSupportedException("Result data are not found. Try from the beginning.");
+            throw new NotSupportedException("Result data are not found.");
 
         var encodedConfirmValue = Uri.EscapeDataString(confirmValue!);
 
@@ -264,7 +265,7 @@ public sealed class KdmidService : IKdmidService
 
         var stringContent = resultForm!.Replace(OldReplacementString, newReplacementString);
 
-        //*/
+        /*/
         var content = new StringContent(stringContent, Encoding.UTF8, FormDataMediaType);
         var resultResponse = await _httpClient.PostAsync(GetRequestUrl(city, urlIdentifier!), content, cToken);
         var resultPage = await resultResponse.Content.ReadAsStringAsync(cToken);

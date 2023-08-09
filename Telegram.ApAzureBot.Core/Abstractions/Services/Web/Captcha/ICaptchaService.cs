@@ -2,5 +2,5 @@
 
 public interface ICaptchaService
 {
-    Task<ushort> SolveInteger(byte[] img, CancellationToken cToken);
+    Task<uint> SolveInteger(byte[] img, CancellationToken cToken);
 }
