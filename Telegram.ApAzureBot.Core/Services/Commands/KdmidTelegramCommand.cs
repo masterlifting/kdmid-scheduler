@@ -265,17 +265,18 @@ public sealed class KdmidTelegramCommand : IKdmidService
 
         var stringContent = resultForm!.Replace(OldReplacementString, newReplacementString);
 
-        /*/
-        var content = new StringContent(stringContent, Encoding.UTF8, FormDataMediaType);
-        var resultResponse = await _httpClient.PostAsync(GetRequestUrl(city, urlIdentifier!), content, cToken);
-        var resultPage = await resultResponse.Content.ReadAsStringAsync(cToken);
-
-        if (!string.IsNullOrEmpty(resultPage))
-            await _telegramClient.SendMessage(new(chatId, resultPage), cToken);
-        /*/
         //*/
+        var content = new StringContent(stringContent, Encoding.UTF8, FormDataMediaType);
+        var postResponse = await _httpClient.PostAsync(GetRequestUrl(city, urlIdentifier!), content, cToken);
+        var postResponseResult = await postResponse.Content.ReadAsStringAsync(cToken);
 
+        if (!string.IsNullOrEmpty(postResponseResult))
+            await _telegramClient.SendMessage(new(chatId, postResponseResult), cToken);
+        else
+            await _telegramClient.SendMessage(new(chatId, "Something went wrong while confirming."), cToken);
+        /*/
         await _telegramClient.SendMessage(new(chatId, "Confirmed."), cToken);
+        //*/
 
         _cache.Clear(chatId);
     }
