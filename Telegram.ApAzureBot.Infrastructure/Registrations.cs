@@ -4,9 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Telegram.ApAzureBot.Infrastructure
+namespace Telegram.ApAzureBot.Infrastructure;
+
+public static class Registrations
 {
-    public static class Registrations
-    {
-    }
 }

@@ -1,7 +1,6 @@
-﻿namespace Telegram.ApAzureBot.Core
+﻿namespace Telegram.ApAzureBot.Core;
+
+public static class Constants
 {
-    public static class Constants
-    {
-        public const string Kdmid = "kdmid";
-    }
+    public const string Kdmid = "kdmid";
 }
