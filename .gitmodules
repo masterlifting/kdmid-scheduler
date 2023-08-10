@@ -22,3 +22,7 @@
 	path = Submodules/Net.Shared
 	url = https://github.com/masterlifting/Net.Shared
 	branch = dev
+[submodule "Submodules/Net.Shared.Background"]
+	path = Submodules/Net.Shared.Background
+	url = https://github.com/masterlifting/Net.Shared.Background
+	branch = dev
