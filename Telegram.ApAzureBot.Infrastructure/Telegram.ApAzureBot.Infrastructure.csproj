@@ -11,7 +11,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Submodules\Net.Shared.Persistence\src\Net.Shared.Persistence\Net.Shared.Persistence.csproj" />
+    <ProjectReference Include="..\Submodules\Net.Shared.Queues\src\Net.Shared.Queues\Net.Shared.Queues.csproj" />
     <ProjectReference Include="..\Submodules\Net.Shared.Web\src\Net.Shared.Web\Net.Shared.Web.csproj" />
+    <ProjectReference Include="..\Submodules\Net.Shared\src\Net.Shared\Net.Shared.csproj" />
     <ProjectReference Include="..\Telegram.ApAzureBot.Core\Telegram.ApAzureBot.Core.csproj" />
   </ItemGroup>
 
