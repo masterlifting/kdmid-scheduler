@@ -1,24 +1,27 @@
-﻿using Microsoft.Azure.Functions.Worker;
-using Telegram.ApAzureBot.Core.Abstractions.Services.Telegram;
-using Telegram.ApAzureBot.Core.Persistence.NoSql;
+﻿using Azure.Data.Tables;
+
+using Microsoft.Azure.Functions.Worker;
+
 using Telegram.ApAzureBot.Worker.Models;
 
 namespace Telegram.ApAzureBot.Worker;
 
 public class Functions
 {
-    private readonly ITelegramCommand _command;
-
-    public Functions(ITelegramCommand telegramCommand)
+    private readonly string _connectionString;
+    public Functions()
     {
-        _command = telegramCommand;
+        var connectionString = Environment.GetEnvironmentVariable("AzureStorageConnectionString");
+
+        ArgumentNullException.ThrowIfNull(connectionString, "Telegram token was not found.");
+        
+        _connectionString = connectionString;
     }
 
     [Function("TelegramApAzureBotWorker")]
-    public async Task Run([TimerTrigger("0 */5 * * * *")] TelegramTimer timer, CancellationToken token)
+    public async Task Run([TimerTrigger("0 */1 * * * *")] TelegramTimer timer)
     {
-        var message = new TelegramMessage(0, "");
-        
-        await _command.Process(message, token);
+        var tableClient = new TableClient(_connectionString, "TelegramApAzureBotTable");
+        var result = tableClient.Query<TelegramMessageEntity>(x => x.ChatId == 123456).ToArray();
     }
 }
