@@ -6,3 +6,19 @@
 	path = Submodules/Net.Shared.Exceptions
 	url = https://github.com/masterlifting/Net.Shared.Exceptions
 	branch = dev-azure_func
+[submodule "Submodules/Net.Shared.Persistence"]
+	path = Submodules/Net.Shared.Persistence
+	url = https://github.com/masterlifting/Net.Shared.Persistence
+	branch = dev
+[submodule "Submodules/Net.Shared.Queues"]
+	path = Submodules/Net.Shared.Queues
+	url = https://github.com/masterlifting/Net.Shared.Queues
+	branch = dev
+[submodule "Submodules/Net.Shared.Extensions"]
+	path = Submodules/Net.Shared.Extensions
+	url = https://github.com/masterlifting/Net.Shared.Extensions
+	branch = dev
+[submodule "Submodules/Net.Shared"]
+	path = Submodules/Net.Shared
+	url = https://github.com/masterlifting/Net.Shared
+	branch = dev
