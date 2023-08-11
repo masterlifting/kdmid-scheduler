@@ -1,8 +1,8 @@
 [submodule "Submodules/Net.Shared.Web"]
 	path = Submodules/Net.Shared.Web
 	url = https://github.com/masterlifting/Net.Shared.Web
-	branch = dev-azure_func
+	branch = dev
 [submodule "Submodules/Net.Shared.Exceptions"]
 	path = Submodules/Net.Shared.Exceptions
 	url = https://github.com/masterlifting/Net.Shared.Exceptions
-	branch = dev-azure_func
+	branch = dev
