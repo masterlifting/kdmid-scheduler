@@ -53,12 +53,12 @@ public sealed class KdmidTelegramCommand : IKdmidService
     public Task Start(long chatId, ReadOnlySpan<char> message, CancellationToken cToken)
     {
         if (message.Length == 0)
-            throw new NotSupportedException("Command is not found.");
+            throw new NotSupportedException("Command was not found.");
 
         var cityIndex = message.IndexOf('/');
 
         if (cityIndex < 0)
-            throw new NotSupportedException($"City from the '{message}' is not found.");
+            throw new NotSupportedException($"City from the '{message}' was not found.");
 
         var city = message[0..cityIndex];
 
@@ -121,7 +121,7 @@ public sealed class KdmidTelegramCommand : IKdmidService
         _cache.AddOrUpdate(chatId, GetRequestFormKey(city), formData);
 
         if (captchaUrl is null)
-            throw new ArgumentException($"Captcha is not found for '{city}'.");
+            throw new ArgumentException($"Captcha was not found for '{city}'.");
         else
         {
             var captcha = await _httpClient.GetByteArrayAsync(captchaUrl, cToken);
@@ -135,10 +135,10 @@ public sealed class KdmidTelegramCommand : IKdmidService
             throw new NotSupportedException($"Captcha is not valid for '{city}'.");
 
         if (!_cache.TryGetValue(chatId, GetUrlIdentifierKey(city), out var urlIdentifier))
-            throw new NotSupportedException($"URL identifier is not found for '{city}'.");
+            throw new NotSupportedException($"URL identifier was not found for '{city}'.");
 
         if (!_cache.TryGetValue(chatId, GetRequestFormKey(city), out var requestForm))
-            throw new NotSupportedException($"Request data are not found for '{city}'.");
+            throw new NotSupportedException($"Form data was not found for '{city}'.");
 
         const string OldReplacementString = "ctl00%24MainContent%24txtCode=";
         var newReplacementString = $"{OldReplacementString}{captcha}";
@@ -189,7 +189,7 @@ public sealed class KdmidTelegramCommand : IKdmidService
 
         if (scheduleTable is null)
         {
-            await _telegramClient.SendMessage(new(chatId, $"Making appointments for '{city}' are not found."), cToken);
+            await _telegramClient.SendMessage(new(chatId, $"Scheduling for '{city.ToUpper()}' was not found."), cToken);
         }
         else
         {
@@ -212,7 +212,7 @@ public sealed class KdmidTelegramCommand : IKdmidService
 
             _cache.AddOrUpdate(chatId, GetResultFormKey(city), formData);
 
-            await _telegramClient.SendMessage(new(chatId, $"Making appointments for '{city}' are found. Choose one of them:"), cToken);
+            await _telegramClient.SendMessage(new(chatId, $"Scheduling variants for '{city.ToUpper()}':"), cToken);
 
             foreach (var item in scheduleTable.SelectNodes("//input[@type='radio']"))
             {
@@ -231,13 +231,13 @@ public sealed class KdmidTelegramCommand : IKdmidService
     public async Task Confirm(long chatId, string city, string confirmResult, CancellationToken cToken)
     {
         if (!_cache.TryGetValue(chatId, GetUrlIdentifierKey(city), out var urlIdentifier))
-            throw new NotSupportedException($"URL identifier is not found for '{city}'.");
+            throw new NotSupportedException($"URL identifier was not found for '{city}'.");
 
         if (!_cache.TryGetValue(chatId, GetConfirmValueKey(city, confirmResult), out var confirmValue))
-            throw new NotSupportedException($"Confirm value is not found for '{city}'.");
+            throw new NotSupportedException($"Confirm value was not found for '{city}'.");
 
         if (!_cache.TryGetValue(chatId, GetResultFormKey(city), out var resultForm))
-            throw new NotSupportedException($"Result data are not found for '{city}'.");
+            throw new NotSupportedException($"Form data was not found for '{city}'.");
 
         var encodedConfirmValue = Uri.EscapeDataString(confirmValue!);
 
@@ -253,7 +253,7 @@ public sealed class KdmidTelegramCommand : IKdmidService
         if (!string.IsNullOrEmpty(postResponseResult))
             await _telegramClient.SendMessage(new(chatId, postResponseResult), cToken);
         else
-            await _telegramClient.SendMessage(new(chatId, $"Something went wrong while confirming for '{city}'."), cToken);
+            await _telegramClient.SendMessage(new(chatId, $"Something went wrong while confirming for '{city.ToUpper()}'."), cToken);
 
         _cache.Clear(chatId);
     }
