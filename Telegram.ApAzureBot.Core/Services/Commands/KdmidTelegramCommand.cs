@@ -12,14 +12,14 @@ namespace Telegram.ApAzureBot.Core.Services.CommandServices;
 public sealed class KdmidTelegramCommand : IKdmidService
 {
     private const string FormDataMediaType = "application/x-www-form-urlencoded";
-    private static string GetCaptchaCommand(string city) => $"/{Constants.Kdmid}/'{city}'/captcha?";
-    private static string GetConfirmCommand(string city) => $"/{Constants.Kdmid}/'{city}'/confirm?";
-    private static string GetBaseUrl(string city) => $"https://'{city}'.{Constants.Kdmid}.ru/queue/";
+    private static string GetCaptchaCommand(string city) => $"/{Constants.Kdmid}/{city}/captcha?";
+    private static string GetConfirmCommand(string city) => $"/{Constants.Kdmid}/{city}/confirm?";
+    private static string GetBaseUrl(string city) => $"https://{city}.{Constants.Kdmid}.ru/queue/";
     private static string GetRequestUrl(string city, string identifier) => GetBaseUrl(city) + "OrderInfo.aspx?" + identifier;
-    private static string GetUrlIdentifierKey(string city) => $"{Constants.Kdmid}.'{city}'.identifier";
-    private static string GetRequestFormKey(string city) => $"{Constants.Kdmid}.'{city}'.request";
-    private static string GetResultFormKey(string city) => $"{Constants.Kdmid}.'{city}'.result";
-    private static string GetConfirmValueKey(string city, string key) => $"{Constants.Kdmid}.'{city}'.confirm.{key}";
+    private static string GetUrlIdentifierKey(string city) => $"{Constants.Kdmid}.{city}.identifier";
+    private static string GetRequestFormKey(string city) => $"{Constants.Kdmid}.{city}.request";
+    private static string GetResultFormKey(string city) => $"{Constants.Kdmid}.{city}.result";
+    private static string GetConfirmValueKey(string city, string key) => $"{Constants.Kdmid}.{city}.confirm.{key}";
 
     private readonly TelegramMemoryCache _cache;
     private readonly ITelegramClient _telegramClient;
