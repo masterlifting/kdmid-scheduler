@@ -12,14 +12,14 @@ namespace Telegram.ApAzureBot.Core.Services.CommandServices;
 public sealed class KdmidTelegramCommand : IKdmidService
 {
     private const string FormDataMediaType = "application/x-www-form-urlencoded";
-    private static string GetCaptchaCommand(string city) => $"/{Constants.Kdmid}/{city}/captcha?";
-    private static string GetConfirmCommand(string city) => $"/{Constants.Kdmid}/{city}/confirm?";
-    private static string GetBaseUrl(string city) => $"https://{city}.{Constants.Kdmid}.ru/queue/";
+    private static string GetCaptchaCommand(string city) => $"/{Constants.Kdmid}/'{city}'/captcha?";
+    private static string GetConfirmCommand(string city) => $"/{Constants.Kdmid}/'{city}'/confirm?";
+    private static string GetBaseUrl(string city) => $"https://'{city}'.{Constants.Kdmid}.ru/queue/";
     private static string GetRequestUrl(string city, string identifier) => GetBaseUrl(city) + "OrderInfo.aspx?" + identifier;
-    private static string GetUrlIdentifierKey(string city) => $"{Constants.Kdmid}.{city}.identifier";
-    private static string GetRequestFormKey(string city) => $"{Constants.Kdmid}.{city}.request";
-    private static string GetResultFormKey(string city) => $"{Constants.Kdmid}.{city}.result";
-    private static string GetConfirmValueKey(string city, string key) => $"{Constants.Kdmid}.{city}.confirm.{key}";
+    private static string GetUrlIdentifierKey(string city) => $"{Constants.Kdmid}.'{city}'.identifier";
+    private static string GetRequestFormKey(string city) => $"{Constants.Kdmid}.'{city}'.request";
+    private static string GetResultFormKey(string city) => $"{Constants.Kdmid}.'{city}'.result";
+    private static string GetConfirmValueKey(string city, string key) => $"{Constants.Kdmid}.'{city}'.confirm.{key}";
 
     private readonly TelegramMemoryCache _cache;
     private readonly ITelegramClient _telegramClient;
@@ -58,7 +58,7 @@ public sealed class KdmidTelegramCommand : IKdmidService
         var cityIndex = message.IndexOf('/');
 
         if (cityIndex < 0)
-            throw new NotSupportedException("City of the command is not found.");
+            throw new NotSupportedException($"City from the '{message}' is not found.");
 
         var city = message[0..cityIndex];
 
@@ -75,17 +75,13 @@ public sealed class KdmidTelegramCommand : IKdmidService
             : string.Empty;
 
         return !_functions.TryGetValue(command.ToString(), out var function)
-            ? throw new NotSupportedException("Command is not supported.")
+            ? throw new NotSupportedException($"Command is not supported for '{city}'.")
             : function(chatId, city.ToString(), parameters.ToString(), cToken);
     }
 
     public async Task Schedule(long chatId, string city, string urlIdentifier, CancellationToken cToken)
     {
-        //*/
         var page = await _httpClient.GetStringAsync(GetRequestUrl(city, urlIdentifier), cToken);
-        /*/
-        var page = File.ReadAllText(Environment.CurrentDirectory + "/Content/firstResponse.html");
-        //*/
 
         _cache.AddOrUpdate(chatId, GetUrlIdentifierKey(city), urlIdentifier);
 
@@ -125,44 +121,33 @@ public sealed class KdmidTelegramCommand : IKdmidService
         _cache.AddOrUpdate(chatId, GetRequestFormKey(city), formData);
 
         if (captchaUrl is null)
-            throw new ArgumentException("Captcha is not found.");
+            throw new ArgumentException($"Captcha is not found for '{city}'.");
         else
         {
-            //*/
             var captcha = await _httpClient.GetByteArrayAsync(captchaUrl, cToken);
             var captchaResult = await _captchaService.SolveInteger(captcha, cToken);
             await Captcha(chatId, city, captchaResult.ToString(), cToken);
-            /*/
-            var captcha = File.ReadAllBytes(Environment.CurrentDirectory + "/Content/CodeImage.jpeg");
-            var captchaResult = await _captchaService.SolveInteger(captcha, cToken);
-            await Captcha(chatId, city, captchaResult.ToString(), cToken);
-            //await _telegramClient.SendPhoto(new(chatId, captcha, "captcha.jpeg", GetCaptchaCommand(city)), cToken);
-            //*/
         }
     }
     public async Task Captcha(long chatId, string city, string captcha, CancellationToken cToken)
     {
         if (captcha.Length < 6 || !uint.TryParse(captcha, out _))
-            throw new NotSupportedException("Captcha is not valid.");
+            throw new NotSupportedException($"Captcha is not valid for '{city}'.");
 
         if (!_cache.TryGetValue(chatId, GetUrlIdentifierKey(city), out var urlIdentifier))
-            throw new NotSupportedException("URL identifier is not found.");
+            throw new NotSupportedException($"URL identifier is not found for '{city}'.");
 
         if (!_cache.TryGetValue(chatId, GetRequestFormKey(city), out var requestForm))
-            throw new NotSupportedException("Request data are not found.");
+            throw new NotSupportedException($"Request data are not found for '{city}'.");
 
         const string OldReplacementString = "ctl00%24MainContent%24txtCode=";
         var newReplacementString = $"{OldReplacementString}{captcha}";
 
         var requestFormData = requestForm!.Replace(OldReplacementString, newReplacementString);
 
-        //*/
         var content = new StringContent(requestFormData, Encoding.UTF8, FormDataMediaType);
         var postResponse = await _httpClient.PostAsync(GetRequestUrl(city, urlIdentifier!), content, cToken);
         var postResponseResult = await postResponse.Content.ReadAsStringAsync(cToken);
-        /*/
-        var postResponseResult = File.ReadAllText(Environment.CurrentDirectory + "/Content/secondResponse.html");
-        //*/
 
         _htmlDocument.LoadHtml(postResponseResult);
 
@@ -191,13 +176,9 @@ public sealed class KdmidTelegramCommand : IKdmidService
 
         var formData = formBuilder.ToString();
 
-        //*/
         content = new StringContent(formData, Encoding.UTF8, FormDataMediaType);
         postResponse = await _httpClient.PostAsync(GetRequestUrl(city, urlIdentifier!), content, cToken);
         postResponseResult = await postResponse.Content.ReadAsStringAsync(cToken);
-        /*/
-        postResponseResult = File.ReadAllText(Environment.CurrentDirectory + "/Content/thirdResponse.html");
-        //*/
 
         _htmlDocument.LoadHtml(postResponseResult);
 
@@ -208,7 +189,7 @@ public sealed class KdmidTelegramCommand : IKdmidService
 
         if (scheduleTable is null)
         {
-            await _telegramClient.SendMessage(new(chatId, "Making appointments are not found."), cToken);
+            await _telegramClient.SendMessage(new(chatId, $"Making appointments for '{city}' are not found."), cToken);
         }
         else
         {
@@ -231,7 +212,7 @@ public sealed class KdmidTelegramCommand : IKdmidService
 
             _cache.AddOrUpdate(chatId, GetResultFormKey(city), formData);
 
-            await _telegramClient.SendMessage(new(chatId, "Making appointments are found. Choose one of them:"), cToken);
+            await _telegramClient.SendMessage(new(chatId, $"Making appointments for '{city}' are found. Choose one of them:"), cToken);
 
             foreach (var item in scheduleTable.SelectNodes("//input[@type='radio']"))
             {
@@ -250,13 +231,13 @@ public sealed class KdmidTelegramCommand : IKdmidService
     public async Task Confirm(long chatId, string city, string confirmResult, CancellationToken cToken)
     {
         if (!_cache.TryGetValue(chatId, GetUrlIdentifierKey(city), out var urlIdentifier))
-            throw new NotSupportedException("URL identifier is not found.");
+            throw new NotSupportedException($"URL identifier is not found for '{city}'.");
 
         if (!_cache.TryGetValue(chatId, GetConfirmValueKey(city, confirmResult), out var confirmValue))
-            throw new NotSupportedException("Confirm value is not found.");
+            throw new NotSupportedException($"Confirm value is not found for '{city}'.");
 
         if (!_cache.TryGetValue(chatId, GetResultFormKey(city), out var resultForm))
-            throw new NotSupportedException("Result data are not found.");
+            throw new NotSupportedException($"Result data are not found for '{city}'.");
 
         var encodedConfirmValue = Uri.EscapeDataString(confirmValue!);
 
@@ -265,7 +246,6 @@ public sealed class KdmidTelegramCommand : IKdmidService
 
         var stringContent = resultForm!.Replace(OldReplacementString, newReplacementString);
 
-        //*/
         var content = new StringContent(stringContent, Encoding.UTF8, FormDataMediaType);
         var postResponse = await _httpClient.PostAsync(GetRequestUrl(city, urlIdentifier!), content, cToken);
         var postResponseResult = await postResponse.Content.ReadAsStringAsync(cToken);
@@ -273,10 +253,7 @@ public sealed class KdmidTelegramCommand : IKdmidService
         if (!string.IsNullOrEmpty(postResponseResult))
             await _telegramClient.SendMessage(new(chatId, postResponseResult), cToken);
         else
-            await _telegramClient.SendMessage(new(chatId, "Something went wrong while confirming."), cToken);
-        /*/
-        await _telegramClient.SendMessage(new(chatId, "Confirmed."), cToken);
-        //*/
+            await _telegramClient.SendMessage(new(chatId, $"Something went wrong while confirming for '{city}'."), cToken);
 
         _cache.Clear(chatId);
     }

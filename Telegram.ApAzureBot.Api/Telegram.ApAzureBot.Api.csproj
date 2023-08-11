@@ -20,21 +20,6 @@
     <ProjectReference Include="..\Telegram.ApAzureBot.Infrastructure\Telegram.ApAzureBot.Infrastructure.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <None Update="Content\CodeImage.jpeg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\firstResponse.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\secondResponse.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\thirdResponse.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\thirdResponse_Ok.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="host.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

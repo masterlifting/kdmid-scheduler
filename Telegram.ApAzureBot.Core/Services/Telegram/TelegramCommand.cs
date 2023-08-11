@@ -36,7 +36,7 @@ public sealed class TelegramCommand : ITelegramCommand
         {
             var telegramClient = _serviceProvider.GetTelegramClient();
 
-            await telegramClient.SendMessage(new(message.ChatId, "Error: " + exception.Message), cToken);
+            await telegramClient.SendMessage(new(message.ChatId, $"Error for the '{message.Text}': {exception.Message}"), cToken);
         }
     }
     private Task Process(long chatId, ReadOnlySpan<char> command, CancellationToken cToken)
