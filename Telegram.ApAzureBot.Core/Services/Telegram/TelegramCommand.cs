@@ -18,7 +18,7 @@ public sealed class TelegramCommand : ITelegramCommand
         };
     }
 
-    public async Task Process(TelegramMessage message, CancellationToken cToken)
+    public async Task Execute(TelegramMessage message, CancellationToken cToken)
     {
         try
         {

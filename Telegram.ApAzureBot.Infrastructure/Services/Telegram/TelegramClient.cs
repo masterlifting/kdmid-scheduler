@@ -38,7 +38,7 @@ public sealed class TelegramClient : ITelegramClient
             await _client.SendTextMessageAsync(update.Message!.Chat.Id, "Message type is not supported.", cancellationToken: cToken);
         }
 
-        await _command.Process(new(update.Message.Chat.Id, update.Message.Text!), cToken);
+        await _command.Execute(new(update.Message.Chat.Id, update.Message.Text!), cToken);
     }
     public Task ListenBot(CancellationToken cToken)
     {
@@ -66,6 +66,6 @@ public sealed class TelegramClient : ITelegramClient
     private Task HandleListenerReceiving(ITelegramBotClient client, Update update, CancellationToken cToken) =>
         update.Type != UpdateType.Message || update.Message!.Type != MessageType.Text
             ? _client.SendTextMessageAsync(update.Message!.Chat.Id, "Message type is not supported.", cancellationToken: cToken)
-            : _command.Process(new(update.Message.Chat.Id, update.Message.Text!), cToken);
+            : _command.Execute(new(update.Message.Chat.Id, update.Message.Text!), cToken);
     #endregion
 }

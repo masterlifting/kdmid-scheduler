@@ -4,5 +4,5 @@ namespace Telegram.ApAzureBot.Core.Abstractions.Services.Telegram;
 
 public interface ITelegramCommand
 {
-    Task Process(TelegramMessage message, CancellationToken cToken);
+    Task Execute(TelegramMessage message, CancellationToken cToken);
 }
