@@ -3,6 +3,7 @@
 public static class Constants
 {
     public const string Kdmid = "kdmid";
+    public const string AntiCaptcha = "anticaptcha";
 
     public enum TelegramCommandTaskStatus
     {

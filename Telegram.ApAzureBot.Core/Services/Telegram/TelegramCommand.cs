@@ -14,7 +14,7 @@ public sealed class TelegramCommand : ITelegramCommand
         _serviceProvider = serviceProvider;
         _services = new()
         {
-            {Constants.Kdmid, new(() => _serviceProvider.GetService<IKdmidService>())},
+            {Constants.Kdmid, new(_serviceProvider.GetService<IKdmidCommandProcess>)},
         };
     }
 
@@ -30,7 +30,7 @@ public sealed class TelegramCommand : ITelegramCommand
             if (!text.StartsWith('/'))
                 throw new NotSupportedException("Message is not a command.");
 
-            await Process(message.ChatId, text[1..].AsSpan(), cToken);
+            await ProcessCommand(message.ChatId, text[1..].AsSpan(), cToken);
         }
         catch (Exception exception)
         {
@@ -39,16 +39,16 @@ public sealed class TelegramCommand : ITelegramCommand
             await telegramClient.SendMessage(new(message.ChatId, "Error: " + exception.Message), cToken);
         }
     }
-    private Task Process(long chatId, ReadOnlySpan<char> command, CancellationToken cToken)
+    private Task ProcessCommand(long chatId, ReadOnlySpan<char> command, CancellationToken cToken)
     {
-        var nextCommandStartIndex = command.IndexOf('/');
+        var commandParametersStartIndex = command.IndexOf('/');
 
-        var commandName = nextCommandStartIndex > 0
-            ? command[0..nextCommandStartIndex]
+        var commandName = commandParametersStartIndex > 0
+            ? command[0..commandParametersStartIndex]
             : command;
 
         return !_services.TryGetValue(commandName.ToString(), out var service)
             ? throw new NotSupportedException("Service is not supported.")
-            : service.Value.Start(chatId, command[(nextCommandStartIndex + 1)..], cToken);
+            : service.Value.Start(chatId, command[(commandParametersStartIndex + 1)..], cToken);
     }
 }

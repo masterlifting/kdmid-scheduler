@@ -36,5 +36,5 @@ public class Functions
 
     [Function(ListenFunction)]
     public Task Listen([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData request, CancellationToken cToken) =>
-        _client.ListenBot(cToken);
+        _client.ListenMessages(cToken);
 }

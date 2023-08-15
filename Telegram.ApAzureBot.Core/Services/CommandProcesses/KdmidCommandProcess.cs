@@ -9,7 +9,7 @@ using Telegram.ApAzureBot.Core.Services.Telegram;
 
 namespace Telegram.ApAzureBot.Core.Services.CommandServices;
 
-public sealed class KdmidTelegramCommand : IKdmidService
+public sealed class KdmidCommandProcess : IKdmidCommandProcess
 {
     private const string FormDataMediaType = "application/x-www-form-urlencoded";
     private static string GetCaptchaCommand(string city) => $"/{Constants.Kdmid}/{city}/captcha?";
@@ -29,7 +29,7 @@ public sealed class KdmidTelegramCommand : IKdmidService
 
     private readonly Dictionary<string, Func<long, string, string, CancellationToken, Task>> _functions;
 
-    public KdmidTelegramCommand(
+    public KdmidCommandProcess(
         TelegramMemoryCache cache
         , ITelegramClient telegramClient
         , IHttpClient httpClient
