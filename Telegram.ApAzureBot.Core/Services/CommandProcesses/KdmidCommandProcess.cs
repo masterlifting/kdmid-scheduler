@@ -1,4 +1,4 @@
-﻿using Azure.Data.Tables;
+using Azure.Data.Tables;
 
 using Microsoft.Extensions.Configuration;
 
@@ -117,7 +117,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
     public async Task Check(KdmidCommand command, CancellationToken cToken)
     {
         var identifier = await GetIdentifier(command.ChatId, command.City, command.Parameters, cToken);
-        
+
         if (identifier is null)
         {
             await AskIdentifier(command, cToken);
