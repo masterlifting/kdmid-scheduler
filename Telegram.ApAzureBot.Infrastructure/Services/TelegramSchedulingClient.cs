@@ -8,7 +8,7 @@ using Telegram.ApAzureBot.Core.Abstractions.Services.Telegram;
 using Microsoft.Extensions.Configuration;
 using Telegram.ApAzureBot.Core.Persistence;
 
-namespace Telegram.ApAzureBot.Infrastructure.Services.Telegram;
+namespace Telegram.ApAzureBot.Infrastructure.Services;
 
 public sealed class TelegramSchedulingClient : ITelegramClient
 {
@@ -40,11 +40,10 @@ public sealed class TelegramSchedulingClient : ITelegramClient
             await _client.SendTextMessageAsync(update.Message!.Chat.Id, "Message type is not supported.", cancellationToken: cToken);
         }
 
-        var message = new TelegramMessage(update.Message.Chat.Id, update.Message.Text!);
-        
         var task = new TelegramCommandTask()
         {
-            Message = message,
+            ChatId = update.Message!.Chat.Id,
+            Text = update.Message.Text!,
         };
 
         await _repository.CreateCommandTask(task, cToken);
@@ -80,11 +79,10 @@ public sealed class TelegramSchedulingClient : ITelegramClient
         }
         else
         {
-            var message = new TelegramMessage(update.Message.Chat.Id, update.Message.Text!);
-
             var task = new TelegramCommandTask()
             {
-                Message = message,
+                ChatId = update.Message!.Chat.Id,
+                Text = update.Message.Text!,
             };
 
             return _repository.CreateCommandTask(task, cToken);

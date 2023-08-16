@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 
 using Telegram.ApAzureBot.Core.Abstractions.Services;
 using Telegram.ApAzureBot.Core.Abstractions.Services.CommandProcesses;
@@ -48,7 +48,7 @@ public sealed class TelegramCommand : ITelegramCommand
         }
         catch (Exception exception)
         {
-            _logger.Error( new ApAzureBotCoreException(exception));
+            _logger.Error(new ApAzureBotCoreException(exception));
             await _serviceProvider.GetTelegramClient().SendMessage(new(message.ChatId, "Something went wrong. Please try again later."), cToken);
         }
     }

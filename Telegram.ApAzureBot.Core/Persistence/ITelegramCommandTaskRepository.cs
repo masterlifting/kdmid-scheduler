@@ -1,11 +1,10 @@
 ﻿using Telegram.ApAzureBot.Core.Persistence.NoSql;
 
-namespace Telegram.ApAzureBot.Core.Persistence
+namespace Telegram.ApAzureBot.Core.Persistence;
+
+public interface ITelegramCommandTaskRepository
 {
-    public interface ITelegramCommandTaskRepository
-    {
-        Task CreateCommandTask(TelegramCommandTask task, CancellationToken cToken);
-        Task<TelegramCommandTask[]> GetReadyTasks(int limit);
-        Task UpdateStatus(IEnumerable<TelegramCommandTask> tasks);
-    }
+    Task CreateCommandTask(TelegramCommandTask task, CancellationToken cToken);
+    Task<TelegramCommandTask[]> GetReadyTasks(int limit);
+    Task UpdateStatus(IEnumerable<TelegramCommandTask> tasks);
 }
