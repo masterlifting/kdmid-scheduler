@@ -1,9 +1,8 @@
-﻿using Net.Shared.Persistence.Abstractions.Entities;
-using Net.Shared.Persistence.Abstractions.Entities.Catalogs;
+﻿using Net.Shared.Persistence.Abstractions.Entities.Catalogs;
 
-namespace Telegram.ApAzureBot.Core.Persistence.NoSql;
+namespace Telegram.ApAzureBot.Core.Persistence.Entities;
 
-public sealed class TelegramCommandStep : IPersistentProcessStep, IPersistentNoSql
+public sealed class TelegramCommandStep : IPersistentProcessStep
 {
     public int Id { get; init; }
     public string Name { get; set; }

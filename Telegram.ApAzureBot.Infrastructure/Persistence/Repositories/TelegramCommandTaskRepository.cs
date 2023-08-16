@@ -51,10 +51,10 @@ public sealed class TelegramCommandTaskRepository : ITelegramCommandTaskReposito
         {
             PartitionKey = _hostId.ToString(),
             RowKey = Guid.NewGuid().ToString(),
-           
+
             ChatId = message.ChatId,
             Text = message.Text,
-           
+
             HostId = _hostId,
             StepId = _step.Id,
             StatusId = (int)ProcessStatuses.Ready,
