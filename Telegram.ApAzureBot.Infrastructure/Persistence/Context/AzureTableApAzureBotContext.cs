@@ -1,8 +1,20 @@
-﻿using Net.Shared.Persistence.Contexts;
+﻿using Microsoft.Extensions.Configuration;
 
-namespace Telegram.ApAzureBot.Infrastructure.Persistence.Context
+using Net.Shared.Persistence.Contexts;
+
+using Telegram.ApAzureBot.Core.Persistence.NoSql;
+
+namespace Telegram.ApAzureBot.Infrastructure.Persistence.Context;
+
+public sealed class AzureTableApAzureBotContext : AzureTableContext
 {
-    public sealed class AzureTableApAzureBotContext : AzureTableContext
+    public AzureTableApAzureBotContext(IConfiguration configuration) 
+        : base(configuration["AzureStorageConnectionString"] ?? throw new ArgumentNullException("AzureStorageConnectionString was not found."))
     {
+    }
+
+    override public void OnModelCreating(AzureTableBuilder builder)
+    {
+        builder.SetTable<TelegramCommandTask>();
     }
 }

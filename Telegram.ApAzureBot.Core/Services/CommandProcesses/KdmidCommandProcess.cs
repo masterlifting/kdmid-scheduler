@@ -5,7 +5,6 @@ using Telegram.ApAzureBot.Core.Abstractions.Services.Telegram;
 using Telegram.ApAzureBot.Core.Abstractions.Services.Web.Captcha;
 using Telegram.ApAzureBot.Core.Abstractions.Services.Web.Html;
 using Telegram.ApAzureBot.Core.Abstractions.Services.Web.Http;
-using Telegram.ApAzureBot.Core.Services.Telegram;
 
 namespace Telegram.ApAzureBot.Core.Services.CommandServices;
 

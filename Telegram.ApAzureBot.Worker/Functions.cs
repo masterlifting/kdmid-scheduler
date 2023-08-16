@@ -33,7 +33,7 @@ public class Functions
         {
             try
             {
-                await _command.Execute(telegramTask.Message, default);
+                await _command.Execute(new(telegramTask.ChatId, telegramTask.Text), default);
                 telegramTask.StatusId = (int)Core.Constants.TelegramCommandTaskStatus.Completed;
             }
             catch (Exception exception)

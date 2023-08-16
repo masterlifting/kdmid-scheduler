@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Azure.Data.Tables" Version="12.8.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Submodules\Net.Shared.Extensions\src\Net.Shared.Extensions\Net.Shared.Extensions.csproj" />
     <ProjectReference Include="..\Submodules\Net.Shared.Persistence\src\Net.Shared.Persistence.Abstractions\Net.Shared.Persistence.Abstractions.csproj" />
     <ProjectReference Include="..\Submodules\Net.Shared.Queues\src\Net.Shared.Queues.Abstractions\Net.Shared.Queues.Abstractions.csproj" />

@@ -6,19 +6,18 @@ using Microsoft.Extensions.Logging;
 using Telegram.ApAzureBot.Core.Persistence.NoSql;
 using Telegram.ApAzureBot.Core.Abstractions.Services.Telegram;
 using Microsoft.Extensions.Configuration;
-using Telegram.ApAzureBot.Core.Persistence;
 
-namespace Telegram.ApAzureBot.Infrastructure.Services.Telegram;
+namespace Telegram.ApAzureBot.Infrastructure.Services;
 
-public sealed class TelegramSchedulingClient : ITelegramClient
+public sealed class TelegramExecutingClient : ITelegramClient
 {
     private readonly ILogger _logger;
     private readonly ITelegramBotClient _client;
-    private readonly ITelegramCommandTaskRepository _repository;
-    public TelegramSchedulingClient(ILogger<TelegramSchedulingClient> logger, ITelegramCommandTaskRepository repository, IConfiguration configuration)
+    private readonly ITelegramCommand _command;
+    public TelegramExecutingClient(ILogger<TelegramExecutingClient> logger, ITelegramCommand telegramCommand, IConfiguration configuration)
     {
         _logger = logger;
-        _repository = repository;
+        _command = telegramCommand;
 
         var token = configuration["TelegramBotToken"];
 
@@ -40,14 +39,7 @@ public sealed class TelegramSchedulingClient : ITelegramClient
             await _client.SendTextMessageAsync(update.Message!.Chat.Id, "Message type is not supported.", cancellationToken: cToken);
         }
 
-        var message = new TelegramMessage(update.Message.Chat.Id, update.Message.Text!);
-        
-        var task = new TelegramCommandTask()
-        {
-            Message = message,
-        };
-
-        await _repository.CreateCommandTask(task, cToken);
+        await _command.Execute(new(update.Message.Chat.Id, update.Message.Text!), cToken);
     }
     public Task ListenMessages(CancellationToken cToken)
     {
@@ -72,23 +64,9 @@ public sealed class TelegramSchedulingClient : ITelegramClient
         _logger.LogError(exception, "Error occurred while receiving a message.");
         return Task.CompletedTask;
     }
-    private Task HandleListenerReceiving(ITelegramBotClient client, Update update, CancellationToken cToken)
-    {
-        if (update.Type != UpdateType.Message || update.Message!.Type != MessageType.Text)
-        {
-            return _client.SendTextMessageAsync(update.Message!.Chat.Id, "Message type is not supported.", cancellationToken: cToken);
-        }
-        else
-        {
-            var message = new TelegramMessage(update.Message.Chat.Id, update.Message.Text!);
-
-            var task = new TelegramCommandTask()
-            {
-                Message = message,
-            };
-
-            return _repository.CreateCommandTask(task, cToken);
-        }
-    }
+    private Task HandleListenerReceiving(ITelegramBotClient client, Update update, CancellationToken cToken) =>
+        update.Type != UpdateType.Message || update.Message!.Type != MessageType.Text
+            ? _client.SendTextMessageAsync(update.Message!.Chat.Id, "Message type is not supported.", cancellationToken: cToken)
+            : _command.Execute(new(update.Message.Chat.Id, update.Message.Text!), cToken);
     #endregion
 }

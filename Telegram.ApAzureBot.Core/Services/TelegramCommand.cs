@@ -2,7 +2,7 @@
 using Telegram.ApAzureBot.Core.Abstractions.Services.Telegram;
 using Telegram.ApAzureBot.Core.Persistence.NoSql;
 
-namespace Telegram.ApAzureBot.Core.Services.Telegram;
+namespace Telegram.ApAzureBot.Core.Services;
 
 public sealed class TelegramCommand : ITelegramCommand
 {

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 
-namespace Telegram.ApAzureBot.Core.Services.Telegram;
+namespace Telegram.ApAzureBot.Core.Services;
 
 public sealed class TelegramMemoryCache
 {
