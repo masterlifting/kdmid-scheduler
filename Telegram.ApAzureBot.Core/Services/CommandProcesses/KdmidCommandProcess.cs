@@ -1,12 +1,12 @@
 ﻿using System.Text;
 
-using Telegram.ApAzureBot.Core.Abstractions.Services.CommandServices;
+using Telegram.ApAzureBot.Core.Abstractions.Services.CommandProcesses;
 using Telegram.ApAzureBot.Core.Abstractions.Services.Telegram;
 using Telegram.ApAzureBot.Core.Abstractions.Services.Web.Captcha;
 using Telegram.ApAzureBot.Core.Abstractions.Services.Web.Html;
 using Telegram.ApAzureBot.Core.Abstractions.Services.Web.Http;
 
-namespace Telegram.ApAzureBot.Core.Services.CommandServices;
+namespace Telegram.ApAzureBot.Core.Services.CommandProcesses;
 
 public sealed class KdmidCommandProcess : IKdmidCommandProcess
 {

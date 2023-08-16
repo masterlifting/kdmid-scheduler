@@ -3,10 +3,10 @@ using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types;
 using Microsoft.Extensions.Logging;
-using Telegram.ApAzureBot.Core.Persistence.NoSql;
 using Telegram.ApAzureBot.Core.Abstractions.Services.Telegram;
 using Microsoft.Extensions.Configuration;
-using Telegram.ApAzureBot.Core.Persistence;
+using Telegram.ApAzureBot.Core.Abstractions.Persistence.Repositories;
+using Telegram.ApAzureBot.Core.Models;
 
 namespace Telegram.ApAzureBot.Infrastructure.Services;
 
@@ -40,13 +40,7 @@ public sealed class TelegramSchedulingClient : ITelegramClient
             await _client.SendTextMessageAsync(update.Message!.Chat.Id, "Message type is not supported.", cancellationToken: cToken);
         }
 
-        var task = new TelegramCommandTask()
-        {
-            ChatId = update.Message!.Chat.Id,
-            Text = update.Message.Text!,
-        };
-
-        await _repository.CreateCommandTask(task, cToken);
+        await _repository.CreateTask(new(update.Message!.Chat.Id, update.Message.Text!), cToken);
     }
     public Task ListenMessages(CancellationToken cToken)
     {
@@ -79,13 +73,7 @@ public sealed class TelegramSchedulingClient : ITelegramClient
         }
         else
         {
-            var task = new TelegramCommandTask()
-            {
-                ChatId = update.Message!.Chat.Id,
-                Text = update.Message.Text!,
-            };
-
-            return _repository.CreateCommandTask(task, cToken);
+            return _repository.CreateTask(new(update.Message!.Chat.Id, update.Message.Text!), cToken);
         }
     }
     #endregion

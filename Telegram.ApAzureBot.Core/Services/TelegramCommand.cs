@@ -1,6 +1,6 @@
-﻿using Telegram.ApAzureBot.Core.Abstractions.Services.CommandServices;
+﻿using Telegram.ApAzureBot.Core.Abstractions.Services.CommandProcesses;
 using Telegram.ApAzureBot.Core.Abstractions.Services.Telegram;
-using Telegram.ApAzureBot.Core.Persistence.NoSql;
+using Telegram.ApAzureBot.Core.Models;
 
 namespace Telegram.ApAzureBot.Core.Services;
 

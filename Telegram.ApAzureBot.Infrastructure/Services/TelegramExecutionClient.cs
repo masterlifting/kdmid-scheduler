@@ -3,18 +3,18 @@ using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types;
 using Microsoft.Extensions.Logging;
-using Telegram.ApAzureBot.Core.Persistence.NoSql;
 using Telegram.ApAzureBot.Core.Abstractions.Services.Telegram;
 using Microsoft.Extensions.Configuration;
+using Telegram.ApAzureBot.Core.Models;
 
 namespace Telegram.ApAzureBot.Infrastructure.Services;
 
-public sealed class TelegramExecutingClient : ITelegramClient
+public sealed class TelegramExecutionClient : ITelegramClient
 {
     private readonly ILogger _logger;
     private readonly ITelegramBotClient _client;
     private readonly ITelegramCommand _command;
-    public TelegramExecutingClient(ILogger<TelegramExecutingClient> logger, ITelegramCommand telegramCommand, IConfiguration configuration)
+    public TelegramExecutionClient(ILogger<TelegramExecutionClient> logger, ITelegramCommand telegramCommand, IConfiguration configuration)
     {
         _logger = logger;
         _command = telegramCommand;

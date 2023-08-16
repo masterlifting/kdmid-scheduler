@@ -1,8 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 
 using Net.Shared.Persistence.Contexts;
-
-using Telegram.ApAzureBot.Core.Persistence.NoSql;
+using Telegram.ApAzureBot.Core.Persistence.Entities;
 
 namespace Telegram.ApAzureBot.Infrastructure.Persistence.Context;
 
@@ -13,7 +12,7 @@ public sealed class AzureTableApAzureBotContext : AzureTableContext
     {
     }
 
-    override public void OnModelCreating(AzureTableBuilder builder)
+    public override void OnModelCreating(AzureTableBuilder builder)
     {
         builder.SetTable<TelegramCommandTask>();
     }

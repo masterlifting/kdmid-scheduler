@@ -2,16 +2,16 @@
 
 using Net.Shared.Persistence;
 
-using Telegram.ApAzureBot.Core.Abstractions.Services.CommandServices;
+using Telegram.ApAzureBot.Core.Abstractions.Persistence.Repositories;
+using Telegram.ApAzureBot.Core.Abstractions.Services.CommandProcesses;
 using Telegram.ApAzureBot.Core.Abstractions.Services.Telegram;
 using Telegram.ApAzureBot.Core.Abstractions.Services.Web.Captcha;
 using Telegram.ApAzureBot.Core.Abstractions.Services.Web.Html;
 using Telegram.ApAzureBot.Core.Abstractions.Services.Web.Http;
-using Telegram.ApAzureBot.Core.Persistence;
 using Telegram.ApAzureBot.Core.Services;
-using Telegram.ApAzureBot.Core.Services.CommandServices;
+using Telegram.ApAzureBot.Core.Services.CommandProcesses;
 using Telegram.ApAzureBot.Infrastructure.Persistence.Context;
-using Telegram.ApAzureBot.Infrastructure.Persistence.Repository;
+using Telegram.ApAzureBot.Infrastructure.Persistence.Repositories;
 using Telegram.ApAzureBot.Infrastructure.Services;
 using Telegram.ApAzureBot.Infrastructure.Services.Web.Captcha;
 using Telegram.ApAzureBot.Infrastructure.Services.Web.Html;

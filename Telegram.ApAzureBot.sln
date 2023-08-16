@@ -48,7 +48,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Net.Shared.Queues.Models", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Net.Shared.Extensions", "Submodules\Net.Shared.Extensions\src\Net.Shared.Extensions\Net.Shared.Extensions.csproj", "{5342FB0E-5E0C-4D54-A443-3DB819293612}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Apstractions", "Apstractions", "{11920E2F-AE93-433C-B9BF-E5359E66C1D4}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Abstractions", "Abstractions", "{11920E2F-AE93-433C-B9BF-E5359E66C1D4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Models", "Models", "{B228BB81-8A05-4C44-A07E-D22AF2005A71}"
 EndProject

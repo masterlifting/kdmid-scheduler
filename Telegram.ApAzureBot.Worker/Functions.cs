@@ -1,7 +1,6 @@
 ﻿using Microsoft.Azure.Functions.Worker;
-
+using Telegram.ApAzureBot.Core.Abstractions.Persistence.Repositories;
 using Telegram.ApAzureBot.Core.Abstractions.Services.Telegram;
-using Telegram.ApAzureBot.Core.Persistence;
 using Telegram.ApAzureBot.Worker.Models;
 
 namespace Telegram.ApAzureBot.Worker;
@@ -27,7 +26,7 @@ public class Functions
             task.StatusId = (int)Core.Constants.TelegramCommandTaskStatus.Processing;
         }
 
-        await _repository.UpdateStatus(telegramTasks);
+        await _repository.UpdateTaskStatus(telegramTasks);
 
         foreach (var telegramTask in telegramTasks)
         {
@@ -43,6 +42,6 @@ public class Functions
             }
         }
 
-        await _repository.UpdateStatus(telegramTasks);
+        await _repository.UpdateTaskStatus(telegramTasks);
     }
 }

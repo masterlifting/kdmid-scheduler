@@ -1,4 +1,4 @@
-﻿namespace Telegram.ApAzureBot.Core.Persistence.NoSql;
+﻿namespace Telegram.ApAzureBot.Core.Models;
 
 public sealed class TelegramMessage
 {
