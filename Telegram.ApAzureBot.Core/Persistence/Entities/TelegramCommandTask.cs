@@ -7,6 +7,11 @@ namespace Telegram.ApAzureBot.Core.Persistence.Entities;
 
 public sealed class TelegramCommandTask : IPersistentProcess, ITableEntity
 {
+    public string PartitionKey { get; set; }
+    public string RowKey { get; set; }
+    public DateTimeOffset? Timestamp { get; set; }
+    public ETag ETag { get; set; }
+
     public long ChatId { get; init; }
     public string Text { get; init; } = null!;
 
