@@ -1,5 +1,6 @@
 ﻿using Telegram.ApAzureBot.Core.Abstractions.Services.CommandProcesses;
 using Telegram.ApAzureBot.Core.Abstractions.Services.Telegram;
+using Telegram.ApAzureBot.Core.Exceptions;
 using Telegram.ApAzureBot.Core.Models;
 
 namespace Telegram.ApAzureBot.Core.Services;
@@ -34,9 +35,7 @@ public sealed class TelegramCommand : ITelegramCommand
         }
         catch (Exception exception)
         {
-            var telegramClient = _serviceProvider.GetTelegramClient();
-
-            await telegramClient.SendMessage(new(message.ChatId, "Error: " + exception.Message), cToken);
+            throw new ApAzureBotCoreException(exception);
         }
     }
     private Task ProcessCommand(long chatId, ReadOnlySpan<char> command, CancellationToken cToken)

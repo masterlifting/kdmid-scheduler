@@ -1,12 +1,17 @@
-﻿using Newtonsoft.Json;
-using Telegram.Bot;
-using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Telegram.ApAzureBot.Core.Abstractions.Services.Telegram;
-using Microsoft.Extensions.Configuration;
+
+using Net.Shared.Extensions;
+
+using Newtonsoft.Json;
+
 using Telegram.ApAzureBot.Core.Abstractions.Persistence.Repositories;
+using Telegram.ApAzureBot.Core.Abstractions.Services.Telegram;
 using Telegram.ApAzureBot.Core.Models;
+using Telegram.ApAzureBot.Infrastructure.Exceptions;
+using Telegram.Bot;
+using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 
 namespace Telegram.ApAzureBot.Infrastructure.Services;
 
@@ -42,10 +47,10 @@ public sealed class TelegramSchedulingClient : ITelegramClient
 
         await _repository.CreateTask(new(update.Message!.Chat.Id, update.Message.Text!), cToken);
     }
-    public Task ListenMessages(CancellationToken cToken)
+    public async Task ListenMessages(CancellationToken cToken)
     {
+        await _client.DeleteWebhookAsync(true, cToken);
         _client.StartReceiving(HandleListenerReceiving, HandleListenerError, cancellationToken: cToken);
-        return Task.CompletedTask;
     }
 
     public Task SendMessage(TelegramMessage message, CancellationToken cToken) =>
@@ -62,19 +67,12 @@ public sealed class TelegramSchedulingClient : ITelegramClient
     #region Private methods
     private Task HandleListenerError(ITelegramBotClient client, Exception exception, CancellationToken cToken)
     {
-        _logger.LogError(exception, "Error occurred while receiving a message.");
+        _logger.Error(new ApAzureBotInfrastructureException(exception));
         return Task.CompletedTask;
     }
-    private Task HandleListenerReceiving(ITelegramBotClient client, Update update, CancellationToken cToken)
-    {
-        if (update.Type != UpdateType.Message || update.Message!.Type != MessageType.Text)
-        {
-            return _client.SendTextMessageAsync(update.Message!.Chat.Id, "Message type is not supported.", cancellationToken: cToken);
-        }
-        else
-        {
-            return _repository.CreateTask(new(update.Message!.Chat.Id, update.Message.Text!), cToken);
-        }
-    }
+    private Task HandleListenerReceiving(ITelegramBotClient client, Update update, CancellationToken cToken) => 
+        update.Type != UpdateType.Message || update.Message!.Type != MessageType.Text
+            ? _client.SendTextMessageAsync(update.Message!.Chat.Id, "Message type is not supported.", cancellationToken: cToken)
+            : _repository.CreateTask(new(update.Message!.Chat.Id, update.Message.Text!), cToken);
     #endregion
 }

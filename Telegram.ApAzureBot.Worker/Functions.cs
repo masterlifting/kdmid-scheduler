@@ -3,6 +3,8 @@ using Telegram.ApAzureBot.Core.Abstractions.Persistence.Repositories;
 using Telegram.ApAzureBot.Core.Abstractions.Services.Telegram;
 using Telegram.ApAzureBot.Worker.Models;
 
+using static Net.Shared.Persistence.Models.Constants.Enums;
+
 namespace Telegram.ApAzureBot.Worker;
 
 public class Functions
@@ -21,23 +23,16 @@ public class Functions
     {
         var telegramTasks = await _repository.GetReadyTasks(5);
 
-        foreach(var task in telegramTasks)
-        {
-            task.StatusId = (int)Core.Constants.TelegramCommandTaskStatus.Processing;
-        }
-
-        await _repository.UpdateTaskStatus(telegramTasks);
-
         foreach (var telegramTask in telegramTasks)
         {
             try
             {
                 await _command.Execute(new(telegramTask.ChatId, telegramTask.Text), default);
-                telegramTask.StatusId = (int)Core.Constants.TelegramCommandTaskStatus.Completed;
+                telegramTask.StatusId = (int)ProcessStatuses.Completed;
             }
             catch (Exception exception)
             {
-                telegramTask.StatusId = (int)Core.Constants.TelegramCommandTaskStatus.Failed;
+                telegramTask.StatusId = (int)ProcessStatuses.Error;
                 telegramTask.Error = exception.Message;
             }
         }

@@ -1,11 +1,16 @@
-﻿using Newtonsoft.Json;
-using Telegram.Bot;
-using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+
+using Net.Shared.Extensions;
+
+using Newtonsoft.Json;
+
 using Telegram.ApAzureBot.Core.Abstractions.Services.Telegram;
-using Microsoft.Extensions.Configuration;
 using Telegram.ApAzureBot.Core.Models;
+using Telegram.ApAzureBot.Infrastructure.Exceptions;
+using Telegram.Bot;
+using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 
 namespace Telegram.ApAzureBot.Infrastructure.Services;
 
@@ -61,7 +66,7 @@ public sealed class TelegramExecutionClient : ITelegramClient
     #region Private methods
     private Task HandleListenerError(ITelegramBotClient client, Exception exception, CancellationToken cToken)
     {
-        _logger.LogError(exception, "Error occurred while receiving a message.");
+        _logger.Error(new ApAzureBotInfrastructureException(exception));
         return Task.CompletedTask;
     }
     private Task HandleListenerReceiving(ITelegramBotClient client, Update update, CancellationToken cToken) =>
