@@ -43,7 +43,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
         _functions = new(StringComparer.OrdinalIgnoreCase)
         {
-            { "schedule", Schedule },
+            { "sch", Schedule },
             { "captcha", Captcha },
             { "confirm", Confirm },
         };
@@ -54,7 +54,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
         if (message.Length == 0)
             throw new NotSupportedException("Command is not found.");
 
-        var cityIndex = message.IndexOf('/');
+        var cityIndex = message.IndexOf('_');
 
         if (cityIndex < 0)
             throw new NotSupportedException("City of the command is not found.");

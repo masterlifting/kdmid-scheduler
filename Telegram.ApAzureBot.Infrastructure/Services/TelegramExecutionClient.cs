@@ -46,10 +46,10 @@ public sealed class TelegramExecutionClient : ITelegramClient
 
         await _command.Execute(new(update.Message.Chat.Id, update.Message.Text!), cToken);
     }
-    public Task ListenMessages(CancellationToken cToken)
+    public async Task ListenMessages(CancellationToken cToken)
     {
+        await _client.DeleteWebhookAsync(true, cToken);
         _client.StartReceiving(HandleListenerReceiving, HandleListenerError, cancellationToken: cToken);
-        return Task.CompletedTask;
     }
 
     public Task SendMessage(TelegramMessage message, CancellationToken cToken) =>

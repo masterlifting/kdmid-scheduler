@@ -8,14 +8,14 @@ namespace Telegram.ApAzureBot.Core.Services;
 public sealed class TelegramCommand : ITelegramCommand
 {
     private readonly ITelegramServiceProvider _serviceProvider;
-    private readonly Dictionary<string, Lazy<ITelegramCommandProcess>> _services;
+    private readonly Dictionary<string, Func<ITelegramCommandProcess>> _services;
 
     public TelegramCommand(ITelegramServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
         _services = new()
         {
-            {Constants.Kdmid, new(_serviceProvider.GetService<IKdmidCommandProcess>)},
+            {Constants.Kdmid, _serviceProvider.GetService<IKdmidCommandProcess>},
         };
     }
 
@@ -40,7 +40,7 @@ public sealed class TelegramCommand : ITelegramCommand
     }
     private Task ProcessCommand(long chatId, ReadOnlySpan<char> command, CancellationToken cToken)
     {
-        var commandParametersStartIndex = command.IndexOf('/');
+        var commandParametersStartIndex = command.IndexOf('_');
 
         var commandName = commandParametersStartIndex > 0
             ? command[0..commandParametersStartIndex]
@@ -48,6 +48,6 @@ public sealed class TelegramCommand : ITelegramCommand
 
         return !_services.TryGetValue(commandName.ToString(), out var service)
             ? throw new NotSupportedException("Service is not supported.")
-            : service.Value.Start(chatId, command[(commandParametersStartIndex + 1)..], cToken);
+            : service().Start(chatId, command[(commandParametersStartIndex + 1)..], cToken);
     }
 }
