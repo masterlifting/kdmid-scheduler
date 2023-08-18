@@ -2,8 +2,6 @@
 using Telegram.ApAzureBot.Core.Abstractions.Services;
 using Telegram.ApAzureBot.Worker.Models;
 
-using static Net.Shared.Persistence.Models.Constants.Enums;
-
 namespace Telegram.ApAzureBot.Worker;
 
 public class Functions

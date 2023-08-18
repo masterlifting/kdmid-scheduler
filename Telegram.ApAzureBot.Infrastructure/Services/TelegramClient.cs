@@ -38,7 +38,7 @@ public sealed class TelegramClient : ITelegramClient
         var update = JsonConvert.DeserializeObject<Update>(data);
 
         ArgumentNullException.ThrowIfNull(update, "Received data is not recognized.");
-        
+
         return HandleMessage(_client, update, cToken);
     }
     public async Task ListenMessages(CancellationToken cToken)
