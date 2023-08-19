@@ -5,14 +5,26 @@ using Telegram.ApAzureBot.Core.Abstractions.Services.Telegram;
 using Telegram.ApAzureBot.Core.Abstractions.Services.Web.Captcha;
 using Telegram.ApAzureBot.Core.Abstractions.Services.Web.Html;
 using Telegram.ApAzureBot.Core.Abstractions.Services.Web.Http;
+using Telegram.ApAzureBot.Core.Models;
+using Telegram.ApAzureBot.Core.Models.CommandProcesses;
 
 namespace Telegram.ApAzureBot.Core.Services.CommandProcesses;
 
 public sealed class KdmidCommandProcess : IKdmidCommandProcess
 {
+    private static readonly Dictionary<string, string> KdmidCities = new()
+    {
+        {"blgd","belgrad" },
+        {"bdpt","budapest" },
+    };
+    private static readonly Dictionary<string, string> ReadableCities = new()
+    {
+        {"belgrad","Belgrade" },
+        {"budapest","Budapest" },
+    };
     private const string FormDataMediaType = "application/x-www-form-urlencoded";
-    private static string GetCaptchaCommand(string city) => $"/{Constants.Kdmid}/{city}/captcha?";
-    private static string GetConfirmCommand(string city) => $"/{Constants.Kdmid}/{city}/confirm?";
+    private static string GetCheckCommand(string city) => $"/{Constants.Kdmid}_{city}_chk?";
+    private static string GetConfirmCommand(string city) => $"/{Constants.Kdmid}_{city}_confirm?";
     private static string GetBaseUrl(string city) => $"https://{city}.{Constants.Kdmid}.ru/queue/";
     private static string GetRequestUrl(string city, string identifier) => GetBaseUrl(city) + "OrderInfo.aspx?" + identifier;
     private static string GetUrlIdentifierKey(string city) => $"{Constants.Kdmid}.{city}.identifier";
@@ -26,7 +38,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
     private readonly IHtmlDocument _htmlDocument;
     private readonly ICaptchaService _captchaService;
 
-    private readonly Dictionary<string, Func<long, string, string, CancellationToken, Task>> _functions;
+    private readonly Dictionary<string, Func<KdmidCommand, CancellationToken, Task>> _functions;
 
     public KdmidCommandProcess(
         TelegramMemoryCache cache
@@ -44,7 +56,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
         _functions = new(StringComparer.OrdinalIgnoreCase)
         {
             { "sch", Schedule },
-            { "captcha", Captcha },
+            { "chk", Check },
             { "confirm", Confirm },
         };
     }
@@ -52,41 +64,66 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
     public Task Start(long chatId, ReadOnlySpan<char> message, CancellationToken cToken)
     {
         if (message.Length == 0)
-            throw new NotSupportedException("Command is not found.");
+            throw new NotSupportedException("The command is not supported.");
 
         var cityIndex = message.IndexOf('_');
 
         if (cityIndex < 0)
-            throw new NotSupportedException("City of the command is not found.");
+            throw new NotSupportedException("The command is not supported.");
 
-        var city = message[0..cityIndex];
+        var cityCode = message[0..cityIndex].ToString();
+
+        if (!KdmidCities.TryGetValue(cityCode, out var city))
+            throw new NotSupportedException("The command is not supported.");
 
         message = message[(cityIndex + 1)..];
 
-        var nextCommandStartIndex = message.IndexOf('?');
+        var commandParametersIndex = message.IndexOf('?');
 
-        var command = nextCommandStartIndex > 0
-            ? message[0..nextCommandStartIndex]
+        var commandCode = commandParametersIndex > 0
+            ? message[0..commandParametersIndex]
             : message;
 
-        var parameters = nextCommandStartIndex > 0
-            ? message[(nextCommandStartIndex + 1)..]
-            : string.Empty;
+        var commandParameters = commandParametersIndex > 0
+            ? message[(commandParametersIndex + 1)..]
+            : ReadOnlySpan<char>.Empty;
 
-        return !_functions.TryGetValue(command.ToString(), out var function)
-            ? throw new NotSupportedException("Command is not supported.")
-            : function(chatId, city.ToString(), parameters.ToString(), cToken);
+        var command = new KdmidCommand(chatId, city, commandParameters.IsEmpty ? null : commandParameters.ToString());
+
+        return !_functions.TryGetValue(commandCode.ToString(), out var call)
+            ? throw new NotSupportedException("The command is not supported.")
+            : call(command, cToken);
     }
 
-    public async Task Schedule(long chatId, string city, string urlIdentifier, CancellationToken cToken)
+    public async Task Schedule(KdmidCommand command, CancellationToken cToken)
     {
+        if (command.Parameters is not null)
+        {
+            var isValid =
+                command.Parameters.IndexOf("id=") == 0
+                && command.Parameters.IndexOf('&') > 0
+                && command.Parameters.IndexOf("cd=") > 0;
+
+            if (!isValid)
+            {
+                await AskIdentifiers(command, cToken);
+                return;
+            }
+
+            _cache.AddOrUpdate(command.ChatId, GetUrlIdentifierKey(command.City), command.Parameters);
+        }
+
+        if (!_cache.TryGetValue(command.ChatId, GetUrlIdentifierKey(command.City), out var urlIdentifier))
+        {
+            await AskIdentifiers(command, cToken);
+            return;
+        }
+
         //*/
-        var page = await _httpClient.GetStringAsync(GetRequestUrl(city, urlIdentifier), cToken);
+        var page = await _httpClient.GetStringAsync(GetRequestUrl(command.City, urlIdentifier!), cToken);
         /*/
         var page = File.ReadAllText(Environment.CurrentDirectory + "/Content/firstResponse.html");
         //*/
-
-        _cache.AddOrUpdate(chatId, GetUrlIdentifierKey(city), urlIdentifier);
 
         _htmlDocument.LoadHtml(page);
 
@@ -112,7 +149,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
                 if (captchaUrlPart.Contains("CodeImage", StringComparison.OrdinalIgnoreCase))
                 {
-                    captchaUrl = GetBaseUrl(city) + captchaUrlPart;
+                    captchaUrl = GetBaseUrl(command.City) + captchaUrlPart;
                 }
             }
         }
@@ -121,7 +158,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
         var formData = formBuilder.ToString();
 
-        _cache.AddOrUpdate(chatId, GetRequestFormKey(city), formData);
+        _cache.AddOrUpdate(command.ChatId, GetRequestFormKey(command.City), formData);
 
         if (captchaUrl is null)
             throw new ArgumentException("Captcha is not found.");
@@ -130,7 +167,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
             //*/
             var captcha = await _httpClient.GetByteArrayAsync(captchaUrl, cToken);
             var captchaResult = await _captchaService.SolveInteger(captcha, cToken);
-            await Captcha(chatId, city, captchaResult.ToString(), cToken);
+            await Check(new(command.ChatId, command.City, captchaResult.ToString()), cToken);
             /*/
             var captcha = File.ReadAllBytes(Environment.CurrentDirectory + "/Content/CodeImage.jpeg");
             var captchaResult = await _captchaService.SolveInteger(captcha, cToken);
@@ -139,25 +176,28 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
             //*/
         }
     }
-    public async Task Captcha(long chatId, string city, string captcha, CancellationToken cToken)
+    public async Task Check(KdmidCommand command, CancellationToken cToken)
     {
-        if (captcha.Length < 6 || !uint.TryParse(captcha, out _))
-            throw new NotSupportedException("Captcha is not valid.");
+        if (command.Parameters is not null && command.Parameters.Length < 6 || !uint.TryParse(command.Parameters, out _))
+            throw new NotSupportedException("Something went wrong. Try one more time.");
 
-        if (!_cache.TryGetValue(chatId, GetUrlIdentifierKey(city), out var urlIdentifier))
-            throw new NotSupportedException("URL identifier is not found.");
+        if (!_cache.TryGetValue(command.ChatId, GetUrlIdentifierKey(command.City), out var urlIdentifier))
+        {
+            await AskIdentifiers(command, cToken);
+            return;
+        }
 
-        if (!_cache.TryGetValue(chatId, GetRequestFormKey(city), out var requestForm))
-            throw new NotSupportedException("Request data are not found.");
+        if (!_cache.TryGetValue(command.ChatId, GetRequestFormKey(command.City), out var requestForm))
+            throw new NotSupportedException("Something went wrong. Try one more time.");
 
         const string OldReplacementString = "ctl00%24MainContent%24txtCode=";
-        var newReplacementString = $"{OldReplacementString}{captcha}";
+        var newReplacementString = $"{OldReplacementString}{command.Parameters}";
 
         var requestFormData = requestForm!.Replace(OldReplacementString, newReplacementString);
 
         //*/
         var content = new StringContent(requestFormData, Encoding.UTF8, FormDataMediaType);
-        var postResponse = await _httpClient.PostAsync(GetRequestUrl(city, urlIdentifier!), content, cToken);
+        var postResponse = await _httpClient.PostAsync(GetRequestUrl(command.City, urlIdentifier!), content, cToken);
         var postResponseResult = await postResponse.Content.ReadAsStringAsync(cToken);
         /*/
         var postResponseResult = File.ReadAllText(Environment.CurrentDirectory + "/Content/secondResponse.html");
@@ -192,7 +232,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
         //*/
         content = new StringContent(formData, Encoding.UTF8, FormDataMediaType);
-        postResponse = await _httpClient.PostAsync(GetRequestUrl(city, urlIdentifier!), content, cToken);
+        postResponse = await _httpClient.PostAsync(GetRequestUrl(command.City, urlIdentifier!), content, cToken);
         postResponseResult = await postResponse.Content.ReadAsStringAsync(cToken);
         /*/
         postResponseResult = File.ReadAllText(Environment.CurrentDirectory + "/Content/thirdResponse.html");
@@ -207,7 +247,9 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
         if (scheduleTable is null)
         {
-            await _telegramClient.SendMessage(new(chatId, "Making appointments are not found."), cToken);
+            var text =  $"Free spaces in the Russian embassy of {ReadableCities[command.City]} are not available.";
+            var message = new TelegramMessage(command.ChatId, text);
+            await _telegramClient.SendMessage(message, cToken);
         }
         else
         {
@@ -228,9 +270,11 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
             formData = formBuilder.ToString();
 
-            _cache.AddOrUpdate(chatId, GetResultFormKey(city), formData);
+            _cache.AddOrUpdate(command.ChatId, GetResultFormKey(command.City), formData);
 
-            await _telegramClient.SendMessage(new(chatId, "Making appointments are found. Choose one of them:"), cToken);
+            var text = $"Free spaces in the Russian embassy of {ReadableCities[command.City]} are available.\n\nChoose one of them:";
+            var message = new TelegramMessage(command.ChatId, text);
+            await _telegramClient.SendMessage(message, cToken);
 
             foreach (var item in scheduleTable.SelectNodes("//input[@type='radio']"))
             {
@@ -238,23 +282,26 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
                 var appointmentText = item.NextSibling.InnerText.Trim();
 
-                _cache.AddOrUpdate(chatId, GetConfirmValueKey(city, appointmentText), appointmentValue);
+                _cache.AddOrUpdate(command.ChatId, GetConfirmValueKey(command.City, appointmentText), appointmentValue);
 
-                await _telegramClient.SendMessage(new(chatId, appointmentText), cToken);
+                await _telegramClient.SendMessage(new(command.ChatId, appointmentText), cToken);
             }
 
-            await _telegramClient.SendMessage(new(chatId, GetConfirmCommand(city)), cToken);
+            await _telegramClient.SendMessage(new(command.ChatId, GetConfirmCommand(command.City)), cToken);
         }
     }
-    public async Task Confirm(long chatId, string city, string confirmResult, CancellationToken cToken)
+    public async Task Confirm(KdmidCommand command, CancellationToken cToken)
     {
-        if (!_cache.TryGetValue(chatId, GetUrlIdentifierKey(city), out var urlIdentifier))
+        if (command.Parameters is null)
+            throw new NotSupportedException("Confirm value is not valid.");
+
+        if (!_cache.TryGetValue(command.ChatId, GetUrlIdentifierKey(command.City), out var urlIdentifier))
             throw new NotSupportedException("URL identifier is not found.");
 
-        if (!_cache.TryGetValue(chatId, GetConfirmValueKey(city, confirmResult), out var confirmValue))
+        if (!_cache.TryGetValue(command.ChatId, GetConfirmValueKey(command.City, command.Parameters), out var confirmValue))
             throw new NotSupportedException("Confirm value is not found.");
 
-        if (!_cache.TryGetValue(chatId, GetResultFormKey(city), out var resultForm))
+        if (!_cache.TryGetValue(command.ChatId, GetResultFormKey(command.City), out var resultForm))
             throw new NotSupportedException("Result data are not found.");
 
         var encodedConfirmValue = Uri.EscapeDataString(confirmValue!);
@@ -266,17 +313,26 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
         //*/
         var content = new StringContent(stringContent, Encoding.UTF8, FormDataMediaType);
-        var postResponse = await _httpClient.PostAsync(GetRequestUrl(city, urlIdentifier!), content, cToken);
+        var postResponse = await _httpClient.PostAsync(GetRequestUrl(command.City, urlIdentifier!), content, cToken);
         var postResponseResult = await postResponse.Content.ReadAsStringAsync(cToken);
 
         if (!string.IsNullOrEmpty(postResponseResult))
-            await _telegramClient.SendMessage(new(chatId, postResponseResult), cToken);
+            await _telegramClient.SendMessage(new(command.ChatId, postResponseResult), cToken);
         else
-            await _telegramClient.SendMessage(new(chatId, "Something went wrong while confirming."), cToken);
+            await _telegramClient.SendMessage(new(command.ChatId, "Something went wrong while confirming."), cToken);
         /*/
         await _telegramClient.SendMessage(new(chatId, "Confirmed."), cToken);
         //*/
 
-        _cache.Clear(chatId);
+        _cache.Clear(command.ChatId);
+    }
+
+    private Task AskIdentifiers(KdmidCommand command, CancellationToken cToken)
+    {
+        var cityCode = KdmidCities.FirstOrDefault(x => x.Value == command.City).Key;
+        var responseText = $"Please, send me your Russian embassy queue registration identifiers for {ReadableCities[command.City]} using the following format:\n\n/{Constants.Kdmid}_{cityCode}_sch?id=00000&cd=AA000AA0";
+        var responseMessage = new TelegramMessage(command.ChatId, responseText);
+
+        return _telegramClient.SendMessage(responseMessage, cToken);
     }
 }
