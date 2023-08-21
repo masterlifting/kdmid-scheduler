@@ -58,6 +58,7 @@ public static class Registrations
 
         services.AddTransient<ITelegramServiceProvider, TelegramServiceProvider>();
         services.AddTransient<ITelegramCommand, TelegramCommand>();
+        services.AddTransient<IMenuCommandProcess, MenuCommandProcess>();
     }
     private static void AddTelegramKdmidCommand(this IServiceCollection services)
     {

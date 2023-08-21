@@ -24,7 +24,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
     };
     private const string FormDataMediaType = "application/x-www-form-urlencoded";
     private static string GetCheckCommand(string city) => $"/{Constants.Kdmid}_{city}_chk?";
-    private static string GetConfirmCommand(string city) => $"/{Constants.Kdmid}_{city}_confirm?";
+    private static string GetConfirmCommand(string city) => $"/{Constants.Kdmid}_{city}_cfm?";
     private static string GetBaseUrl(string city) => $"https://{city}.{Constants.Kdmid}.ru/queue/";
     private static string GetRequestUrl(string city, string identifier) => GetBaseUrl(city) + "OrderInfo.aspx?" + identifier;
     private static string GetUrlIdentifierKey(string city) => $"{Constants.Kdmid}.{city}.identifier";
@@ -57,7 +57,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
         {
             { "sch", Schedule },
             { "chk", Check },
-            { "confirm", Confirm },
+            { "cfm", Confirm },
         };
     }
 
@@ -119,7 +119,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
             return;
         }
 
-        //*/
+        /*/
         var page = await _httpClient.GetStringAsync(GetRequestUrl(command.City, urlIdentifier!), cToken);
         /*/
         var page = File.ReadAllText(Environment.CurrentDirectory + "/Content/firstResponse.html");
@@ -127,11 +127,16 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
         _htmlDocument.LoadHtml(page);
 
+        var pageNodes = _htmlDocument.SelectNodes("//input | //img");
+
+        if (pageNodes is null || !pageNodes.Any())
+            throw new NotSupportedException($"Page data for {ReadableCities[command.City]} was not found.");
+
         string? captchaUrl = null;
 
         StringBuilder formBuilder = new();
 
-        foreach (var node in _htmlDocument.SelectNodes("//input | //img"))
+        foreach (var node in pageNodes)
         {
             if (node.Name == "input")
             {
@@ -164,14 +169,14 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
             throw new ArgumentException("Captcha is not found.");
         else
         {
-            //*/
+            /*/
             var captcha = await _httpClient.GetByteArrayAsync(captchaUrl, cToken);
             var captchaResult = await _captchaService.SolveInteger(captcha, cToken);
             await Check(new(command.ChatId, command.City, captchaResult.ToString()), cToken);
             /*/
             var captcha = File.ReadAllBytes(Environment.CurrentDirectory + "/Content/CodeImage.jpeg");
             var captchaResult = await _captchaService.SolveInteger(captcha, cToken);
-            await Captcha(chatId, city, captchaResult.ToString(), cToken);
+            await Check(new(command.ChatId, command.City, captchaResult.ToString()), cToken);
             //await _telegramClient.SendPhoto(new(chatId, captcha, "captcha.jpeg", GetCaptchaCommand(city)), cToken);
             //*/
         }
@@ -179,7 +184,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
     public async Task Check(KdmidCommand command, CancellationToken cToken)
     {
         if (command.Parameters is not null && command.Parameters.Length < 6 || !uint.TryParse(command.Parameters, out _))
-            throw new NotSupportedException("Something went wrong. Try one more time.");
+            throw new NotSupportedException("Something went wrong. Try again.");
 
         if (!_cache.TryGetValue(command.ChatId, GetUrlIdentifierKey(command.City), out var urlIdentifier))
         {
@@ -188,14 +193,14 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
         }
 
         if (!_cache.TryGetValue(command.ChatId, GetRequestFormKey(command.City), out var requestForm))
-            throw new NotSupportedException("Something went wrong. Try one more time.");
+            throw new NotSupportedException("Something went wrong. Try again.");
 
         const string OldReplacementString = "ctl00%24MainContent%24txtCode=";
         var newReplacementString = $"{OldReplacementString}{command.Parameters}";
 
         var requestFormData = requestForm!.Replace(OldReplacementString, newReplacementString);
 
-        //*/
+        /*/
         var content = new StringContent(requestFormData, Encoding.UTF8, FormDataMediaType);
         var postResponse = await _httpClient.PostAsync(GetRequestUrl(command.City, urlIdentifier!), content, cToken);
         var postResponseResult = await postResponse.Content.ReadAsStringAsync(cToken);
@@ -205,9 +210,14 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
         _htmlDocument.LoadHtml(postResponseResult);
 
+        var pageNodes = _htmlDocument.SelectNodes("//input");
+
+        if (pageNodes is null || !pageNodes.Any())
+            throw new NotSupportedException($"Page data for {ReadableCities[command.City]} was not found.");
+
         StringBuilder formBuilder = new();
 
-        foreach (var node in _htmlDocument.SelectNodes("//input"))
+        foreach (var node in pageNodes)
         {
             var inputName = node.GetAttributeValue("name");
             var inputValue = node.GetAttributeValue("value");
@@ -230,24 +240,24 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
         var formData = formBuilder.ToString();
 
-        //*/
+        /*/
         content = new StringContent(formData, Encoding.UTF8, FormDataMediaType);
         postResponse = await _httpClient.PostAsync(GetRequestUrl(command.City, urlIdentifier!), content, cToken);
         postResponseResult = await postResponse.Content.ReadAsStringAsync(cToken);
         /*/
-        postResponseResult = File.ReadAllText(Environment.CurrentDirectory + "/Content/thirdResponse.html");
+        postResponseResult = File.ReadAllText(Environment.CurrentDirectory + "/Content/thirdResponse_Ok.html");
         //*/
 
         _htmlDocument.LoadHtml(postResponseResult);
 
-        var scheduleTable = _htmlDocument
+        var resultTable = _htmlDocument
             .SelectSingleNode("//td[@id='center-panel']")
             .ChildNodes
             .FirstOrDefault(x => x.Name == "table");
 
-        if (scheduleTable is null)
+        if (resultTable is null)
         {
-            var text =  $"Free spaces in the Russian embassy of {ReadableCities[command.City]} are not available.";
+            var text = $"Free spaces in the Russian embassy of {ReadableCities[command.City]} are not available.";
             var message = new TelegramMessage(command.ChatId, text);
             await _telegramClient.SendMessage(message, cToken);
         }
@@ -272,22 +282,32 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
             _cache.AddOrUpdate(command.ChatId, GetResultFormKey(command.City), formData);
 
-            var text = $"Free spaces in the Russian embassy of {ReadableCities[command.City]} are available.\n\nChoose one of them:";
-            var message = new TelegramMessage(command.ChatId, text);
-            await _telegramClient.SendMessage(message, cToken);
+            var confirmationText = $"Free spaces in the Russian embassy of {ReadableCities[command.City]}.";
+            
+            var confirmationValues = new List<(string, string)>(22);
 
-            foreach (var item in scheduleTable.SelectNodes("//input[@type='radio']"))
+            var cityCode = KdmidCities.FirstOrDefault(x => x.Value == command.City).Key;
+
+            foreach (var item in resultTable.SelectNodes("//input[@type='radio']"))
             {
                 var appointmentValue = item.GetAttributeValue("value");
 
-                var appointmentText = item.NextSibling.InnerText.Trim();
+                var buttonName = item.NextSibling.InnerText.Trim();
 
-                _cache.AddOrUpdate(command.ChatId, GetConfirmValueKey(command.City, appointmentText), appointmentValue);
+                var buttonValue = $"{GetConfirmCommand(command.City)}{appointmentValue}";
 
-                await _telegramClient.SendMessage(new(command.ChatId, appointmentText), cToken);
+                var guid = Guid.NewGuid().ToString("N");
+                
+                var confirmKey = GetConfirmValueKey(command.City, guid);
+
+                _cache.AddOrUpdate(command.ChatId, confirmKey, appointmentValue);
+
+                confirmationValues.Add((buttonName, GetConfirmCommand(cityCode) + guid));
             }
 
-            await _telegramClient.SendMessage(new(command.ChatId, GetConfirmCommand(command.City)), cToken);
+            var confirmButtons = new TelegramButtons(command.ChatId, confirmationText, confirmationValues);
+
+            await _telegramClient.SendButtons(confirmButtons, cToken);
         }
     }
     public async Task Confirm(KdmidCommand command, CancellationToken cToken)
@@ -311,7 +331,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
         var stringContent = resultForm!.Replace(OldReplacementString, newReplacementString);
 
-        //*/
+        /*/
         var content = new StringContent(stringContent, Encoding.UTF8, FormDataMediaType);
         var postResponse = await _httpClient.PostAsync(GetRequestUrl(command.City, urlIdentifier!), content, cToken);
         var postResponseResult = await postResponse.Content.ReadAsStringAsync(cToken);
@@ -319,9 +339,9 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
         if (!string.IsNullOrEmpty(postResponseResult))
             await _telegramClient.SendMessage(new(command.ChatId, postResponseResult), cToken);
         else
-            await _telegramClient.SendMessage(new(command.ChatId, "Something went wrong while confirming."), cToken);
+            await _telegramClient.SendMessage(new(command.ChatId, $"Something went wrong while {ReadableCities[command.City]} confirming ."), cToken);
         /*/
-        await _telegramClient.SendMessage(new(chatId, "Confirmed."), cToken);
+        await _telegramClient.SendMessage(new(command.ChatId, "Confirmed."), cToken);
         //*/
 
         _cache.Clear(command.ChatId);

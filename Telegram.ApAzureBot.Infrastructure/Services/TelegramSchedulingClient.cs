@@ -74,5 +74,10 @@ public sealed class TelegramSchedulingClient : ITelegramClient
         update.Type != UpdateType.Message || update.Message!.Type != MessageType.Text
             ? _client.SendTextMessageAsync(update.Message!.Chat.Id, "Message type is not supported.", cancellationToken: cToken)
             : _repository.CreateTask(new(update.Message!.Chat.Id, update.Message.Text!), cToken);
+
+    public Task SendButtons(TelegramButtons button, CancellationToken cToken)
+    {
+        throw new NotImplementedException();
+    }
     #endregion
 }

@@ -9,12 +9,12 @@ public sealed class TelegramCommand : ITelegramCommand
 {
     private readonly ITelegramServiceProvider _serviceProvider;
     private readonly Dictionary<string, Func<ITelegramCommandProcess>> _services;
-
     public TelegramCommand(ITelegramServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
         _services = new()
         {
+            {"menu", _serviceProvider.GetService<IMenuCommandProcess>},
             {Constants.Kdmid, _serviceProvider.GetService<IKdmidCommandProcess>},
         };
     }
