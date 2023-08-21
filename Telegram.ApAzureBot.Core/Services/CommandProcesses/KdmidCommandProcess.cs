@@ -23,6 +23,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
         {"budapest","Budapest" },
     };
     private const string FormDataMediaType = "application/x-www-form-urlencoded";
+    private static string GetScheduleCommand(string city) => $"/{Constants.Kdmid}_{city}_sch?";
     private static string GetCheckCommand(string city) => $"/{Constants.Kdmid}_{city}_chk?";
     private static string GetConfirmCommand(string city) => $"/{Constants.Kdmid}_{city}_cfm?";
     private static string GetBaseUrl(string city) => $"https://{city}.{Constants.Kdmid}.ru/queue/";
@@ -97,6 +98,8 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
     public async Task Schedule(KdmidCommand command, CancellationToken cToken)
     {
+        string? urlIdentifier = null;
+
         if (command.Parameters is not null)
         {
             var isValid =
@@ -110,10 +113,12 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
                 return;
             }
 
-            _cache.AddOrUpdate(command.ChatId, GetUrlIdentifierKey(command.City), command.Parameters);
+            urlIdentifier = command.Parameters;
+
+            _cache.AddOrUpdate(command.ChatId, GetUrlIdentifierKey(command.City), urlIdentifier);
         }
 
-        if (!_cache.TryGetValue(command.ChatId, GetUrlIdentifierKey(command.City), out var urlIdentifier))
+        if (!_cache.TryGetValue(command.ChatId, GetUrlIdentifierKey(command.City), out urlIdentifier))
         {
             await AskIdentifiers(command, cToken);
             return;
@@ -283,7 +288,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
             _cache.AddOrUpdate(command.ChatId, GetResultFormKey(command.City), formData);
 
             var confirmationText = $"Free spaces in the Russian embassy of {ReadableCities[command.City]}.";
-            
+
             var confirmationValues = new List<(string, string)>(22);
 
             var cityCode = KdmidCities.FirstOrDefault(x => x.Value == command.City).Key;
@@ -297,7 +302,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
                 var buttonValue = $"{GetConfirmCommand(command.City)}{appointmentValue}";
 
                 var guid = Guid.NewGuid().ToString("N");
-                
+
                 var confirmKey = GetConfirmValueKey(command.City, guid);
 
                 _cache.AddOrUpdate(command.ChatId, confirmKey, appointmentValue);
@@ -350,7 +355,8 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
     private Task AskIdentifiers(KdmidCommand command, CancellationToken cToken)
     {
         var cityCode = KdmidCities.FirstOrDefault(x => x.Value == command.City).Key;
-        var responseText = $"Please, send me your Russian embassy queue registration identifiers for {ReadableCities[command.City]} using the following format:\n\n/{Constants.Kdmid}_{cityCode}_sch?id=00000&cd=AA000AA0";
+        var scheduleCommand = GetScheduleCommand(cityCode);
+        var responseText = $"Please, send me your Russian embassy queue registration identifiers for {ReadableCities[command.City]} using the following format:\n\n{scheduleCommand}id=00000&cd=AA000AA0";
         var responseMessage = new TelegramMessage(command.ChatId, responseText);
 
         return _telegramClient.SendMessage(responseMessage, cToken);
