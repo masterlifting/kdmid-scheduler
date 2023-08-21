@@ -98,22 +98,20 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
     public async Task Schedule(KdmidCommand command, CancellationToken cToken)
     {
-        string? urlIdentifier = null;
+        var urlIdentifier = command.Parameters;
 
-        if (command.Parameters is not null)
+        if (urlIdentifier is not null)
         {
             var isValid =
-                command.Parameters.IndexOf("id=") == 0
-                && command.Parameters.IndexOf('&') > 0
-                && command.Parameters.IndexOf("cd=") > 0;
+                urlIdentifier.IndexOf("id=") == 0
+                && urlIdentifier.IndexOf('&') > 0
+                && urlIdentifier.IndexOf("cd=") > 0;
 
             if (!isValid)
             {
                 await AskIdentifiers(command, cToken);
                 return;
             }
-
-            urlIdentifier = command.Parameters;
 
             _cache.AddOrUpdate(command.ChatId, GetUrlIdentifierKey(command.City), urlIdentifier);
         }
