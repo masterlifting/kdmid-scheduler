@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-
-using Telegram.ApAzureBot.Core.Abstractions.Services.Telegram;
+using Telegram.ApAzureBot.Core.Abstractions.Services;
+using Telegram.ApAzureBot.Core.Abstractions.Services.CommandProcesses;
 
 namespace Telegram.ApAzureBot.Infrastructure.Services;
 

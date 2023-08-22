@@ -1,4 +1,6 @@
-﻿namespace Telegram.ApAzureBot.Core.Abstractions.Services.Telegram;
+﻿using Telegram.ApAzureBot.Core.Abstractions.Services.CommandProcesses;
+
+namespace Telegram.ApAzureBot.Core.Abstractions.Services;
 
 public interface ITelegramServiceProvider
 {

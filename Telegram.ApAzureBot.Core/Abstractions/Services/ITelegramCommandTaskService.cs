@@ -1,4 +1,4 @@
-﻿namespace Telegram.ApAzureBot.Core.Abstractions.Services.Telegram
+﻿namespace Telegram.ApAzureBot.Core.Abstractions.Services
 {
     public interface ITelegramCommandTaskService
     {

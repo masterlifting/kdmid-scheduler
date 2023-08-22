@@ -1,14 +1,14 @@
-﻿using Telegram.ApAzureBot.Core.Abstractions.Services.CommandProcesses;
-using Telegram.ApAzureBot.Core.Abstractions.Services.Telegram;
+﻿using Telegram.ApAzureBot.Core.Abstractions.Services;
+using Telegram.ApAzureBot.Core.Abstractions.Services.CommandProcesses;
 using Telegram.ApAzureBot.Core.Models;
 
 namespace Telegram.ApAzureBot.Core.Services.CommandProcesses
 {
-    public sealed class MenuCommandProcess : IMenuCommandProcess
+    public sealed class TelegramMenuCommandProcess : ITelegramMenuCommandProcess
     {
         private readonly ITelegramClient _telegramClient;
 
-        public MenuCommandProcess(ITelegramClient telegramClient)
+        public TelegramMenuCommandProcess(ITelegramClient telegramClient)
         {
             _telegramClient = telegramClient;
         }
@@ -16,10 +16,10 @@ namespace Telegram.ApAzureBot.Core.Services.CommandProcesses
         {
             var menuButton = new TelegramButtons(chatId, "Choose Russian embassy:", new[]
             {
-                    ("Belgrade", "/kdmid_blgd_sch"),
-                    ("Budapest", "/kdmid_bdpt_sch")
+                    ("Belgrade", KdmidCommandProcess.CheckBelgradeCommand),
+                    ("Budapest", KdmidCommandProcess.CheckBudapestCommand)
             });
-            
+
             return _telegramClient.SendButtons(menuButton, cToken);
         }
     }

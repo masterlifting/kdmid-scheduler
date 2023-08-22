@@ -1,5 +1,6 @@
-﻿using Telegram.ApAzureBot.Core.Abstractions.Services.CommandProcesses;
-using Telegram.ApAzureBot.Core.Abstractions.Services.Telegram;
+﻿using Telegram.ApAzureBot.Core.Abstractions.Services;
+using Telegram.ApAzureBot.Core.Abstractions.Services.CommandProcesses;
+using Telegram.ApAzureBot.Core.Abstractions.Services.CommandProcesses.Kdmid;
 using Telegram.ApAzureBot.Core.Exceptions;
 using Telegram.ApAzureBot.Core.Models;
 
@@ -14,7 +15,7 @@ public sealed class TelegramCommand : ITelegramCommand
         _serviceProvider = serviceProvider;
         _services = new()
         {
-            {"menu", _serviceProvider.GetService<IMenuCommandProcess>},
+            {"menu", _serviceProvider.GetService<ITelegramMenuCommandProcess>},
             {Constants.Kdmid, _serviceProvider.GetService<IKdmidCommandProcess>},
         };
     }

@@ -1,5 +1,5 @@
 ﻿using Telegram.ApAzureBot.Core.Abstractions.Persistence.Repositories;
-using Telegram.ApAzureBot.Core.Abstractions.Services.Telegram;
+using Telegram.ApAzureBot.Core.Abstractions.Services;
 
 using static Net.Shared.Persistence.Models.Constants.Enums;
 

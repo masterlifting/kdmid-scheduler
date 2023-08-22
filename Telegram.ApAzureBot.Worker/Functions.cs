@@ -1,6 +1,5 @@
 ﻿using Microsoft.Azure.Functions.Worker;
-
-using Telegram.ApAzureBot.Core.Abstractions.Services.Telegram;
+using Telegram.ApAzureBot.Core.Abstractions.Services;
 using Telegram.ApAzureBot.Worker.Models;
 
 namespace Telegram.ApAzureBot.Worker;

@@ -2,8 +2,7 @@
 
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-
-using Telegram.ApAzureBot.Core.Abstractions.Services.Telegram;
+using Telegram.ApAzureBot.Core.Abstractions.Services;
 
 namespace Telegram.ApAzureBot.Api;
 

@@ -3,19 +3,15 @@
 using Net.Shared.Persistence;
 
 using Telegram.ApAzureBot.Core.Abstractions.Persistence.Repositories;
+using Telegram.ApAzureBot.Core.Abstractions.Services;
 using Telegram.ApAzureBot.Core.Abstractions.Services.CommandProcesses;
-using Telegram.ApAzureBot.Core.Abstractions.Services.Telegram;
-using Telegram.ApAzureBot.Core.Abstractions.Services.Web.Captcha;
-using Telegram.ApAzureBot.Core.Abstractions.Services.Web.Html;
-using Telegram.ApAzureBot.Core.Abstractions.Services.Web.Http;
+using Telegram.ApAzureBot.Core.Abstractions.Services.CommandProcesses.Kdmid;
 using Telegram.ApAzureBot.Core.Services;
 using Telegram.ApAzureBot.Core.Services.CommandProcesses;
 using Telegram.ApAzureBot.Infrastructure.Persistence.Context;
 using Telegram.ApAzureBot.Infrastructure.Persistence.Repositories;
 using Telegram.ApAzureBot.Infrastructure.Services;
-using Telegram.ApAzureBot.Infrastructure.Services.Web.Captcha;
-using Telegram.ApAzureBot.Infrastructure.Services.Web.Html;
-using Telegram.ApAzureBot.Infrastructure.Services.Web.Http;
+using Telegram.ApAzureBot.Infrastructure.Services.CommandProcesses.Kdmid;
 
 namespace Telegram.ApAzureBot.Infrastructure;
 
@@ -27,15 +23,15 @@ public static class Registrations
         services.AddTelegram();
         services.AddPersistence();
 
-#if DEBUG
-        services.AddTelegramKdmidCommand();
-#endif
+        #if DEBUG
+                services.AddTelegramKdmid();
+        #endif
     }
     public static void ConfigureWorker(this IServiceCollection services)
     {
         services.AddLogging();
         services.AddTelegram();
-        services.AddTelegramKdmidCommand();
+        services.AddTelegramKdmid();
         services.AddPersistence();
 
         services.AddTransient<ITelegramCommandTaskService, TelegramCommandTaskService>();
@@ -49,18 +45,18 @@ public static class Registrations
     private static void AddTelegram(this IServiceCollection services)
     {
         services.AddSingleton<TelegramMemoryCache>();
-
-#if DEBUG
-        services.AddSingleton<ITelegramClient, TelegramExecutionClient>();
-#else
-        services.AddTransient<ITelegramClient, TelegramSchedulingClient>();
-#endif
-
         services.AddTransient<ITelegramServiceProvider, TelegramServiceProvider>();
+
         services.AddTransient<ITelegramCommand, TelegramCommand>();
-        services.AddTransient<IMenuCommandProcess, MenuCommandProcess>();
+        services.AddTransient<ITelegramMenuCommandProcess, TelegramMenuCommandProcess>();
+
+        #if DEBUG
+                services.AddSingleton<ITelegramClient, TelegramClient>();
+        #else
+                services.AddTransient<ITelegramClient, TelegramClient>();
+        #endif
     }
-    private static void AddTelegramKdmidCommand(this IServiceCollection services)
+    private static void AddTelegramKdmid(this IServiceCollection services)
     {
         services.AddHttpClient(Core.Constants.Kdmid);
         services.AddHttpClient(Core.Constants.AntiCaptcha, x =>
@@ -68,9 +64,9 @@ public static class Registrations
             x.BaseAddress = new Uri("https://api.anti-captcha.com/");
         });
 
-        services.AddTransient<IHttpClient, KdmidHttpClient>();
-        services.AddTransient<IHtmlDocument, KdmidHtmlDocument>();
-        services.AddTransient<ICaptchaService, AntiCaptchaService>();
+        services.AddTransient<IKdmidHttpClient, KdmidHttpClient>();
+        services.AddTransient<IKdmidHtmlDocument, KdmidHtmlDocument>();
+        services.AddTransient<IKdmidCaptchaService, KdmidCaptchaService>();
         services.AddTransient<IKdmidCommandProcess, KdmidCommandProcess>();
     }
 }

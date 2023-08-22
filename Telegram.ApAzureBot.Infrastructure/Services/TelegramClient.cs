@@ -4,8 +4,7 @@ using Microsoft.Extensions.Logging;
 using Net.Shared.Extensions;
 
 using Newtonsoft.Json;
-
-using Telegram.ApAzureBot.Core.Abstractions.Services.Telegram;
+using Telegram.ApAzureBot.Core.Abstractions.Services;
 using Telegram.ApAzureBot.Core.Models;
 using Telegram.ApAzureBot.Infrastructure.Exceptions;
 using Telegram.Bot;
@@ -15,12 +14,12 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace Telegram.ApAzureBot.Infrastructure.Services;
 
-public sealed class TelegramExecutionClient : ITelegramClient
+public sealed class TelegramClient : ITelegramClient
 {
     private readonly ILogger _logger;
     private readonly ITelegramBotClient _client;
     private readonly ITelegramCommand _command;
-    public TelegramExecutionClient(ILogger<TelegramExecutionClient> logger, ITelegramCommand telegramCommand, IConfiguration configuration)
+    public TelegramClient(ILogger<TelegramClient> logger, ITelegramCommand telegramCommand, IConfiguration configuration)
     {
         _logger = logger;
         _command = telegramCommand;
@@ -34,23 +33,18 @@ public sealed class TelegramExecutionClient : ITelegramClient
 
     public Task SetWebhook(string url, CancellationToken cToken) =>
         _client.SetWebhookAsync(url, cancellationToken: cToken);
-    public async Task ReceiveMessage(string data, CancellationToken cToken)
+    public Task ReceiveMessage(string data, CancellationToken cToken)
     {
         var update = JsonConvert.DeserializeObject<Update>(data);
 
         ArgumentNullException.ThrowIfNull(update, "Received data is not recognized.");
-
-        if (update.Type != UpdateType.Message || update.Message!.Type != MessageType.Text)
-        {
-            await _client.SendTextMessageAsync(update.Message!.Chat.Id, "Message type is not supported.", cancellationToken: cToken);
-        }
-
-        await _command.Execute(new(update.Message.Chat.Id, update.Message.Text!), cToken);
+        
+        return HandleMessage(_client, update, cToken);
     }
     public async Task ListenMessages(CancellationToken cToken)
     {
         await _client.DeleteWebhookAsync(true, cToken);
-        _client.StartReceiving(HandleListenerReceiving, HandleListenerError, cancellationToken: cToken);
+        _client.StartReceiving(HandleMessage, HandleError, cancellationToken: cToken);
     }
 
     public Task SendMessage(TelegramMessage message, CancellationToken cToken) =>
@@ -73,12 +67,12 @@ public sealed class TelegramExecutionClient : ITelegramClient
     }
 
     #region Private methods
-    private Task HandleListenerError(ITelegramBotClient client, Exception exception, CancellationToken cToken)
+    private Task HandleError(ITelegramBotClient client, Exception exception, CancellationToken cToken)
     {
         _logger.Error(new ApAzureBotInfrastructureException(exception));
         return Task.CompletedTask;
     }
-    private Task HandleListenerReceiving(ITelegramBotClient client, Update update, CancellationToken cToken) => update.Type switch
+    private Task HandleMessage(ITelegramBotClient client, Update update, CancellationToken cToken) => update.Type switch
     {
         UpdateType.Message => update.Message!.Type != MessageType.Text
             ? _client.SendTextMessageAsync(update.Message!.Chat.Id, "Message type is not supported.", cancellationToken: cToken)
