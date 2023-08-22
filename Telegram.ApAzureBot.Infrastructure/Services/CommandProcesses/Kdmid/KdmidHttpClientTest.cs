@@ -21,7 +21,7 @@ public sealed class KdmidHttpClientTest : IKdmidHttpClient
             : Task.FromResult(page);
     }
 
-    public Task<string> GetConfirmPage(string url, string data, CancellationToken cToken)
+    public Task PostConfirmPage(string url, string data, CancellationToken cToken)
     {
         var page = File.ReadAllText(Environment.CurrentDirectory + "/Content/thirdResponse_Ok.html");
 
@@ -32,5 +32,10 @@ public sealed class KdmidHttpClientTest : IKdmidHttpClient
     public Task<string> GetConfirmPageResult(string url, string data, CancellationToken cToken)
     {
         return Task.FromResult("Confirmed from test.");
+    }
+
+    public Task<string> GetConfirmCalendar(string calendarUrl, CancellationToken cToken)
+    {
+        throw new NotImplementedException();
     }
 }

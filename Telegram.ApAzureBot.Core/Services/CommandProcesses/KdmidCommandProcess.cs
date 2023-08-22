@@ -144,7 +144,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
         var confirmPage = _htmlDocument.GetConfirmPage(confirmPageResultResponse);
 
-        if (confirmPage.Variants.Count == 0)
+        if (calendarPage.Variants.Count == 0)
         {
             var text = $"Accessible spaces for scheduling at the Russian embassy in {command.City.Name} are not available.";
 
@@ -155,13 +155,13 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
             return;
         }
 
-        _cache.AddOrUpdate(command.ChatId, GetConfirmDataKey(command.City), confirmPage.FormData);
+        _cache.AddOrUpdate(command.ChatId, GetConfirmDataKey(command.City), calendarPage.FormData);
 
         var confirmText = $"Accessible spaces for scheduling at the Russian embassy in {command.City.Name}.";
 
         var confirmCommand = GetConfirmCommand(command.City.Id);
 
-        var confirmButtons = confirmPage.Variants
+        var confirmButtons = calendarPage.Variants
             .Select(x =>
             {
                 var guid = Guid.NewGuid().ToString("N");

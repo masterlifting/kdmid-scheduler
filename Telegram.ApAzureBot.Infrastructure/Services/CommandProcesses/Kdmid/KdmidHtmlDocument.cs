@@ -26,6 +26,8 @@ public sealed class KdmidHtmlDocument : IKdmidHtmlDocument
 
         StringBuilder formBuilder = new();
 
+        formBuilder.Append("__EVENTTARGET=&__EVENTARGUMENT=");
+
         foreach (var node in pageNodes)
         {
             if (node.Name == "input")
@@ -89,7 +91,7 @@ public sealed class KdmidHtmlDocument : IKdmidHtmlDocument
 
         return formBuilder.ToString();
     }
-    public KdmidConfirmPage GetConfirmPage(string page)
+    public KdmidConfirmPage GetCalendarPage(string page)
     {
         _htmlDocument.LoadHtml(page);
 
