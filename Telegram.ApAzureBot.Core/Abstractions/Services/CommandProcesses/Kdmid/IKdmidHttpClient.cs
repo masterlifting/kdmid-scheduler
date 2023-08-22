@@ -1,4 +1,4 @@
-﻿using Telegram.ApAzureBot.Core.Models.CommandProcesses.Kdmid;
+using Telegram.ApAzureBot.Core.Models.CommandProcesses.Kdmid;
 
 namespace Telegram.ApAzureBot.Core.Abstractions.Services.CommandProcesses.Kdmid;
 

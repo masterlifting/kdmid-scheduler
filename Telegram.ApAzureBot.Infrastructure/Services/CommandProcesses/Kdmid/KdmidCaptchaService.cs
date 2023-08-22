@@ -26,6 +26,8 @@ public sealed class KdmidCaptchaService : IKdmidCaptchaService
     {
         try
         {
+            var img = await _httpClient.GetByteArrayAsync(captchaUrl, cToken);
+
             var captcha = Convert.ToBase64String(img);
             var content = new StringContent($"{{\"clientKey\": \"{_apiKey}\", \"task\": {{\"type\": \"ImageToTextTask\", \"body\": \"{captcha}\", \"phrase\": false, \"case\": false, \"numeric\": true, \"math\": 0, \"minLength\": 1, \"maxLength\": 1}}}}", Encoding.UTF8, "application/json");
 
@@ -53,14 +55,14 @@ public sealed class KdmidCaptchaService : IKdmidCaptchaService
                 {
                     var resultContent = taskResult!["solution"]?.ToString();
 
-                    if(string.IsNullOrWhiteSpace(resultContent))
+                    if (string.IsNullOrWhiteSpace(resultContent))
                     {
                         throw new NotSupportedException("Captcha solving failed.");
                     }
 
                     var resultObject = JsonSerializer.Deserialize<Dictionary<string, object?>>(resultContent);
 
-                    if(resultObject == null)
+                    if (resultObject == null)
                     {
                         throw new NotSupportedException("Captcha solving failed.");
                     }
@@ -68,7 +70,7 @@ public sealed class KdmidCaptchaService : IKdmidCaptchaService
                     var result = resultObject["text"]?.ToString();
 
                     return string.IsNullOrWhiteSpace(result)
-                        ? throw new NotSupportedException(result) 
+                        ? throw new NotSupportedException(result)
                         : result;
                 }
             }
