@@ -17,7 +17,8 @@ namespace Telegram.ApAzureBot.Core.Services.CommandProcesses
             var menuButton = new TelegramButtons(chatId, "Choose Russian embassy:", new[]
             {
                     ("Belgrade", KdmidCommandProcess.CheckBelgradeCommand),
-                    ("Budapest", KdmidCommandProcess.CheckBudapestCommand)
+                    ("Budapest", KdmidCommandProcess.CheckBudapestCommand),
+                    ("Paris", KdmidCommandProcess.CheckParisCommand)
             });
 
             return _telegramClient.SendButtons(menuButton, cToken);

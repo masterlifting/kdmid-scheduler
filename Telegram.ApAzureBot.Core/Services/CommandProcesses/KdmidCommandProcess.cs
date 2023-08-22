@@ -10,14 +10,17 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 {
     private const string BelgradeId = "blgd";
     private const string BudapestId = "bdpt";
+    private const string ParisId = "prs";
     
-    public static string CheckBelgradeCommand => $"{Constants.Kdmid}_{BelgradeId}_chk";
-    public static string CheckBudapestCommand => $"{Constants.Kdmid}_{BudapestId}_chk";
+    public static string CheckBelgradeCommand => $"/{Constants.Kdmid}_{BelgradeId}_chk";
+    public static string CheckBudapestCommand => $"/{Constants.Kdmid}_{BudapestId}_chk";
+    public static string CheckParisCommand => $"/{Constants.Kdmid}_{ParisId}_chk";
 
     private static readonly Dictionary<string, KdmidCity> Cities = new()
     {
-        { BelgradeId, new KdmidCity(BelgradeId, "belgrad", "Belgrade")},
-        { BudapestId, new KdmidCity(BudapestId, "budapest", "Budapest")},
+        { BelgradeId, new(BelgradeId, "belgrad", "Belgrade")},
+        { BudapestId, new(BudapestId, "budapest", "Budapest")},
+        { ParisId, new(ParisId, "paris", "Paris")}
     };
 
     private static string GetBaseUrl(KdmidCity city) => $"https://{city.Code}.{Constants.Kdmid}.ru/queue/";
@@ -104,7 +107,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
         var captchaUrl = GetBaseUrl(command.City) + startPage.CaptchaCode;
 
-        var captchaValue = _captchaService.SolveInteger(captchaUrl, cToken);
+        var captchaValue = await _captchaService.SolveInteger(captchaUrl, cToken);
 
         const string CaptchaKey = "ctl00%24MainContent%24txtCode=";
 
@@ -114,11 +117,19 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
         var startPageResultFormData = _htmlDocument.GetStartPageResultFormData(startPageResultString);
 
-        var confirmPageString = await _httpClient.GetConfirmPage(startPageUrl, startPageResultFormData, cToken);
+        await _httpClient.PostConfirmPage(startPageUrl, startPageResultFormData, cToken);
 
-        var confirmPage = _htmlDocument.GetConfirmPage(confirmPageString);
+        var idEndIndex = identifier!.IndexOf('&');
+        
+        var id = identifier!.Substring(2, idEndIndex);
 
-        if (confirmPage.Variants.Count == 0)
+        var calendarUrl = GetBaseUrl(command.City) + $"SPCalendar.aspx?bjo={id}";
+
+        string calendarPageString = await _httpClient.GetConfirmCalendar(calendarUrl, cToken);
+
+        var calendarPage = _htmlDocument.GetCalendarPage(calendarPageString);
+
+        if (calendarPage.Variants.Count == 0)
         {
             var text = $"Free spaces in the Russian embassy of {command.City.Name} are not available.";
 
@@ -129,13 +140,13 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
             return;
         }
 
-        _cache.AddOrUpdate(command.ChatId, GetConfirmDataKey(command.City), confirmPage.FormData);
+        _cache.AddOrUpdate(command.ChatId, GetConfirmDataKey(command.City), calendarPage.FormData);
 
         var confirmText = $"Free spaces in the Russian embassy of {command.City.Name}.";
 
         var confirmCommand = $"/{Constants.Kdmid}_{command.City.Id}_cfm?";
 
-        var confirmButtons = confirmPage.Variants
+        var confirmButtons = calendarPage.Variants
             .Select(x =>
             {
                 var guid = Guid.NewGuid().ToString("N");

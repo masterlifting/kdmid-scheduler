@@ -2,5 +2,5 @@
 
 public interface IKdmidCaptchaService
 {
-    Task<uint> SolveInteger(string captchaUrl, CancellationToken cToken);
+    Task<string> SolveInteger(string captchaUrl, CancellationToken cToken);
 }

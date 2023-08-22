@@ -22,7 +22,7 @@ public sealed class KdmidCaptchaService : IKdmidCaptchaService
         _httpClient = httpClientFactory.CreateClient(Core.Constants.AntiCaptcha);
     }
 
-    public async Task<uint> SolveInteger(string captchaUrl, CancellationToken cToken)
+    public async Task<string> SolveInteger(string captchaUrl, CancellationToken cToken)
     {
         try
         {
@@ -53,9 +53,7 @@ public sealed class KdmidCaptchaService : IKdmidCaptchaService
 
                 if (status == "ready")
                 {
-                    var result = JsonSerializer.Deserialize<Dictionary<string, object>>(taskResult["solution"].ToString())["text"].ToString();
-
-                    return uint.Parse(result);
+                    return JsonSerializer.Deserialize<Dictionary<string, object>>(taskResult["solution"].ToString())["text"].ToString();
                 }
             }
 
