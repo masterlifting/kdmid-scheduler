@@ -58,7 +58,13 @@ public static class Registrations
     }
     private static void AddTelegramKdmid(this IServiceCollection services)
     {
-        services.AddHttpClient(Core.Constants.Kdmid);
+        services.AddHttpClient(Core.Constants.Kdmid, x =>
+        {
+            x.DefaultRequestHeaders.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8");
+            x.DefaultRequestHeaders.Add("Accept-Encoding", "gzip, deflate, br");
+            x.DefaultRequestHeaders.Add("Accept-Language", "en,ru;q=0.5");
+            x.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/117.0");
+        });
         services.AddHttpClient(Core.Constants.AntiCaptcha, x =>
         {
             x.BaseAddress = new Uri("https://api.anti-captcha.com/");

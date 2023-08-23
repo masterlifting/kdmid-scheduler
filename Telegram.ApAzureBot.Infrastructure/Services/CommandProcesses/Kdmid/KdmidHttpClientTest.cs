@@ -38,4 +38,29 @@ public sealed class KdmidHttpClientTest : IKdmidHttpClient
     {
         throw new NotImplementedException();
     }
+
+    public Task<byte[]> GetCaptchaImage(long chatId, string url, CancellationToken cToken)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<string> PostStartPageResult(long chatId, Uri uri, string data, CancellationToken cToken)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task PostConfirmPage(long chatId, string url, string data, CancellationToken cToken)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<string> GetConfirmPageResult(long chatId, string url, string data, CancellationToken cToken)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<string> GetConfirmCalendar(long chatId, string url, CancellationToken cToken)
+    {
+        throw new NotImplementedException();
+    }
 }

@@ -107,17 +107,19 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
         var captchaUrl = GetBaseUrl(command.City) + startPage.CaptchaCode;
 
-        var captchaValue = await _captchaService.SolveInteger(captchaUrl, cToken);
+        var captchaImage = await _httpClient.GetCaptchaImage(command.ChatId, captchaUrl, cToken);
+
+        var captchaValue = await _captchaService.SolveInteger(captchaImage, cToken);
 
         const string CaptchaKey = "ctl00%24MainContent%24txtCode=";
 
         var startPageFormData = startPage.FormData.Replace(CaptchaKey, $"{CaptchaKey}{captchaValue}");
 
-        var startPageResultString = await _httpClient.PostStartPageResult(new(startPageUrl), startPageFormData, cToken);
+        var startPageResultString = await _httpClient.PostStartPageResult(command.ChatId, new(startPageUrl), startPageFormData, cToken);
 
         var startPageResultFormData = _htmlDocument.GetStartPageResultFormData(startPageResultString);
 
-        await _httpClient.PostConfirmPage(startPageUrl, startPageResultFormData, cToken);
+        await _httpClient.PostConfirmPage(command.ChatId, startPageUrl, startPageResultFormData, cToken);
 
         var idEndIndex = identifier!.IndexOf('&');
         
@@ -125,7 +127,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
         var calendarUrl = GetBaseUrl(command.City) + $"SPCalendar.aspx?bjo={id}";
 
-        string calendarPageString = await _httpClient.GetConfirmCalendar(calendarUrl, cToken);
+        string calendarPageString = await _httpClient.GetConfirmCalendar(command.ChatId, calendarUrl, cToken);
 
         var calendarPage = _htmlDocument.GetCalendarPage(calendarPageString);
 
@@ -187,7 +189,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
         var url = GetRequestUrl(command.City, identifier!);
 
-        var confirmResult = await _httpClient.GetConfirmPageResult(url, data, cToken);
+        var confirmResult = await _httpClient.GetConfirmPageResult(command.ChatId, url, data, cToken);
 
         await _telegramClient.SendMessage(new(command.ChatId, confirmResult), cToken);
 

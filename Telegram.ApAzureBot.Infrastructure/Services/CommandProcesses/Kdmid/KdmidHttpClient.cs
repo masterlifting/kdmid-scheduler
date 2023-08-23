@@ -3,22 +3,22 @@ using System.Text;
 
 using Telegram.ApAzureBot.Core;
 using Telegram.ApAzureBot.Core.Abstractions.Services.CommandProcesses.Kdmid;
+using Telegram.ApAzureBot.Core.Services;
+using Telegram.ApAzureBot.Infrastructure.Exceptions;
 
 namespace Telegram.ApAzureBot.Infrastructure.Services.CommandProcesses.Kdmid;
 
 public sealed class KdmidHttpClient : IKdmidHttpClient
 {
+    private const string SessionIdKey = "ASP.NET_SessionId";
     private const string FormDataMediaType = "application/x-www-form-urlencoded";
 
     private readonly HttpClient _httpClient;
-    public KdmidHttpClient(IHttpClientFactory httpClientFactory)
+    private readonly TelegramMemoryCache _cache;
+    public KdmidHttpClient(IHttpClientFactory httpClientFactory, TelegramMemoryCache cache)
     {
         _httpClient = httpClientFactory.CreateClient(Constants.Kdmid);
-        
-        _httpClient.DefaultRequestHeaders.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8");
-        _httpClient.DefaultRequestHeaders.Add("Accept-Encoding", "gzip, deflate, br");
-        _httpClient.DefaultRequestHeaders.Add("Accept-Language", "en,ru;q=0.5");
-        _httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/117.0");
+        _cache = cache;
     }
 
     public async Task<string> GetStartPage(string url, CancellationToken cToken)
@@ -28,20 +28,51 @@ public sealed class KdmidHttpClient : IKdmidHttpClient
             var page = await _httpClient.GetStringAsync(url, cToken);
 
             return string.IsNullOrEmpty(page)
-                ? throw new Exception("Request to Kdmid is failed.")
+                ? throw new ApAzureBotInfrastructureException("Request to Kdmid is failed.")
                 : page;
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            throw new Exception("Request to Kdmid is failed.", ex);
+            throw new ApAzureBotInfrastructureException(exception);
         }
     }
-    public async Task<string> PostStartPageResult(Uri uri, string data, CancellationToken cToken)
+    public async Task<byte[]> GetCaptchaImage(long chatId, string url, CancellationToken cToken)
     {
         try
         {
+            var response = await _httpClient.GetAsync(url, cToken);
+            var captchaImage = await response.Content.ReadAsByteArrayAsync(cToken);
+            
+            var sessionId = response.Headers.GetValues("Set-Cookie").FirstOrDefault()?.Split(';').FirstOrDefault();
+            
+            if(sessionId is null)
+                throw new ApAzureBotInfrastructureException("Request to Kdmid is failed.");
+
+            var sessionIdData = sessionId.Split('=');
+
+            var sessionIdKey = SessionIdKey;
+            var sessionIdValue = sessionIdData[1];
+
+            _cache.AddOrUpdate(chatId, sessionIdKey, sessionIdValue);
+
+            return captchaImage;
+
+        }
+        catch (Exception exception)
+        {
+            throw new ApAzureBotInfrastructureException(exception);
+        }
+    }
+    public async Task<string> PostStartPageResult(long chatId, Uri uri, string data, CancellationToken cToken)
+    {
+        try
+        {
+            if(!_cache.TryGetValue(chatId, SessionIdKey, out var sessionIdValue))
+                throw new ApAzureBotInfrastructureException("Request to Kdmid is failed.");
+
             var content = new StringContent(data, Encoding.ASCII, new MediaTypeHeaderValue(FormDataMediaType));
 
+            _httpClient.DefaultRequestHeaders.Add("Cookie", $"{SessionIdKey}={sessionIdValue}");
             _httpClient.DefaultRequestHeaders.Add("Host", uri.Host);
             _httpClient.DefaultRequestHeaders.Add("Origin", uri.GetLeftPart(UriPartial.Authority));
             _httpClient.DefaultRequestHeaders.Add("Referer", uri.AbsoluteUri);
@@ -51,50 +82,63 @@ public sealed class KdmidHttpClient : IKdmidHttpClient
             _httpClient.DefaultRequestHeaders.Add("Sec-Fetch-Site", "same-origin");
             _httpClient.DefaultRequestHeaders.Add("Sec-Fetch-User", "?1");
 
+
             var postResponse = await _httpClient.PostAsync(uri, content, cToken);
 
             var postResponseResult = await postResponse.Content.ReadAsStringAsync(cToken);
 
             return string.IsNullOrEmpty(postResponseResult)
-                ? throw new Exception("Request to Kdmid is failed.")
+                ? throw new ApAzureBotInfrastructureException("Request to Kdmid is failed.")
                 : postResponseResult;
-
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            throw new Exception("Request to Kdmid is failed.", ex);
+            throw new ApAzureBotInfrastructureException(exception);
         }
     }
     
-    public async Task PostConfirmPage(string url, string data, CancellationToken cToken)
+    public async Task PostConfirmPage(long chatId, string url, string data, CancellationToken cToken)
     {
         try
         {
+            if (!_cache.TryGetValue(chatId, SessionIdKey, out var sessionIdValue))
+                throw new ApAzureBotInfrastructureException("Request to Kdmid is failed.");
+
             var content = new StringContent(data, Encoding.UTF8, FormDataMediaType);
+
+            _httpClient.DefaultRequestHeaders.Add("Cookie", $"{SessionIdKey}={sessionIdValue}");
+
             var postResponse = await _httpClient.PostAsync(url, content, cToken);
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            throw new Exception("Request to Kdmid is failed.", ex);
+            throw new ApAzureBotInfrastructureException(exception);
         }
     }
-    public async Task<string> GetConfirmCalendar(string url, CancellationToken cToken)
+    public async Task<string> GetConfirmCalendar(long chatId, string url, CancellationToken cToken)
     {
         try
         {
-            var page = await _httpClient.GetStringAsync(url, cToken);
+            if (!_cache.TryGetValue(chatId, SessionIdKey, out var sessionIdValue))
+                throw new ApAzureBotInfrastructureException("Request to Kdmid is failed.");
+
+            _httpClient.DefaultRequestHeaders.Add("Cookie", $"{SessionIdKey}={sessionIdValue}");
+
+            var response = await _httpClient.GetAsync(url, cToken);
+            
+            var page = await response.Content.ReadAsStringAsync(cToken);
 
             return string.IsNullOrEmpty(page)
-                ? throw new Exception("Request to Kdmid is failed.")
+                ? throw new ApAzureBotInfrastructureException("Request to Kdmid is failed.")
                 : page;
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            throw new Exception("Request to Kdmid is failed.", ex);
+            throw new ApAzureBotInfrastructureException(exception);
         }
     }
     
-    public async Task<string> GetConfirmPageResult(string url, string data, CancellationToken cToken)
+    public async Task<string> GetConfirmPageResult(long chatId, string url, string data, CancellationToken cToken)
     {
         try
         {
@@ -103,13 +147,13 @@ public sealed class KdmidHttpClient : IKdmidHttpClient
             var postResponseResult = await postResponse.Content.ReadAsStringAsync(cToken);
 
             return string.IsNullOrEmpty(postResponseResult)
-                ? throw new Exception("Request to Kdmid is failed.")
+                ? throw new ApAzureBotInfrastructureException("Request to Kdmid is failed.")
                 : postResponseResult;
 
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            throw new Exception("Request to Kdmid is failed.", ex);
+            throw new ApAzureBotInfrastructureException(exception);
         }
     }
 }
