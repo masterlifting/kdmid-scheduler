@@ -12,9 +12,9 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
     private const string BudapestId = "bdpt";
     private const string ParisId = "prs";
     
-    public static string CheckBelgradeCommand => $"/{Constants.Kdmid}_{BelgradeId}_chk";
-    public static string CheckBudapestCommand => $"/{Constants.Kdmid}_{BudapestId}_chk";
-    public static string CheckParisCommand => $"/{Constants.Kdmid}_{ParisId}_chk";
+    public static string CheckBelgradeCommand => GetCheckCommand(BelgradeId);
+    public static string CheckBudapestCommand => GetCheckCommand(BudapestId);
+    public static string CheckParisCommand => GetCheckCommand(ParisId);
 
     private static readonly Dictionary<string, KdmidCity> Cities = new()
     {
@@ -23,11 +23,11 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
         { ParisId, new(ParisId, "paris", "Paris")}
     };
 
-    private static string GetBaseUrl(KdmidCity city) => $"https://{city.Code}.{Constants.Kdmid}.ru/queue/";
-    private static string GetRequestUrl(KdmidCity city, string identifier) => GetBaseUrl(city) + "OrderInfo.aspx?" + identifier;
-
+    private static string GetCheckCommand(string cityId) => $"/{Constants.Kdmid}_{cityId}_chk";
+    private static string GetConfirmCommand(string cityId) => $"/{Constants.Kdmid}_{cityId}_cfm";
+    
     private static string GetConfirmDataKey(KdmidCity city) => $"{Constants.Kdmid}.{city.Id}.confirm";
-    private static string GetConfirmButtonKey(KdmidCity city, string key) => $"{Constants.Kdmid}.{city.Id}.confirm.button.{key}";
+    private static string GetConfirmButtonKey(KdmidCity city, string key) => $"{GetConfirmDataKey(city)}.button.{key}";
 
     private readonly TelegramMemoryCache _cache;
     private readonly ITelegramClient _telegramClient;
@@ -60,17 +60,17 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
     public Task Start(long chatId, ReadOnlySpan<char> message, CancellationToken cToken)
     {
         if (message.Length == 0)
-            throw new NotSupportedException("The command is not supported.");
+            throw new ApAzureBotCoreException("The message is empty.");
 
         var cityIndex = message.IndexOf('_');
 
         if (cityIndex < 0)
-            throw new NotSupportedException("The command is not supported.");
+            throw new ApAzureBotCoreException("The city index is not found.");
 
         var cityId = message[0..cityIndex].ToString();
 
         if (!Cities.TryGetValue(cityId, out var city))
-            throw new NotSupportedException("The command is not supported.");
+            throw new ApAzureBotCoreException($"The cityId: {cityId} is not supported.");
 
         message = message[(cityIndex + 1)..];
 
@@ -87,7 +87,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
         var command = new KdmidCommand(chatId, city, commandParameters.IsEmpty ? null : commandParameters.ToString());
 
         return !_functions.TryGetValue(commandCode.ToString(), out var call)
-            ? throw new NotSupportedException("The command is not supported.")
+            ? throw new ApAzureBotCoreException($"The command: {commandCode} is not supported.")
             : call(command, cToken);
     }
 
@@ -99,41 +99,29 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
             return;
         }
 
-        var startPageUrl = GetRequestUrl(command.City, identifier!);
+        var startPageResponse = await _httpClient.GetStartPage(command.City, identifier!, cToken);
 
-        var startPageString = await _httpClient.GetStartPage(startPageUrl, cToken);
+        var startPage = _htmlDocument.GetStartPage(startPageResponse);
 
-        var startPage = _htmlDocument.GetStartPage(startPageString);
+        var captchaImage = await _httpClient.GetCaptchaImage(command.ChatId, command.City, startPage.CaptchaCode , cToken);
 
-        var captchaUrl = GetBaseUrl(command.City) + startPage.CaptchaCode;
-
-        var captchaImage = await _httpClient.GetCaptchaImage(command.ChatId, captchaUrl, cToken);
-
-        var captchaValue = await _captchaService.SolveInteger(captchaImage, cToken);
+        var captchaResult = await _captchaService.SolveInteger(captchaImage, cToken);
 
         const string CaptchaKey = "ctl00%24MainContent%24txtCode=";
 
-        var startPageFormData = startPage.FormData.Replace(CaptchaKey, $"{CaptchaKey}{captchaValue}");
+        var startPageFormData = startPage.FormData.Replace(CaptchaKey, $"{CaptchaKey}{captchaResult}");
 
-        var startPageResultString = await _httpClient.PostStartPageResult(command.ChatId, new(startPageUrl), startPageFormData, cToken);
+        var startPageResultResponse = await _httpClient.PostStartPageResult(command.ChatId, command.City, identifier!, startPageFormData, cToken);
 
-        var startPageResultFormData = _htmlDocument.GetStartPageResultFormData(startPageResultString);
+        var startPageResultFormData = _htmlDocument.GetStartPageResultFormData(startPageResultResponse);
 
-        await _httpClient.PostConfirmPage(command.ChatId, startPageUrl, startPageResultFormData, cToken);
+        var confirmPageResultResponse = await _httpClient.PostConfirmPageResult(command.City, identifier!, startPageResultFormData, cToken);
 
-        var idEndIndex = identifier!.IndexOf('&');
-        
-        var id = identifier!.Substring(2, idEndIndex);
+        var confirmPage = _htmlDocument.GetConfirmPage(confirmPageResultResponse);
 
-        var calendarUrl = GetBaseUrl(command.City) + $"SPCalendar.aspx?bjo={id}";
-
-        string calendarPageString = await _httpClient.GetConfirmCalendar(command.ChatId, calendarUrl, cToken);
-
-        var calendarPage = _htmlDocument.GetCalendarPage(calendarPageString);
-
-        if (calendarPage.Variants.Count == 0)
+        if (confirmPage.Variants.Count == 0)
         {
-            var text = $"Free spaces in the Russian embassy of {command.City.Name} are not available.";
+            var text = $"Accessible spaces for scheduling at the Russian embassy in {command.City.Name} are not available.";
 
             var message = new TelegramMessage(command.ChatId, text);
 
@@ -142,13 +130,13 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
             return;
         }
 
-        _cache.AddOrUpdate(command.ChatId, GetConfirmDataKey(command.City), calendarPage.FormData);
+        _cache.AddOrUpdate(command.ChatId, GetConfirmDataKey(command.City), confirmPage.FormData);
 
-        var confirmText = $"Free spaces in the Russian embassy of {command.City.Name}.";
+        var confirmText = $"Accessible spaces for scheduling at the Russian embassy in {command.City.Name}.";
 
-        var confirmCommand = $"/{Constants.Kdmid}_{command.City.Id}_cfm?";
+        var confirmCommand = GetConfirmCommand(command.City.Id);
 
-        var confirmButtons = calendarPage.Variants
+        var confirmButtons = confirmPage.Variants
             .Select(x =>
             {
                 var guid = Guid.NewGuid().ToString("N");
@@ -157,9 +145,8 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
                 _cache.AddOrUpdate(command.ChatId, buttonKey, x.Value);
 
-                return (x.Key, confirmCommand + guid);
+                return (x.Key, $"{confirmCommand}?{guid}");
             });
-
 
         var buttons = new TelegramButtons(command.ChatId, confirmText, confirmButtons);
 
@@ -176,10 +163,10 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
         var buttonKey = command.Parameters;
 
         if (string.IsNullOrEmpty(buttonKey) || !_cache.TryGetValue(command.ChatId, GetConfirmButtonKey(command.City, buttonKey), out var buttonValue))
-            throw new ApAzureBotCoreException("Something went wrong. Try again.");
+            throw new ApAzureBotCoreException("The button key is not found in the cache.");
 
         if (!_cache.TryGetValue(command.ChatId, GetConfirmDataKey(command.City), out var confirmFormData))
-            throw new ApAzureBotCoreException("Something went wrong. Try again.");
+            throw new ApAzureBotCoreException("The confirm form data is not found in the cache.");
 
         var encodedButtonValue = Uri.EscapeDataString(buttonValue!);
 
@@ -187,9 +174,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
         var data = confirmFormData!.Replace(ButtonKey, $"{ButtonKey}{encodedButtonValue}");
 
-        var url = GetRequestUrl(command.City, identifier!);
-
-        var confirmResult = await _httpClient.GetConfirmPageResult(command.ChatId, url, data, cToken);
+        var confirmResult = await _httpClient.PostConfirmPageResult(command.ChatId, command.City, identifier!, data, cToken);
 
         await _telegramClient.SendMessage(new(command.ChatId, confirmResult), cToken);
 
@@ -198,9 +183,9 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
     private Task AskIdentifier(KdmidCommand command, CancellationToken cToken)
     {
-        var startCommand = $"/{Constants.Kdmid}_{command.City.Id}_chk?";
+        var templateCommand = GetCheckCommand(command.City.Id);
 
-        var text = $"Please, send me your valid Russian embassy queue registration identifiers for the {command.City.Name} using the following format:\n\n{startCommand}id=00000&cd=AA000AA0";
+        var text = $"Please, send me your valid Russian embassy queue registration identifiers for the {command.City.Name} using the following format:\n\n{templateCommand}?id=00000&cd=AA000AA0";
 
         var message = new TelegramMessage(command.ChatId, text);
 

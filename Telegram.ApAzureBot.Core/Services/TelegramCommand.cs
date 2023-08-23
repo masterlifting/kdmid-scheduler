@@ -1,17 +1,23 @@
-﻿using Telegram.ApAzureBot.Core.Abstractions.Services;
+﻿using Microsoft.Extensions.Logging;
+
+using Telegram.ApAzureBot.Core.Abstractions.Services;
 using Telegram.ApAzureBot.Core.Abstractions.Services.CommandProcesses;
 using Telegram.ApAzureBot.Core.Abstractions.Services.CommandProcesses.Kdmid;
 using Telegram.ApAzureBot.Core.Exceptions;
 using Telegram.ApAzureBot.Core.Models;
 
+using Net.Shared.Extensions;
+
 namespace Telegram.ApAzureBot.Core.Services;
 
 public sealed class TelegramCommand : ITelegramCommand
 {
+    ILogger _logger;
     private readonly ITelegramServiceProvider _serviceProvider;
     private readonly Dictionary<string, Func<ITelegramCommandProcess>> _services;
-    public TelegramCommand(ITelegramServiceProvider serviceProvider)
+    public TelegramCommand(ILogger<TelegramCommand> logger, ITelegramServiceProvider serviceProvider)
     {
+        _logger = logger;
         _serviceProvider = serviceProvider;
         _services = new()
         {
@@ -25,18 +31,24 @@ public sealed class TelegramCommand : ITelegramCommand
         try
         {
             if (string.IsNullOrWhiteSpace(message.Text) || message.Text.Length < 4)
-                throw new NotSupportedException("Message is not supported.");
+                throw new ApAzureBotCoreException("The message is empty.");
 
             var text = message.Text.Trim();
 
             if (!text.StartsWith('/'))
-                throw new NotSupportedException("Message is not a command.");
+                throw new ApAzureBotCoreException($"The message {text} is not a command.");
 
             await ProcessCommand(message.ChatId, text[1..].AsSpan(), cToken);
         }
+        catch (ApAzureBotCoreException exception)
+        {
+            _logger.Error(exception);
+            await _serviceProvider.GetTelegramClient().SendMessage(new(message.ChatId, "Something went wrong. Please try again later."), cToken);
+        }
         catch (Exception exception)
         {
-            throw new ApAzureBotCoreException(exception);
+            _logger.Error( new ApAzureBotCoreException(exception));
+            await _serviceProvider.GetTelegramClient().SendMessage(new(message.ChatId, "Something went wrong. Please try again later."), cToken);
         }
     }
     private Task ProcessCommand(long chatId, ReadOnlySpan<char> command, CancellationToken cToken)
@@ -48,7 +60,7 @@ public sealed class TelegramCommand : ITelegramCommand
             : command;
 
         return !_services.TryGetValue(commandName.ToString(), out var service)
-            ? throw new NotSupportedException("Service is not supported.")
+            ? throw new ApAzureBotCoreException($"The service {commandName} is not supported.")
             : service().Start(chatId, command[(commandParametersStartIndex + 1)..], cToken);
     }
 }

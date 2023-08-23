@@ -20,7 +20,7 @@ public sealed class KdmidHtmlDocument : IKdmidHtmlDocument
         var pageNodes = _htmlDocument.DocumentNode.SelectNodes("//input | //img");
 
         if (pageNodes is null || !pageNodes.Any())
-            throw new ApAzureBotInfrastructureException("Page data was not found.");
+            throw new ApAzureBotInfrastructureException("The Start page data was not found.");
 
         var captchaCode = string.Empty;
 
@@ -44,7 +44,7 @@ public sealed class KdmidHtmlDocument : IKdmidHtmlDocument
 
                 if (string.IsNullOrWhiteSpace(captchaCode) || !captchaCode.Contains("CodeImage", StringComparison.OrdinalIgnoreCase))
                 {
-                    throw new ApAzureBotInfrastructureException("Captcha code was not found.");
+                    throw new ApAzureBotInfrastructureException("The captcha code was not found.");
                 }
             }
         }
@@ -62,7 +62,7 @@ public sealed class KdmidHtmlDocument : IKdmidHtmlDocument
         var pageNodes = _htmlDocument.DocumentNode.SelectNodes("//input");
 
         if (pageNodes is null || !pageNodes.Any())
-            throw new ApAzureBotInfrastructureException("Page data was not found.");
+            throw new ApAzureBotInfrastructureException("The Start page data was not found.");
 
         StringBuilder formBuilder = new();
 
@@ -89,7 +89,7 @@ public sealed class KdmidHtmlDocument : IKdmidHtmlDocument
 
         return formBuilder.ToString();
     }
-    public KdmidConfirmPage GetCalendarPage(string page)
+    public KdmidConfirmPage GetConfirmPage(string page)
     {
         _htmlDocument.LoadHtml(page);
 
@@ -105,7 +105,7 @@ public sealed class KdmidHtmlDocument : IKdmidHtmlDocument
         var pageNodes = _htmlDocument.DocumentNode.SelectNodes("//input");
 
         if (pageNodes is null || !pageNodes.Any())
-            throw new ApAzureBotInfrastructureException("Page data was not found.");
+            throw new ApAzureBotInfrastructureException("The Confirm page data was not found.");
 
         var formData = new StringBuilder();
 
