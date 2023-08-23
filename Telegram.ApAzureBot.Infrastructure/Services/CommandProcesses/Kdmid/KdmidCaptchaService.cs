@@ -26,8 +26,6 @@ public sealed class KdmidCaptchaService : IKdmidCaptchaService
     {
         try
         {
-            var img = await _httpClient.GetByteArrayAsync(captchaUrl, cToken);
-
             var captcha = Convert.ToBase64String(img);
             var content = new StringContent($"{{\"clientKey\": \"{_apiKey}\", \"task\": {{\"type\": \"ImageToTextTask\", \"body\": \"{captcha}\", \"phrase\": false, \"case\": false, \"numeric\": true, \"math\": 0, \"minLength\": 1, \"maxLength\": 1}}}}", Encoding.UTF8, "application/json");
 
