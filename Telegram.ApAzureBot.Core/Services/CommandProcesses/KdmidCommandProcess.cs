@@ -155,13 +155,13 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
             return;
         }
 
-        _cache.AddOrUpdate(command.ChatId, GetConfirmDataKey(command.City), calendarPage.FormData);
+        _cache.AddOrUpdate(command.ChatId, GetConfirmDataKey(command.City), confirmPage.FormData);
 
         var confirmText = $"Accessible spaces for scheduling at the Russian embassy in {command.City.Name}.";
 
         var confirmCommand = GetConfirmCommand(command.City.Id);
 
-        var confirmButtons = calendarPage.Variants
+        var confirmButtons = confirmPage.Variants
             .Select(x =>
             {
                 var guid = Guid.NewGuid().ToString("N");

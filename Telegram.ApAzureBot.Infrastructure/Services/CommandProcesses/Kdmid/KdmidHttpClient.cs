@@ -1,6 +1,8 @@
 using System.Net.Http.Headers;
 using System.Text;
 
+using Azure;
+
 using Telegram.ApAzureBot.Core;
 using Telegram.ApAzureBot.Core.Abstractions.Services.CommandProcesses.Kdmid;
 using Telegram.ApAzureBot.Core.Models.CommandProcesses.Kdmid;
@@ -81,7 +83,6 @@ public sealed class KdmidHttpClient : IKdmidHttpClient
 
             var content = new StringContent(data, Encoding.ASCII, new MediaTypeHeaderValue(FormDataMediaType));
 
-            _httpClient.DefaultRequestHeaders.Add("Cookie", $"{SessionIdKey}={sessionIdValue}");
             _httpClient.DefaultRequestHeaders.Add("Host", uri.Host);
             _httpClient.DefaultRequestHeaders.Add("Origin", uri.GetLeftPart(UriPartial.Authority));
             _httpClient.DefaultRequestHeaders.Add("Referer", uri.AbsoluteUri);
@@ -90,7 +91,6 @@ public sealed class KdmidHttpClient : IKdmidHttpClient
             _httpClient.DefaultRequestHeaders.Add("Sec-Fetch-Mode", "navigate");
             _httpClient.DefaultRequestHeaders.Add("Sec-Fetch-Site", "same-origin");
             _httpClient.DefaultRequestHeaders.Add("Sec-Fetch-User", "?1");
-
 
             var postResponse = await _httpClient.PostAsync(uri, content, cToken);
 

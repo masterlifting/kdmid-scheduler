@@ -89,7 +89,7 @@ public sealed class KdmidHtmlDocument : IKdmidHtmlDocument
 
         return formBuilder.ToString();
     }
-    public KdmidConfirmPage GetCalendarPage(string page)
+    public KdmidConfirmPage GetConfirmPage(string page)
     {
         _htmlDocument.LoadHtml(page);
 
