@@ -10,5 +10,5 @@ public class Functions
     public Functions(ITelegramCommandTaskService service) => _service = service;
 
     [Function("TelegramApAzureBotWorker")]
-    public Task Run([TimerTrigger("0 */1 * * * *")] TelegramTimer timer) => _service.Process();
+    public Task Run([TimerTrigger("*/30 8-17 * * 1-5")] TelegramTimer timer) => _service.Process();
 }
