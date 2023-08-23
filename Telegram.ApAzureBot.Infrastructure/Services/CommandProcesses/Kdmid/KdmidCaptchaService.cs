@@ -42,7 +42,7 @@ public sealed class KdmidCaptchaService : IKdmidCaptchaService
 
             while (status == "processing")
             {
-                await Task.Delay(1000, cToken);
+                await Task.Delay(500, cToken);
 
                 response = await _httpClient.PostAsync(_httpClient.BaseAddress + "getTaskResult", content, cToken);
                 responseContent = await response.Content.ReadAsStringAsync(cToken);
@@ -53,7 +53,25 @@ public sealed class KdmidCaptchaService : IKdmidCaptchaService
 
                 if (status == "ready")
                 {
-                    return JsonSerializer.Deserialize<Dictionary<string, object>>(taskResult["solution"].ToString())["text"].ToString();
+                    var resultContent = taskResult!["solution"]?.ToString();
+
+                    if(string.IsNullOrWhiteSpace(resultContent))
+                    {
+                        throw new NotSupportedException("Captcha solving failed.");
+                    }
+
+                    var resultObject = JsonSerializer.Deserialize<Dictionary<string, object?>>(resultContent);
+
+                    if(resultObject == null)
+                    {
+                        throw new NotSupportedException("Captcha solving failed.");
+                    }
+
+                    var result = resultObject["text"]?.ToString();
+
+                    return string.IsNullOrWhiteSpace(result)
+                        ? throw new NotSupportedException(result) 
+                        : result;
                 }
             }
 

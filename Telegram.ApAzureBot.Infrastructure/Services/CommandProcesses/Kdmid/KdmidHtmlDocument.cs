@@ -26,8 +26,6 @@ public sealed class KdmidHtmlDocument : IKdmidHtmlDocument
 
         StringBuilder formBuilder = new();
 
-        formBuilder.Append("__EVENTTARGET=&__EVENTARGUMENT=");
-
         foreach (var node in pageNodes)
         {
             if (node.Name == "input")

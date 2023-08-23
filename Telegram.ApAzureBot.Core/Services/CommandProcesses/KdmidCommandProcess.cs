@@ -113,7 +113,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
         var startPageFormData = startPage.FormData.Replace(CaptchaKey, $"{CaptchaKey}{captchaValue}");
 
-        var startPageResultString = await _httpClient.GetStartPageResult(startPageUrl, startPageFormData, cToken);
+        var startPageResultString = await _httpClient.PostStartPageResult(new(startPageUrl), startPageFormData, cToken);
 
         var startPageResultFormData = _htmlDocument.GetStartPageResultFormData(startPageResultString);
 

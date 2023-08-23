@@ -12,7 +12,7 @@ public sealed class KdmidHttpClientTest : IKdmidHttpClient
             ? throw new Exception("Start page is empty")
             : Task.FromResult(page);
     }
-    public Task<string> GetStartPageResult(string url, string data, CancellationToken cToken)
+    public Task<string> PostStartPageResult(Uri uri, string data, CancellationToken cToken)
     {
         var page = File.ReadAllText(Environment.CurrentDirectory + "/Content/secondResponse.html");
 
