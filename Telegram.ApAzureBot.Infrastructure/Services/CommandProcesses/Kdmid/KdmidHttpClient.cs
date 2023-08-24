@@ -1,5 +1,4 @@
-﻿using System.Data;
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Text;
 
 using Telegram.ApAzureBot.Core;
@@ -35,34 +34,6 @@ public sealed class KdmidHttpClient : IKdmidHttpClient
             var response = await _httpClient.GetAsync(uri, cToken);
 
             var page = await response.Content.ReadAsStringAsync(cToken);
-
-            var setCookie = response.Headers?.GetValues("Set-Cookie");
-
-            if (setCookie is not null)
-            {
-                foreach (var cookie in setCookie)
-                {
-                    var cookieData = cookie.Split(';');
-
-                    foreach (var data in cookieData)
-                    {
-                        var dataKeyAndValue = data.Split('=');
-
-                        if (dataKeyAndValue.Length == 2)
-                        {
-                            var dataKey = dataKeyAndValue[0];
-                            var dataValue = dataKeyAndValue[1];
-
-                            _httpClient.DefaultRequestHeaders.Add("Cookie", $"{dataKey}={dataValue}");
-                        }
-                        else
-                        {
-                            _httpClient.DefaultRequestHeaders.Add("Cookie", $"{dataKeyAndValue[0]}");
-                        }
-
-                    }
-                }
-            }
 
             return string.IsNullOrEmpty(page)
                 ? throw new ApAzureBotInfrastructureException($"The response from {uri} is empty.")
