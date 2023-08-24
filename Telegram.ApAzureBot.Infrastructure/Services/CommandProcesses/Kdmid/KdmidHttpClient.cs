@@ -1,7 +1,6 @@
+using System.Data;
 using System.Net.Http.Headers;
 using System.Text;
-
-using Azure;
 
 using Telegram.ApAzureBot.Core;
 using Telegram.ApAzureBot.Core.Abstractions.Services.CommandProcesses.Kdmid;
