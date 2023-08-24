@@ -22,10 +22,7 @@ public static class Registrations
         services.AddLogging();
         services.AddTelegram();
         services.AddPersistence();
-
-        #if DEBUG
-                services.AddTelegramKdmid();
-        #endif
+        services.AddTelegramKdmid();
     }
     public static void ConfigureWorker(this IServiceCollection services)
     {
@@ -50,11 +47,11 @@ public static class Registrations
         services.AddTransient<ITelegramCommand, TelegramCommand>();
         services.AddTransient<ITelegramMenuCommandProcess, TelegramMenuCommandProcess>();
 
-        #if DEBUG
-                services.AddSingleton<ITelegramClient, TelegramClient>();
-        #else
-                services.AddTransient<ITelegramClient, TelegramClient>();
-        #endif
+#if DEBUG
+        services.AddSingleton<ITelegramClient, TelegramClient>();
+#else
+        services.AddTransient<ITelegramClient, TelegramClient>();
+#endif
     }
     private static void AddTelegramKdmid(this IServiceCollection services)
     {
