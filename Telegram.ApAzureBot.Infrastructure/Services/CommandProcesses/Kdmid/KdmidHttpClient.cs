@@ -1,7 +1,6 @@
-﻿using System.Net.Http.Headers;
+﻿using System.Data;
+using System.Net.Http.Headers;
 using System.Text;
-
-using Azure;
 
 using Telegram.ApAzureBot.Core;
 using Telegram.ApAzureBot.Core.Abstractions.Services.CommandProcesses.Kdmid;
@@ -33,7 +32,37 @@ public sealed class KdmidHttpClient : IKdmidHttpClient
         {
             var uri = GetRequestUri(city, parameters);
 
-            var page = await _httpClient.GetStringAsync(uri, cToken);
+            var response = await _httpClient.GetAsync(uri, cToken);
+
+            var page = await response.Content.ReadAsStringAsync(cToken);
+
+            var setCookie = response.Headers?.GetValues("Set-Cookie");
+
+            if (setCookie is not null)
+            {
+                foreach (var cookie in setCookie)
+                {
+                    var cookieData = cookie.Split(';');
+
+                    foreach (var data in cookieData)
+                    {
+                        var dataKeyAndValue = data.Split('=');
+
+                        if (dataKeyAndValue.Length == 2)
+                        {
+                            var dataKey = dataKeyAndValue[0];
+                            var dataValue = dataKeyAndValue[1];
+
+                            _httpClient.DefaultRequestHeaders.Add("Cookie", $"{dataKey}={dataValue}");
+                        }
+                        else
+                        {
+                            _httpClient.DefaultRequestHeaders.Add("Cookie", $"{dataKeyAndValue[0]}");
+                        }
+
+                    }
+                }
+            }
 
             return string.IsNullOrEmpty(page)
                 ? throw new ApAzureBotInfrastructureException($"The response from {uri} is empty.")
@@ -44,7 +73,7 @@ public sealed class KdmidHttpClient : IKdmidHttpClient
             throw new ApAzureBotInfrastructureException(exception);
         }
     }
-    public async Task<byte[]> GetCaptchaImage(long chatId, KdmidCity city, string parameters,  CancellationToken cToken)
+    public async Task<byte[]> GetCaptchaImage(long chatId, KdmidCity city, string parameters, CancellationToken cToken)
     {
         try
         {
@@ -54,9 +83,9 @@ public sealed class KdmidHttpClient : IKdmidHttpClient
 
             var captchaImage = await response.Content.ReadAsByteArrayAsync(cToken);
 
-            var sessionId = (response.Headers.GetValues("Set-Cookie").FirstOrDefault()?.Split(';').FirstOrDefault()) 
+            var sessionId = (response.Headers.GetValues("Set-Cookie").FirstOrDefault()?.Split(';').FirstOrDefault())
                 ?? throw new ApAzureBotInfrastructureException("The SessionId is not found in the response headers.");
-            
+
             var sessionIdData = sessionId.Split('=');
 
             var sessionIdKey = SessionIdKey;
