@@ -21,6 +21,7 @@ public sealed class TelegramCommand : ITelegramCommand
         _serviceProvider = serviceProvider;
         _services = new()
         {
+            {"start", _serviceProvider.GetService<ITelegramMenuCommandProcess>},
             {"menu", _serviceProvider.GetService<ITelegramMenuCommandProcess>},
             {Constants.Kdmid, _serviceProvider.GetService<IKdmidCommandProcess>},
         };
