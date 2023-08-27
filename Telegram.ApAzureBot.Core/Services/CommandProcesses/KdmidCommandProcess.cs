@@ -16,7 +16,7 @@ namespace Telegram.ApAzureBot.Core.Services.CommandProcesses;
 
 public sealed class KdmidCommandProcess : IKdmidCommandProcess
 {
-    public static string GetStartCommand(string cityId) => $"/{Constants.Kdmid}_{cityId}_chk";
+    public static string GetMenuCommand(string cityId) => $"/{Constants.Kdmid}_{cityId}_mnu";
 
     public const string Belgrade = "blgrd";
     public const string Budapest = "bdpst";
@@ -33,6 +33,8 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
         { Bucharest, new(Bucharest, "bucharest", "Bucharest")},
     };
 
+    private static string GetRequestCommand(string cityId) => $"/{Constants.Kdmid}_{cityId}_req";
+    private static string GetScheduleCommand(string cityId) => $"/{Constants.Kdmid}_{cityId}_sch";
     private static string GetConfirmCommand(string cityId) => $"/{Constants.Kdmid}_{cityId}_cfm";
 
     private static string GetConfirmDataKey(KdmidCity city) => $"{Constants.Kdmid}.{city.Id}.confirm";
@@ -75,10 +77,13 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
         _functions = new(StringComparer.OrdinalIgnoreCase)
         {
-            { "chk", Check },
+            { "mnu", Menu },
+            { "req", Request },
+            { "sch", Schedule },
             { "cfm", Confirm },
         };
     }
+
 
     public Task Start(long chatId, ReadOnlySpan<char> message, CancellationToken cToken)
     {
@@ -114,7 +119,11 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
             : call(command, cToken);
     }
 
-    public async Task Check(KdmidCommand command, CancellationToken cToken)
+    private Task Menu(KdmidCommand command, CancellationToken token)
+    {
+        throw new NotImplementedException();
+    }
+    public async Task Request(KdmidCommand command, CancellationToken cToken)
     {
         var identifier = await GetIdentifier(command.ChatId, command.City, command.Parameters, cToken);
 
@@ -177,6 +186,10 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
         await _telegramClient.SendButtons(buttons, cToken);
     }
+    private Task Schedule(KdmidCommand command, CancellationToken token)
+    {
+        throw new NotImplementedException();
+    }
     public async Task Confirm(KdmidCommand command, CancellationToken cToken)
     {
         var identifier = await GetIdentifier(command.ChatId, command.City, command.Parameters, cToken);
@@ -210,7 +223,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
     private Task AskIdentifier(KdmidCommand command, CancellationToken cToken)
     {
-        var templateCommand = GetStartCommand(command.City.Id);
+        var templateCommand = GetRequestCommand(command.City.Id);
 
         var text = $"Please, send me your valid Russian embassy queue registration identifiers for the {command.City.Name} using the following format:\n\n{templateCommand}?id=00000&cd=AA000AA0";
 
