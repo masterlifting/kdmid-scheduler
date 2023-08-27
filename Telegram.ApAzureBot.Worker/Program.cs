@@ -1,7 +1,10 @@
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
-var host = new HostBuilder()
-    .ConfigureFunctionsWorkerDefaults()
-    .Build();
+using static Telegram.ApAzureBot.Infrastructure.Registrations;
 
-host.Run();
+new HostBuilder()
+    .ConfigureLogging(logger => logger.AddSimpleConsole())
+    .ConfigureFunctionsWorkerDefaults((_, builder) => builder.Services.ConfigureWorker())
+    .Build()
+    .Run();

@@ -1,3 +1,9 @@
 {
-  "dotnet.defaultSolution": "Azure.sln"
+  "dotnet.defaultSolution": "Telegram.ApAzureBot.sln",
+  "azureFunctions.projectSubpath": "Telegram.ApAzureBot.Api",
+  "azureFunctions.deploySubpath": "Telegram.ApAzureBot.Api/bin/Release/net7.0/publish",
+  "azureFunctions.projectLanguage": "C#",
+  "azureFunctions.projectRuntime": "~4",
+  "debug.internalConsoleOptions": "neverOpen",
+  "azureFunctions.preDeployTask": "publish (functions)"
 }

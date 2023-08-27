@@ -2,8 +2,7 @@
 
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-
-using Telegram.ApAzureBot.Core.Abstractions.Services.Telegram;
+using Telegram.ApAzureBot.Core.Abstractions.Services;
 
 namespace Telegram.ApAzureBot.Api;
 
@@ -36,5 +35,5 @@ public class Functions
 
     [Function(ListenFunction)]
     public Task Listen([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData request, CancellationToken cToken) =>
-        _client.ListenBot(cToken);
+        _client.ListenMessages(cToken);
 }
