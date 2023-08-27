@@ -15,5 +15,6 @@ public sealed class AzureTableApAzureBotContext : AzureTableContext
     public override void OnModelCreating(AzureTableBuilder builder)
     {
         builder.SetTable<TelegramCommandTask>();
+        builder.SetTable<TelegramCommandCache>();
     }
 }

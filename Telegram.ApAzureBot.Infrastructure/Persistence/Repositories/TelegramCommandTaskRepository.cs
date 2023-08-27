@@ -33,9 +33,7 @@ public sealed class TelegramCommandTaskRepository : ITelegramCommandTaskReposito
         ArgumentNullException.ThrowIfNull(hostId, "HostId is not defined");
 
         if (!Guid.TryParse(hostId, out _hostId))
-        {
             throw new ArgumentException("HostId is not valid");
-        }
 
         _step = new()
         {

@@ -1,31 +1,40 @@
-﻿using Telegram.ApAzureBot.Core.Abstractions.Services;
+﻿using Azure.Data.Tables;
+
+using Microsoft.Extensions.Configuration;
+
+using Net.Shared.Persistence.Abstractions.Repositories;
+using Net.Shared.Persistence.Models.Contexts;
+
+using Telegram.ApAzureBot.Core.Abstractions.Services;
 using Telegram.ApAzureBot.Core.Abstractions.Services.CommandProcesses.Kdmid;
 using Telegram.ApAzureBot.Core.Exceptions;
 using Telegram.ApAzureBot.Core.Models;
 using Telegram.ApAzureBot.Core.Models.CommandProcesses.Kdmid;
+using Telegram.ApAzureBot.Core.Persistence.Entities;
 
 namespace Telegram.ApAzureBot.Core.Services.CommandProcesses;
 
 public sealed class KdmidCommandProcess : IKdmidCommandProcess
 {
-    private const string BelgradeId = "blgd";
-    private const string BudapestId = "bdpt";
-    private const string ParisId = "prs";
-    
-    public static string CheckBelgradeCommand => GetCheckCommand(BelgradeId);
-    public static string CheckBudapestCommand => GetCheckCommand(BudapestId);
-    public static string CheckParisCommand => GetCheckCommand(ParisId);
+    public static string GetStartCommand(string cityId) => $"/{Constants.Kdmid}_{cityId}_chk";
+
+    public const string Belgrade = "blgrd";
+    public const string Budapest = "bdpst";
+    public const string Paris = "pris";
+    public const string Bucharest = "bchrt";
+
+    private readonly Guid _hostId;
 
     private static readonly Dictionary<string, KdmidCity> Cities = new()
     {
-        { BelgradeId, new(BelgradeId, "belgrad", "Belgrade")},
-        { BudapestId, new(BudapestId, "budapest", "Budapest")},
-        { ParisId, new(ParisId, "paris", "Paris")}
+        { Belgrade, new(Belgrade, "belgrad", "Belgrade")},
+        { Budapest, new(Budapest, "budapest", "Budapest")},
+        { Paris, new(Paris, "paris", "Paris")},
+        { Bucharest, new(Bucharest, "bucharest", "Bucharest")},
     };
 
-    private static string GetCheckCommand(string cityId) => $"/{Constants.Kdmid}_{cityId}_chk";
     private static string GetConfirmCommand(string cityId) => $"/{Constants.Kdmid}_{cityId}_cfm";
-    
+
     private static string GetConfirmDataKey(KdmidCity city) => $"{Constants.Kdmid}.{city.Id}.confirm";
     private static string GetConfirmButtonKey(KdmidCity city, string key) => $"{GetConfirmDataKey(city)}.button.{key}";
 
@@ -33,22 +42,36 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
     private readonly ITelegramClient _telegramClient;
     private readonly IKdmidHttpClient _httpClient;
     private readonly IKdmidHtmlDocument _htmlDocument;
+    private readonly IPersistenceReaderRepository<ITableEntity> _readerRepository;
+    private readonly IPersistenceWriterRepository<ITableEntity> _writerRepository;
     private readonly IKdmidCaptchaService _captchaService;
 
     private readonly Dictionary<string, Func<KdmidCommand, CancellationToken, Task>> _functions;
 
     public KdmidCommandProcess(
         TelegramMemoryCache cache
+        , IConfiguration configuration
         , ITelegramClient telegramClient
         , IKdmidHttpClient httpClient
         , IKdmidHtmlDocument htmlDocument
+        , IPersistenceReaderRepository<ITableEntity> readerRepository
+        , IPersistenceWriterRepository<ITableEntity> writerRepository
         , IKdmidCaptchaService captchaService)
     {
         _cache = cache;
         _telegramClient = telegramClient;
         _httpClient = httpClient;
         _htmlDocument = htmlDocument;
+        _readerRepository = readerRepository;
+        _writerRepository = writerRepository;
         _captchaService = captchaService;
+
+        var hostId = configuration["HostId"];
+
+        ArgumentNullException.ThrowIfNull(hostId, "HostId is not defined");
+
+        if (!Guid.TryParse(hostId, out _hostId))
+            throw new ArgumentException("HostId is not valid");
 
         _functions = new(StringComparer.OrdinalIgnoreCase)
         {
@@ -93,17 +116,19 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
     public async Task Check(KdmidCommand command, CancellationToken cToken)
     {
-        if (!TryGetIdentifier(command.ChatId, command.City, command.Parameters, out var identifier))
+        var identifier = await GetIdentifier(command.ChatId, command.City, command.Parameters, cToken);
+        
+        if (identifier is null)
         {
             await AskIdentifier(command, cToken);
             return;
         }
 
-        var startPageResponse = await _httpClient.GetStartPage(command.City, identifier!, cToken);
+        var startPageResponse = await _httpClient.GetStartPage(command.City, identifier, cToken);
 
         var startPage = _htmlDocument.GetStartPage(startPageResponse);
 
-        var captchaImage = await _httpClient.GetCaptchaImage(command.ChatId, command.City, startPage.CaptchaCode , cToken);
+        var captchaImage = await _httpClient.GetCaptchaImage(command.ChatId, command.City, startPage.CaptchaCode, cToken);
 
         var captchaResult = await _captchaService.SolveInteger(captchaImage, cToken);
 
@@ -111,11 +136,11 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
         var startPageFormData = startPage.FormData.Replace(CaptchaKey, $"{CaptchaKey}{captchaResult}");
 
-        var startPageResultResponse = await _httpClient.PostStartPageResult(command.ChatId, command.City, identifier!, startPageFormData, cToken);
+        var startPageResultResponse = await _httpClient.PostStartPageResult(command.ChatId, command.City, identifier, startPageFormData, cToken);
 
         var startPageResultFormData = _htmlDocument.GetStartPageResultFormData(startPageResultResponse);
 
-        var confirmPageResultResponse = await _httpClient.PostConfirmPageResult(command.City, identifier!, startPageResultFormData, cToken);
+        var confirmPageResultResponse = await _httpClient.PostConfirmPageResult(command.City, identifier, startPageResultFormData, cToken);
 
         var confirmPage = _htmlDocument.GetConfirmPage(confirmPageResultResponse);
 
@@ -154,7 +179,9 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
     }
     public async Task Confirm(KdmidCommand command, CancellationToken cToken)
     {
-        if (!TryGetIdentifier(command.ChatId, command.City, null, out var identifier))
+        var identifier = await GetIdentifier(command.ChatId, command.City, command.Parameters, cToken);
+
+        if (identifier is null)
         {
             await AskIdentifier(command, cToken);
             return;
@@ -174,7 +201,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
         var data = confirmFormData!.Replace(ButtonKey, $"{ButtonKey}{encodedButtonValue}");
 
-        var confirmResult = await _httpClient.PostConfirmPageResult(command.ChatId, command.City, identifier!, data, cToken);
+        var confirmResult = await _httpClient.PostConfirmPageResult(command.ChatId, command.City, identifier, data, cToken);
 
         await _telegramClient.SendMessage(new(command.ChatId, confirmResult), cToken);
 
@@ -183,7 +210,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
     private Task AskIdentifier(KdmidCommand command, CancellationToken cToken)
     {
-        var templateCommand = GetCheckCommand(command.City.Id);
+        var templateCommand = GetStartCommand(command.City.Id);
 
         var text = $"Please, send me your valid Russian embassy queue registration identifiers for the {command.City.Name} using the following format:\n\n{templateCommand}?id=00000&cd=AA000AA0";
 
@@ -191,11 +218,16 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
         return _telegramClient.SendMessage(message, cToken);
     }
-    private bool TryGetIdentifier(long chatId, KdmidCity city, string? value, out string? identifier)
+    private async Task<string?> GetIdentifier(long chatId, KdmidCity city, string? value, CancellationToken cToken)
     {
-        identifier = value;
+        var identifier = value;
 
         var cacheKey = $"{Constants.Kdmid}.{city.Id}.identifier";
+
+        var cacheQueryOptions = new PersistenceQueryOptions<TelegramCommandCache>
+        {
+            Filter = x => x.ChatId == chatId && x.Key == cacheKey
+        };
 
         if (identifier is not null)
         {
@@ -205,11 +237,34 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
                 && identifier.IndexOf("cd=") > 0;
 
             if (isValidIdentifier)
+            {
                 _cache.AddOrUpdate(chatId, cacheKey, identifier);
 
-            return isValidIdentifier;
+                if (!await _readerRepository.IsExists(cacheQueryOptions, cToken))
+                {
+                    await _writerRepository.CreateOne(new TelegramCommandCache
+                    {
+                        PartitionKey = _hostId.ToString(),
+                        RowKey = Guid.NewGuid().ToString(),
+
+                        ChatId = chatId,
+                        Key = cacheKey,
+                        Value = identifier,
+
+                    }, cToken);
+                }
+            }
+
+            return identifier;
         }
         else
-            return _cache.TryGetValue(chatId, cacheKey, out identifier);
+        {
+            if (_cache.TryGetValue(chatId, cacheKey, out identifier))
+                return identifier;
+
+            var cache = await _readerRepository.FindSingle(cacheQueryOptions, cToken);
+
+            return cache?.Value;
+        }
     }
 }
