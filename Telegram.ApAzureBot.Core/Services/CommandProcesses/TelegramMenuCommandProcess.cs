@@ -16,10 +16,10 @@ public sealed class TelegramMenuCommandProcess : ITelegramMenuCommandProcess
     {
         var menuButton = new TelegramButtons(chatId, "Choose Russian embassy:", new[]
         {
-            ("Belgrade", KdmidCommandProcess.GetStartCommand(KdmidCommandProcess.Belgrade)),
-            ("Budapest", KdmidCommandProcess.GetStartCommand(KdmidCommandProcess.Budapest)),
-            ("Paris", KdmidCommandProcess.GetStartCommand(KdmidCommandProcess.Paris)),
-            ("Bucharest", KdmidCommandProcess.GetStartCommand(KdmidCommandProcess.Bucharest) )
+            ("Belgrade", KdmidCommandProcess.GetMenuCommand(KdmidCommandProcess.Belgrade)),
+            ("Budapest", KdmidCommandProcess.GetMenuCommand(KdmidCommandProcess.Budapest)),
+            ("Paris", KdmidCommandProcess.GetMenuCommand(KdmidCommandProcess.Paris)),
+            ("Bucharest", KdmidCommandProcess.GetMenuCommand(KdmidCommandProcess.Bucharest) )
         });
 
         return _telegramClient.SendButtons(menuButton, cToken);
