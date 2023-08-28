@@ -11,7 +11,7 @@ namespace Telegram.ApAzureBot.Infrastructure.Services.CommandProcesses.Kdmid;
 
 public sealed class KdmidHttpClient : IKdmidHttpClient
 {
-    private static string GetBaseUrl(KdmidCity city) => $"https://{city.Code}.{Constants.Kdmid}.ru/queue/";
+    private static string GetBaseUrl(KdmidCity city) => $"https://{city.Code}.{Constants.Kdmid.Key}.ru/queue/";
     private static Uri GetRequestUri(KdmidCity city, string identifier) => new(GetBaseUrl(city) + "OrderInfo.aspx?" + identifier);
 
     private const string SessionIdKey = "ASP.NET_SessionId";
@@ -21,7 +21,7 @@ public sealed class KdmidHttpClient : IKdmidHttpClient
     private readonly TelegramMemoryCache _cache;
     public KdmidHttpClient(IHttpClientFactory httpClientFactory, TelegramMemoryCache cache)
     {
-        _httpClient = httpClientFactory.CreateClient(Constants.Kdmid);
+        _httpClient = httpClientFactory.CreateClient(Constants.Kdmid.Key);
         _cache = cache;
     }
 

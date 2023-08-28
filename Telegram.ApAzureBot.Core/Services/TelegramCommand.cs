@@ -23,7 +23,7 @@ public sealed class TelegramCommand : ITelegramCommand
         {
             {"start", _serviceProvider.GetService<ITelegramMenuCommandProcess>},
             {"menu", _serviceProvider.GetService<ITelegramMenuCommandProcess>},
-            {Constants.Kdmid, _serviceProvider.GetService<IKdmidCommandProcess>},
+            {Constants.Kdmid.Key, _serviceProvider.GetService<IKdmidCommandProcess>},
         };
     }
 

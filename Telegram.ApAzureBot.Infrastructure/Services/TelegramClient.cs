@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Net.Shared.Extensions;
 
 using Newtonsoft.Json;
+
 using Telegram.ApAzureBot.Core.Abstractions.Services;
 using Telegram.ApAzureBot.Core.Models;
 using Telegram.ApAzureBot.Infrastructure.Exceptions;
@@ -60,7 +61,7 @@ public sealed class TelegramClient : ITelegramClient
     public async Task SendButtons(TelegramButtons button, CancellationToken cToken)
     {
         var keyboard = new InlineKeyboardMarkup(
-            button.Buttons.Select(x => InlineKeyboardButton.WithCallbackData(x.Name, x.Callback)).ToArray()
+            button.Buttons.Select(x => InlineKeyboardButton.WithCallbackData(x.Name, x.Callback))
         );
 
         await _client.SendTextMessageAsync(button.ChatId, button.Text, replyMarkup: keyboard, cancellationToken: cToken);
