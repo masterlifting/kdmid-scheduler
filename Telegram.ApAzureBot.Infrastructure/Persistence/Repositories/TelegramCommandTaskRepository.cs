@@ -88,8 +88,8 @@ public sealed class TelegramCommandTaskRepository : ITelegramCommandTaskReposito
 
     public async Task<TelegramCommandTask[]> GetReadyTasks(int limit)
     {
-        var processableData = await _processRepository.GetProcessableData<TelegramCommandTask>(_hostId, _step, limit);
         var unprocessedData = await _processRepository.GetUnprocessedData<TelegramCommandTask>(_hostId, _step, limit, DateTime.UtcNow, 20);
+        var processableData = await _processRepository.GetProcessableData<TelegramCommandTask>(_hostId, _step, limit);
 
         return processableData.Concat(unprocessedData).ToArray();
     }
