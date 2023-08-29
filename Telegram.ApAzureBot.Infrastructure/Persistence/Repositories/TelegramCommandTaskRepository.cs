@@ -95,7 +95,7 @@ public sealed class TelegramCommandTaskRepository : ITelegramCommandTaskReposito
     }
 
     public Task UpdateTaskStatus(IEnumerable<TelegramCommandTask> tasks) =>
-        _processRepository.SetProcessedData(_hostId, _step, null, tasks);
+        _processRepository.SetProcessedData(_hostId, _step, _step, tasks);
 
     private Task UpdateTask(TelegramMessage message, ProcessStatuses status, CancellationToken cToken)
     {

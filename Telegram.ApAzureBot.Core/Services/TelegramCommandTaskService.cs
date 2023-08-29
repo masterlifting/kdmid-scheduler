@@ -25,7 +25,6 @@ namespace Telegram.ApAzureBot.Core.Services
                 try
                 {
                     await _command.Execute(new(telegramTask.ChatId, telegramTask.Text), default);
-                    telegramTask.StatusId = (int)ProcessStatuses.Ready;
                 }
                 catch (Exception exception)
                 {
