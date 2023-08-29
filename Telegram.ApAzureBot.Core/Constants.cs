@@ -18,7 +18,7 @@ public static class Constants
         {
             public const string Menu = "mnu";
             public const string Request = "req";
-            public const string Schedule = "sch";
+            public const string Seek = "sk";
             public const string Confirm = "cnf";
         }
     }

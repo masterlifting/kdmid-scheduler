@@ -74,7 +74,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
         {
             { Kdmid.Commands.Menu, Menu },
             { Kdmid.Commands.Request, Request },
-            { Kdmid.Commands.Schedule, Schedule },
+            { Kdmid.Commands.Seek, Seek },
             { Kdmid.Commands.Confirm, Confirm },
         };
     }
@@ -125,31 +125,31 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
         };
 
         if (!isScheduled)
-            buttons.Add(("Start schedule", BuildCommand(command.City.Id, Kdmid.Commands.Schedule) + "?start"));
+            buttons.Add(("Start seek", BuildCommand(command.City.Id, Kdmid.Commands.Seek) + "?start"));
         else
-            buttons.Add(("Stop schedule", BuildCommand(command.City.Id, Kdmid.Commands.Schedule) + "?stop"));
+            buttons.Add(("Stop seek", BuildCommand(command.City.Id, Kdmid.Commands.Seek) + "?stop"));
 
         var menuButton = new TelegramButtons(command.ChatId, $"Choose the action for {command.City.Name}.", buttons);
 
         await _telegramClient.SendButtons(menuButton, cToken);
     }
-    public async Task Schedule(KdmidCommand command, CancellationToken cToken)
+    public async Task Seek(KdmidCommand command, CancellationToken cToken)
     {
         if (string.IsNullOrEmpty(command.Parameters))
-            throw new ApAzureBotCoreException("The command parameters for Scheduling is empty.");
+            throw new ApAzureBotCoreException("The command parameters for the seek is empty.");
 
         string text;
         if (command.Parameters.Equals("start", StringComparison.OrdinalIgnoreCase))
         {
             var message = new TelegramMessage(command.ChatId, BuildCommand(command.City.Id, Kdmid.Commands.Request));
             await _commandTaskRepository.StartTask(message, cToken);
-            text = $"Auto scheduling for {command.City.Name} was started.";
+            text = $"Auto seek for {command.City.Name} was started.";
         }
         else if (command.Parameters.Equals("stop", StringComparison.OrdinalIgnoreCase))
         {
             var message = new TelegramMessage(command.ChatId, BuildCommand(command.City.Id, Kdmid.Commands.Request));
             await _commandTaskRepository.StopTask(message, cToken);
-            text = $"Auto scheduling for {command.City.Name} was stopped.";
+            text = $"Auto seek for {command.City.Name} was stopped.";
         }
         else
             throw new ApAzureBotCoreException($"The command parameters: {command.Parameters} is not supported.");
