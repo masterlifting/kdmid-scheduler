@@ -159,7 +159,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
     public async Task Request(KdmidCommand command, CancellationToken cToken)
     {
-        var identifier = await GetIdentifier(command, cToken);
+        var identifier = await GetIdentifier(command.ChatId, command.City.Id, command.Parameters, cToken);
 
         if (identifier is null)
         {
@@ -222,7 +222,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
     }
     public async Task Confirm(KdmidCommand command, CancellationToken cToken)
     {
-        var identifier = await GetIdentifier(command, cToken);
+        var identifier = await GetIdentifier(command.ChatId, command.City.Id, null, cToken);
 
         if (identifier is null)
         {
@@ -261,15 +261,15 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
         return _telegramClient.SendMessage(message, cToken);
     }
-    private async Task<string?> GetIdentifier(KdmidCommand command, CancellationToken cToken)
+    private async Task<string?> GetIdentifier(long chatId, string cityId, string? value, CancellationToken cToken)
     {
-        var identifier = command.Parameters;
+        var identifier = value;
 
-        var cacheKey = $"{Kdmid.Key}.{command.City.Id}.identifier";
+        var cacheKey = $"{Kdmid.Key}.{cityId}.identifier";
 
         var cacheQueryOptions = new PersistenceQueryOptions<TelegramCommandCache>
         {
-            Filter = x => x.PartitionKey == _hostId.ToString() && x.ChatId == command.ChatId && x.Key == cacheKey
+            Filter = x => x.PartitionKey == _hostId.ToString() && x.ChatId == chatId && x.Key == cacheKey
         };
 
         if (identifier is not null)
@@ -281,7 +281,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
             if (isValidIdentifier)
             {
-                _cache.AddOrUpdate(command.ChatId, cacheKey, identifier);
+                _cache.AddOrUpdate(chatId, cacheKey, identifier);
 
                 if (!await _readerRepository.IsExists(cacheQueryOptions, cToken))
                 {
@@ -290,7 +290,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
                         PartitionKey = _hostId.ToString(),
                         RowKey = Guid.NewGuid().ToString(),
 
-                        ChatId = command.ChatId,
+                        ChatId = chatId,
                         Key = cacheKey,
                         Value = identifier,
 
@@ -302,7 +302,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
         }
         else
         {
-            if (_cache.TryGetValue(command.ChatId, cacheKey, out identifier))
+            if (_cache.TryGetValue(chatId, cacheKey, out identifier))
                 return identifier;
 
             var cache = await _readerRepository.FindSingle(cacheQueryOptions, cToken);
