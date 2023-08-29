@@ -189,11 +189,11 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
         if (calendarPage.Variants.Count == 0)
         {
-            var text = $"Accessible spaces for scheduling at the Russian embassy in {command.City.Name} are not available.";
+            //var text = $"Accessible spaces for scheduling at the Russian embassy in {command.City.Name} are not available.";
 
-            var message = new TelegramMessage(command.ChatId, text);
+            //var message = new TelegramMessage(command.ChatId, text);
 
-            await _telegramClient.SendMessage(message, cToken);
+            //await _telegramClient.SendMessage(message, cToken);
 
             return;
         }
