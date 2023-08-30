@@ -16,9 +16,9 @@ namespace Telegram.ApAzureBot.Core.Services
             _command = command;
         }
 
-        public async Task Process()
+        public async Task Process(string[] cities)
         {
-            var telegramTasks = await _repository.GetReadyTasks(10);
+            var telegramTasks = await _repository.GetReadyTasks(cities, default);
 
             foreach (var telegramTask in telegramTasks)
             {

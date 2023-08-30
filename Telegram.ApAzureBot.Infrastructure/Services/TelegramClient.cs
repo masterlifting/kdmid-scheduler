@@ -13,6 +13,8 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 
+using static Telegram.ApAzureBot.Core.Constants;
+
 namespace Telegram.ApAzureBot.Infrastructure.Services;
 
 public sealed class TelegramClient : ITelegramClient
@@ -60,9 +62,12 @@ public sealed class TelegramClient : ITelegramClient
     }
     public async Task SendButtons(TelegramButtons button, CancellationToken cToken)
     {
-        var keyboard = new InlineKeyboardMarkup(
-            button.Buttons.Select(x => InlineKeyboardButton.WithCallbackData(x.Name, x.Callback))
-        );
+        InlineKeyboardMarkup keyboard = button.Style switch
+        {
+            ButtonStyle.Horizontally => new(button.Buttons.Select(x => InlineKeyboardButton.WithCallbackData(x.Name, x.Callback))),
+            ButtonStyle.Vertically => new(button.Buttons.Select(x => new InlineKeyboardButton[] { InlineKeyboardButton.WithCallbackData(x.Name, x.Callback) })),
+            _ => throw new ApAzureBotInfrastructureException($"Button style {button.Style} is not supported.")
+        };
 
         await _client.SendTextMessageAsync(button.ChatId, button.Text, replyMarkup: keyboard, cancellationToken: cToken);
     }

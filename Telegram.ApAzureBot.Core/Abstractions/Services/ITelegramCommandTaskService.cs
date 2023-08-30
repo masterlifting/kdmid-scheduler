@@ -1,8 +1,8 @@
-
+﻿
 namespace Telegram.ApAzureBot.Core.Abstractions.Services
 {
     public interface ITelegramCommandTaskService
     {
-        Task Process();
+        Task Process(string[] cities);
     }
 }

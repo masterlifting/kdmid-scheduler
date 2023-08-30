@@ -16,13 +16,12 @@ public sealed class TelegramMenuCommandProcess : ITelegramMenuCommandProcess
     }
     public Task Start(long chatId, ReadOnlySpan<char> message, CancellationToken cToken)
     {
-        var menuButton = new TelegramButtons(chatId, "Choose Russian embassy.", new[]
-        {
-            ("Belgrade", KdmidCommandProcess.BuildCommand(Kdmid.Cities.Belgrade, Kdmid.Commands.Menu)),
-            ("Budapest", KdmidCommandProcess.BuildCommand(Kdmid.Cities.Budapest, Kdmid.Commands.Menu)),
-            ("Paris", KdmidCommandProcess.BuildCommand(Kdmid.Cities.Paris, Kdmid.Commands.Menu)),
-            ("Bucharest", KdmidCommandProcess.BuildCommand(Kdmid.Cities.Bucharest, Kdmid.Commands.Menu))
-        });
+        var menuButton = new TelegramButtons(
+            chatId
+            , "Choose Russian embassy."
+            , KdmidCommandProcess.Cities.Select(x => (x.Value.Name, KdmidCommandProcess.BuildCommand(x.Value.Id, Kdmid.Commands.Menu)))
+            , ButtonStyle.Vertically
+        );
 
         return _telegramClient.SendButtons(menuButton, cToken);
     }

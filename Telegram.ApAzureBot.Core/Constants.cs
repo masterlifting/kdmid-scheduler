@@ -13,6 +13,31 @@ public static class Constants
             public const string Budapest = "bdpst";
             public const string Paris = "pris";
             public const string Bucharest = "bchrt";
+            public const string Rome = "rm";
+            public const string Vienna = "vn";
+            public const string Warsaw = "wrs";
+            public const string Ljubljana = "ljbln";
+            public const string Sarajevo = "srjv";
+            public const string Tirana = "trn";
+            public const string Canberra = "cnbr";
+            public const string Ottawa = "otw";
+            public const string Washington = "wshngtn";
+            public const string Berlin = "brln";
+            public const string Bern = "brn";
+            public const string Brussels = "brssls";
+            public const string Helsinki = "hlsnk";
+            public const string Madrid = "mdrd";
+            public const string Oslo = "osl";
+            public const string Stockholm = "stkhlm";
+            public const string Hague = "hg";
+            public const string Dublin = "dbrln";
+            public const string Lisbon = "lps";
+            public const string Luxembourg = "lxmbrg";
+            public const string Riga = "rg";
+            public const string Tallinn = "tlln";
+            public const string Vilnius = "vltns";
+            public const string Prague = "prg";
+            public const string Valletta = "vlt";
         }
         public static class Commands
         {
@@ -26,6 +51,11 @@ public static class Constants
     public enum ProcessSteps
     {
         Process = 1
-        Process = 1
+    }
+
+    public enum ButtonStyle
+    {
+        Vertically,
+        Horizontally
     }
 }

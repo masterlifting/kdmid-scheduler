@@ -1,13 +1,17 @@
-﻿using Azure.Data.Tables;
+﻿using System.Linq.Expressions;
+
+using Azure.Data.Tables;
 
 using Microsoft.Extensions.Configuration;
 
 using Net.Shared.Persistence.Abstractions.Repositories;
 using Net.Shared.Persistence.Models.Contexts;
 
+using Telegram.ApAzureBot.Core;
 using Telegram.ApAzureBot.Core.Abstractions.Persistence.Repositories;
 using Telegram.ApAzureBot.Core.Models;
 using Telegram.ApAzureBot.Core.Persistence.Entities;
+using Telegram.ApAzureBot.Core.Services.CommandProcesses;
 
 using static Net.Shared.Persistence.Models.Constants.Enums;
 
@@ -51,9 +55,9 @@ public sealed class TelegramCommandTaskRepository : ITelegramCommandTaskReposito
 
     public Task<bool> IsExists(TelegramMessage message, CancellationToken cToken)
     {
-        Func< TelegramCommandTask, bool> statusPredicate = x => 
+        Func<TelegramCommandTask, bool> statusPredicate = x =>
             !(x.StatusId == (int)ProcessStatuses.Completed || x.StatusId == (int)ProcessStatuses.Draft);
-        
+
         return IsExists(message, statusPredicate, cToken);
     }
 
@@ -86,12 +90,27 @@ public sealed class TelegramCommandTaskRepository : ITelegramCommandTaskReposito
     public Task StopTask(TelegramMessage message, CancellationToken cToken) =>
         UpdateTask(message, ProcessStatuses.Draft, cToken);
 
-    public async Task<TelegramCommandTask[]> GetReadyTasks(int limit)
+    public Task<TelegramCommandTask[]> GetReadyTasks(string[] cities, CancellationToken cToken)
     {
-        var unprocessedData = await _processRepository.GetUnprocessedData<TelegramCommandTask>(_hostId, _step, limit, DateTime.UtcNow, 20);
-        var processableData = await _processRepository.GetProcessableData<TelegramCommandTask>(_hostId, _step, limit);
+        var commands = cities.Select(x => KdmidCommandProcess.BuildCommand(x, Constants.Kdmid.Commands.Request)).ToArray();
 
-        return processableData.Concat(unprocessedData).ToArray();
+        Expression<Func<TelegramCommandTask, bool>> filter = commands.Any()
+            ? x =>
+                x.PartitionKey == _hostId.ToString()
+                && x.StepId == _step.Id
+                && x.StatusId != (int)ProcessStatuses.Completed && x.StatusId != (int)ProcessStatuses.Draft
+                && commands.Contains(x.Text)
+            : x =>
+                x.PartitionKey == _hostId.ToString()
+                && x.StepId == _step.Id
+                && x.StatusId != (int)ProcessStatuses.Completed && x.StatusId != (int)ProcessStatuses.Draft;
+
+        var queryOptions = new PersistenceQueryOptions<TelegramCommandTask>()
+        {
+            Filter = filter
+        };
+
+        return _readerRepository.FindMany(queryOptions, cToken);
     }
 
     public Task UpdateTaskStatus(IEnumerable<TelegramCommandTask> tasks) =>
@@ -99,15 +118,10 @@ public sealed class TelegramCommandTaskRepository : ITelegramCommandTaskReposito
 
     private Task UpdateTask(TelegramMessage message, ProcessStatuses status, CancellationToken cToken)
     {
-        var updated = DateTime.UtcNow;
-
         var updater = (TelegramCommandTask x) =>
         {
             x.StatusId = (int)status;
-            x.Attempt = 0;
-            x.Description = null;
-            x.Error = null;
-            x.Updated = updated;
+            x.Updated = DateTime.UtcNow;
         };
 
         var updateOptions = new PersistenceUpdateOptions<TelegramCommandTask>(updater, nameof(TelegramCommandTask.RowKey))

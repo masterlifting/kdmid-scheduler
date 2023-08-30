@@ -1,4 +1,4 @@
-using Azure.Data.Tables;
+﻿using Azure.Data.Tables;
 
 using Microsoft.Extensions.Configuration;
 
@@ -23,12 +23,23 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
     private static string GetConfirmDataKey(KdmidCity city) => $"{Kdmid.Key}.{city.Id}.confirm";
     private static string GetConfirmButtonKey(KdmidCity city, string key) => $"{GetConfirmDataKey(city)}.button.{key}";
 
-    private static readonly Dictionary<string, KdmidCity> Cities = new()
+    public static readonly Dictionary<string, KdmidCity> Cities = new()
     {
-        { Kdmid.Cities.Belgrade, new(Kdmid.Cities.Belgrade, "belgrad", "Belgrade")},
-        { Kdmid.Cities.Budapest, new(Kdmid.Cities.Budapest, "budapest", "Budapest")},
-        { Kdmid.Cities.Paris, new(Kdmid.Cities.Paris, "paris", "Paris")},
-        { Kdmid.Cities.Bucharest, new(Kdmid.Cities.Bucharest, "bucharest", "Bucharest")},
+        { Kdmid.Cities.Belgrade, new(Kdmid.Cities.Belgrade, "belgrad", nameof(Kdmid.Cities.Belgrade))},
+        { Kdmid.Cities.Budapest, new(Kdmid.Cities.Budapest, "budapest", nameof(Kdmid.Cities.Budapest))},
+        { Kdmid.Cities.Paris, new(Kdmid.Cities.Paris, "paris", nameof(Kdmid.Cities.Paris))},
+        { Kdmid.Cities.Bucharest, new(Kdmid.Cities.Bucharest, "bucharest", nameof(Kdmid.Cities.Bucharest))},
+        { Kdmid.Cities.Riga, new(Kdmid.Cities.Riga, "riga", nameof(Kdmid.Cities.Riga))},
+        { Kdmid.Cities.Vilnius, new(Kdmid.Cities.Vilnius, "vilnius", nameof(Kdmid.Cities.Vilnius))},
+        { Kdmid.Cities.Sarajevo, new(Kdmid.Cities.Sarajevo, "sarajevo", nameof(Kdmid.Cities.Sarajevo))},
+        { Kdmid.Cities.Tirana, new(Kdmid.Cities.Tirana, "tirana", nameof(Kdmid.Cities.Tirana))},
+        { Kdmid.Cities.Ljubljana, new(Kdmid.Cities.Ljubljana, "ljubljana", nameof(Kdmid.Cities.Ljubljana))},
+        { Kdmid.Cities.Berlin, new(Kdmid.Cities.Berlin, "berlin", nameof(Kdmid.Cities.Berlin))},
+        { Kdmid.Cities.Bern, new(Kdmid.Cities.Bern, "bern", nameof(Kdmid.Cities.Bern))},
+        { Kdmid.Cities.Brussels, new(Kdmid.Cities.Brussels, "brussels", nameof(Kdmid.Cities.Brussels))},
+        { Kdmid.Cities.Dublin, new(Kdmid.Cities.Dublin, "dublin", nameof(Kdmid.Cities.Dublin))},
+        { Kdmid.Cities.Helsinki, new(Kdmid.Cities.Helsinki, "helsinki", nameof(Kdmid.Cities.Helsinki))},
+        { Kdmid.Cities.Hague, new(Kdmid.Cities.Hague, "hague", nameof(Kdmid.Cities.Hague))},
     };
 
     private readonly Guid _hostId;
@@ -129,7 +140,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
         else
             buttons.Add(("Stop seek", BuildCommand(command.City.Id, Kdmid.Commands.Seek) + "?stop"));
 
-        var menuButton = new TelegramButtons(command.ChatId, $"Choose the action for {command.City.Name}.", buttons);
+        var menuButton = new TelegramButtons(command.ChatId, $"Choose the action for {command.City.Name}.", buttons, ButtonStyle.Horizontally);
 
         await _telegramClient.SendButtons(menuButton, cToken);
     }
@@ -159,7 +170,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
     public async Task Request(KdmidCommand command, CancellationToken cToken)
     {
-        var identifier = await GetIdentifier(command.ChatId, command.City.Id, command.Parameters, cToken);
+        var identifier = await GetOrAddIdentifier(command.ChatId, command.City.Id, command.Parameters, cToken);
 
         if (identifier is null)
         {
@@ -187,7 +198,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
         var confirmPage = _htmlDocument.GetConfirmPage(confirmPageResultResponse);
 
-        if (calendarPage.Variants.Count == 0)
+        if (confirmPage.Variants.Count == 0)
         {
             //var text = $"Accessible spaces for scheduling at the Russian embassy in {command.City.Name} are not available.";
 
@@ -216,13 +227,13 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
                 return (x.Key, $"{confirmCommand}?{guid}");
             });
 
-        var buttons = new TelegramButtons(command.ChatId, confirmText, confirmButtons);
+        var buttons = new TelegramButtons(command.ChatId, confirmText, confirmButtons, ButtonStyle.Vertically);
 
         await _telegramClient.SendButtons(buttons, cToken);
     }
     public async Task Confirm(KdmidCommand command, CancellationToken cToken)
     {
-        var identifier = await GetIdentifier(command.ChatId, command.City.Id, null, cToken);
+        var identifier = await GetOrAddIdentifier(command.ChatId, command.City.Id, null, cToken);
 
         if (identifier is null)
         {
@@ -261,7 +272,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
         return _telegramClient.SendMessage(message, cToken);
     }
-    private async Task<string?> GetIdentifier(long chatId, string cityId, string? value, CancellationToken cToken)
+    private async Task<string?> GetOrAddIdentifier(long chatId, string cityId, string? value, CancellationToken cToken)
     {
         var identifier = value;
 
