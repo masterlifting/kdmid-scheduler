@@ -19,8 +19,10 @@ public sealed class TelegramMenuCommandProcess : ITelegramMenuCommandProcess
         var menuButton = new TelegramButtons(
             chatId
             , "Choose Russian embassy."
-            , KdmidCommandProcess.Cities.Select(x => (x.Value.Name, KdmidCommandProcess.BuildCommand(x.Value.Id, Kdmid.Commands.Menu)))
-            , ButtonStyle.Vertically
+            , KdmidCommandProcess.Cities
+                .OrderBy(x => x.Value.Name)
+                .Select(x => (x.Value.Name, KdmidCommandProcess.BuildCommand(x.Value.Id, Kdmid.Commands.Menu)))
+            , ButtonStyle.VerticallyFlex
         );
 
         return _telegramClient.SendButtons(menuButton, cToken);

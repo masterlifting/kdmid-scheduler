@@ -1,3 +1,4 @@
+﻿using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 
@@ -33,6 +34,9 @@ public sealed class KdmidHttpClient : IKdmidHttpClient
 
             var response = await _httpClient.GetAsync(uri, cToken);
 
+            if (response.StatusCode != HttpStatusCode.OK)
+                throw new ApAzureBotInfrastructureException($"The response status code from {uri} is {response.StatusCode}.");
+
             var page = await response.Content.ReadAsStringAsync(cToken);
 
             return string.IsNullOrEmpty(page)
@@ -44,18 +48,21 @@ public sealed class KdmidHttpClient : IKdmidHttpClient
             throw new ApAzureBotInfrastructureException(exception);
         }
     }
-    public async Task<byte[]> GetCaptchaImage(long chatId, KdmidCity city, string parameters, CancellationToken cToken)
+    public async Task<byte[]> GetStartPageCaptcha(long chatId, KdmidCity city, string parameters, CancellationToken cToken)
     {
         try
         {
-            var uri = new Uri(GetBaseUrl(city) + parameters);
+            var uri = GetBaseUrl(city) + parameters;
 
             var response = await _httpClient.GetAsync(uri, cToken);
+
+            if (response.StatusCode != HttpStatusCode.OK)
+                throw new ApAzureBotInfrastructureException($"The response status code from {uri} is {response.StatusCode}.");
 
             var captchaImage = await response.Content.ReadAsByteArrayAsync(cToken);
 
             var sessionId = (response.Headers.GetValues("Set-Cookie").FirstOrDefault()?.Split(';').FirstOrDefault())
-                ?? throw new ApAzureBotInfrastructureException("The SessionId is not found in the response headers.");
+                ?? throw new ApAzureBotInfrastructureException($"The SessionId is not found in the response headers for the {city.Name}.");
 
             var sessionIdData = sessionId.Split('=');
 
@@ -73,7 +80,7 @@ public sealed class KdmidHttpClient : IKdmidHttpClient
             throw new ApAzureBotInfrastructureException(exception);
         }
     }
-    public async Task<string> PostStartPageResult(long chatId, KdmidCity city, string parameters, string data, CancellationToken cToken)
+    public async Task<string> PostApplication(long chatId, KdmidCity city, string parameters, string data, CancellationToken cToken)
     {
         try
         {
@@ -92,6 +99,9 @@ public sealed class KdmidHttpClient : IKdmidHttpClient
 
             var postResponse = await _httpClient.PostAsync(uri, content, cToken);
 
+            if (postResponse.StatusCode != HttpStatusCode.OK)
+                throw new ApAzureBotInfrastructureException($"The response status code from {uri} is {postResponse.StatusCode}.");
+
             var postResponseResult = await postResponse.Content.ReadAsStringAsync(cToken);
 
             return string.IsNullOrEmpty(postResponseResult)
@@ -103,8 +113,7 @@ public sealed class KdmidHttpClient : IKdmidHttpClient
             throw new ApAzureBotInfrastructureException(exception);
         }
     }
-
-    public async Task<string> PostConfirmPageResult(KdmidCity city, string parameters, string data, CancellationToken cToken)
+    public async Task<string> PostCalendar(KdmidCity city, string parameters, string data, CancellationToken cToken)
     {
         try
         {
@@ -114,6 +123,9 @@ public sealed class KdmidHttpClient : IKdmidHttpClient
 
             var postResponse = await _httpClient.PostAsync(uri, content, cToken);
 
+            if (postResponse.StatusCode != HttpStatusCode.OK)
+                throw new ApAzureBotInfrastructureException($"The response status code from {uri} is {postResponse.StatusCode}.");
+
             var postResponseResult = await postResponse.Content.ReadAsStringAsync(cToken);
 
             return string.IsNullOrEmpty(postResponseResult)
@@ -125,16 +137,15 @@ public sealed class KdmidHttpClient : IKdmidHttpClient
             throw new ApAzureBotInfrastructureException(exception);
         }
     }
-
-    public async Task<string> PostConfirmPageResult(long chatId, KdmidCity city, string parameters, string data, CancellationToken cToken)
+    public async Task<string> PostConfirmation(long chatId, KdmidCity city, string id, string data, CancellationToken cToken)
     {
         try
         {
-            var uri = GetRequestUri(city, parameters);
+            var uri = new Uri(GetBaseUrl(city) + $"SPCalendar.aspx?bjo={id}");
 
             if (!_cache.TryGetValue(chatId, SessionIdKey, out var sessionIdValue))
                 throw new ApAzureBotInfrastructureException("The SessionId is not found in the cache.");
-
+            
             var content = new StringContent(data, Encoding.UTF8, FormDataMediaType);
 
             _httpClient.DefaultRequestHeaders.Add("Cookie", $"{SessionIdKey}={sessionIdValue}");
@@ -148,6 +159,9 @@ public sealed class KdmidHttpClient : IKdmidHttpClient
             _httpClient.DefaultRequestHeaders.Add("Sec-Fetch-User", "?1");
 
             var postResponse = await _httpClient.PostAsync(uri, content, cToken);
+
+            if (postResponse.StatusCode != HttpStatusCode.OK)
+                throw new ApAzureBotInfrastructureException($"The response status code from {uri} is {postResponse.StatusCode}.");
 
             var postResponseResult = await postResponse.Content.ReadAsStringAsync(cToken);
 

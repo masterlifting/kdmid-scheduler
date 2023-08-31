@@ -55,7 +55,8 @@ public static class Constants
 
     public enum ButtonStyle
     {
-        Vertically,
+        VerticallyStrict,
+        VerticallyFlex,
         Horizontally
     }
 }

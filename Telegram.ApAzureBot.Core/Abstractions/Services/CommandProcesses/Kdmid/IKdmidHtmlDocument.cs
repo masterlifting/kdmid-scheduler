@@ -4,7 +4,8 @@ namespace Telegram.ApAzureBot.Core.Abstractions.Services.CommandProcesses.Kdmid;
 
 public interface IKdmidHtmlDocument
 {
-    KdmidStartPage GetStartPage(string page);
-    string GetStartPageResultFormData(string page);
-    KdmidConfirmPage GetConfirmPage(string page);
+    KdmidStart GetStart(string page);
+    string GetApplicationFormData(string page);
+    KdmidCalendar GetCalendar(string page);
+    KdmidConfirmation GetConfirmation(string page);
 }

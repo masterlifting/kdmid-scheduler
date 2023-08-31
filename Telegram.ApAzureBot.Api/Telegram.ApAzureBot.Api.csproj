@@ -20,6 +20,9 @@
     <ProjectReference Include="..\Telegram.ApAzureBot.Infrastructure\Telegram.ApAzureBot.Infrastructure.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <None Update="Content\confirmation.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="host.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -30,5 +33,8 @@
   </ItemGroup>
   <ItemGroup>
     <Using Include="System.Threading.ExecutionContext" Alias="ExecutionContext" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Content\" />
   </ItemGroup>
 </Project>

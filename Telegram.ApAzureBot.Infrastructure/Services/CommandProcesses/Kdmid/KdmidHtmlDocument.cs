@@ -13,7 +13,7 @@ public sealed class KdmidHtmlDocument : IKdmidHtmlDocument
     private HtmlDocument _htmlDocument;
     public KdmidHtmlDocument() => _htmlDocument = new HtmlDocument();
 
-    public KdmidStartPage GetStartPage(string page)
+    public KdmidStart GetStart(string page)
     {
         _htmlDocument.LoadHtml(page);
 
@@ -53,9 +53,9 @@ public sealed class KdmidHtmlDocument : IKdmidHtmlDocument
 
         var formData = formBuilder.ToString();
 
-        return new KdmidStartPage(formData, captchaCode);
+        return new KdmidStart(formData, captchaCode);
     }
-    public string GetStartPageResultFormData(string page)
+    public string GetApplicationFormData(string page)
     {
         _htmlDocument.LoadHtml(page);
 
@@ -89,7 +89,7 @@ public sealed class KdmidHtmlDocument : IKdmidHtmlDocument
 
         return formBuilder.ToString();
     }
-    public KdmidConfirmPage GetConfirmPage(string page)
+    public KdmidCalendar GetCalendar(string page)
     {
         _htmlDocument.LoadHtml(page);
 
@@ -132,6 +132,30 @@ public sealed class KdmidHtmlDocument : IKdmidHtmlDocument
             scheduling.Add(radioKey, radioValue);
         }
 
-        return new KdmidConfirmPage(formData.ToString(), scheduling);
+        return new KdmidCalendar(formData.ToString(), scheduling);
+    }
+    public KdmidConfirmation GetConfirmation(string page)
+    {
+        _htmlDocument.LoadHtml(page);
+
+        var resultTable = _htmlDocument
+            .DocumentNode
+            .SelectNodes("//td[@id='center-panel']")
+            .FirstOrDefault();
+
+        if (resultTable is null)
+            return new("Confirmation page data was not found.");
+
+        var result = resultTable.ChildNodes
+            .Where(x => x.Name == "div" && !string.IsNullOrWhiteSpace(x.InnerText))
+            .Skip(1)
+            .FirstOrDefault()
+            ?.ChildNodes
+            .FirstOrDefault(x => x.Name == "span")
+            ?.InnerText;
+
+        return result is null
+            ? new("Confirmation page data was not recognized.")
+            : new(string.Join(" ", result.Split("\n").Select(x => x.Trim())));
     }
 }

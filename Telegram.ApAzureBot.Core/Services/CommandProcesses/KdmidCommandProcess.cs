@@ -30,7 +30,6 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
         { Kdmid.Cities.Paris, new(Kdmid.Cities.Paris, "paris", nameof(Kdmid.Cities.Paris))},
         { Kdmid.Cities.Bucharest, new(Kdmid.Cities.Bucharest, "bucharest", nameof(Kdmid.Cities.Bucharest))},
         { Kdmid.Cities.Riga, new(Kdmid.Cities.Riga, "riga", nameof(Kdmid.Cities.Riga))},
-        { Kdmid.Cities.Vilnius, new(Kdmid.Cities.Vilnius, "vilnius", nameof(Kdmid.Cities.Vilnius))},
         { Kdmid.Cities.Sarajevo, new(Kdmid.Cities.Sarajevo, "sarajevo", nameof(Kdmid.Cities.Sarajevo))},
         { Kdmid.Cities.Tirana, new(Kdmid.Cities.Tirana, "tirana", nameof(Kdmid.Cities.Tirana))},
         { Kdmid.Cities.Ljubljana, new(Kdmid.Cities.Ljubljana, "ljubljana", nameof(Kdmid.Cities.Ljubljana))},
@@ -180,9 +179,9 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
         var startPageResponse = await _httpClient.GetStartPage(command.City, identifier, cToken);
 
-        var startPage = _htmlDocument.GetStartPage(startPageResponse);
+        var startPage = _htmlDocument.GetStart(startPageResponse);
 
-        var captchaImage = await _httpClient.GetCaptchaImage(command.ChatId, command.City, startPage.CaptchaCode, cToken);
+        var captchaImage = await _httpClient.GetStartPageCaptcha(command.ChatId, command.City, startPage.CaptchaCode, cToken);
 
         var captchaResult = await _captchaService.SolveInteger(captchaImage, cToken);
 
@@ -190,32 +189,29 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
         var startPageFormData = startPage.FormData.Replace(CaptchaKey, $"{CaptchaKey}{captchaResult}");
 
-        var startPageResultResponse = await _httpClient.PostStartPageResult(command.ChatId, command.City, identifier, startPageFormData, cToken);
+        var applicationResponse = await _httpClient.PostApplication(command.ChatId, command.City, identifier, startPageFormData, cToken);
 
-        var startPageResultFormData = _htmlDocument.GetStartPageResultFormData(startPageResultResponse);
+        var startPageResultFormData = _htmlDocument.GetApplicationFormData(applicationResponse);
 
-        var confirmPageResultResponse = await _httpClient.PostConfirmPageResult(command.City, identifier, startPageResultFormData, cToken);
+        var calendarResponse = await _httpClient.PostCalendar(command.City, identifier, startPageResultFormData, cToken);
 
-        var confirmPage = _htmlDocument.GetConfirmPage(confirmPageResultResponse);
+        var calendar = _htmlDocument.GetCalendar(calendarResponse);
 
-        if (confirmPage.Variants.Count == 0)
+        if (calendar.Variants.Count == 0)
         {
             //var text = $"Accessible spaces for scheduling at the Russian embassy in {command.City.Name} are not available.";
-
             //var message = new TelegramMessage(command.ChatId, text);
-
             //await _telegramClient.SendMessage(message, cToken);
-
             return;
         }
 
-        _cache.AddOrUpdate(command.ChatId, GetConfirmDataKey(command.City), confirmPage.FormData);
+        _cache.AddOrUpdate(command.ChatId, GetConfirmDataKey(command.City), calendar.FormData);
 
         var confirmText = $"Accessible spaces for scheduling at the Russian embassy in {command.City.Name}.";
 
         var confirmCommand = BuildCommand(command.City.Id, Kdmid.Commands.Confirm);
 
-        var confirmButtons = confirmPage.Variants
+        var confirmButtons = calendar.Variants
             .Select(x =>
             {
                 var guid = Guid.NewGuid().ToString("N");
@@ -227,7 +223,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
                 return (x.Key, $"{confirmCommand}?{guid}");
             });
 
-        var buttons = new TelegramButtons(command.ChatId, confirmText, confirmButtons, ButtonStyle.Vertically);
+        var buttons = new TelegramButtons(command.ChatId, confirmText, confirmButtons, ButtonStyle.VerticallyStrict);
 
         await _telegramClient.SendButtons(buttons, cToken);
     }
@@ -240,6 +236,8 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
             await AskIdentifier(command, cToken);
             return;
         }
+
+        var id = identifier[3..identifier.IndexOf('&')];
 
         var buttonKey = command.Parameters;
 
@@ -254,10 +252,14 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
         const string ButtonKey = "ctl00%24MainContent%24TextBox1=";
 
         var data = confirmFormData!.Replace(ButtonKey, $"{ButtonKey}{encodedButtonValue}");
+        
+        var confirmationResponse = await _httpClient.PostConfirmation(command.ChatId, command.City, id, data, cToken);
 
-        var confirmResult = await _httpClient.PostConfirmPageResult(command.ChatId, command.City, identifier, data, cToken);
+        var confirmation = _htmlDocument.GetConfirmation(confirmationResponse);
 
-        await _telegramClient.SendMessage(new(command.ChatId, confirmResult), cToken);
+        var result = confirmation.Result + $" - to {command.City.Name}";
+
+        await _telegramClient.SendMessage(new(command.ChatId, result), cToken);
 
         _cache.Clear(command.ChatId);
     }

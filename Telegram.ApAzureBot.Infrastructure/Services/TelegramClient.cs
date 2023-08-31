@@ -64,12 +64,27 @@ public sealed class TelegramClient : ITelegramClient
     {
         InlineKeyboardMarkup keyboard = button.Style switch
         {
-            ButtonStyle.Horizontally => new(button.Buttons.Select(x => InlineKeyboardButton.WithCallbackData(x.Name, x.Callback))),
-            ButtonStyle.Vertically => new(button.Buttons.Select(x => new InlineKeyboardButton[] { InlineKeyboardButton.WithCallbackData(x.Name, x.Callback) })),
+            ButtonStyle.Horizontally => new(button.Items.Select(x => InlineKeyboardButton.WithCallbackData(x.Name, x.Callback))),
+            ButtonStyle.VerticallyStrict => new(button.Items.Select(x => new InlineKeyboardButton[] { InlineKeyboardButton.WithCallbackData(x.Name, x.Callback) })),
+            ButtonStyle.VerticallyFlex => button.Items.Count() % 2 == 0
+                ? new(GetButtonPairs(button.Items.Select(x => InlineKeyboardButton.WithCallbackData(x.Name, x.Callback)).ToArray()))
+                : new(button.Items.Select(x => new InlineKeyboardButton[] { InlineKeyboardButton.WithCallbackData(x.Name, x.Callback) })),
             _ => throw new ApAzureBotInfrastructureException($"Button style {button.Style} is not supported.")
         };
 
         await _client.SendTextMessageAsync(button.ChatId, button.Text, replyMarkup: keyboard, cancellationToken: cToken);
+
+        static IEnumerable<InlineKeyboardButton[]> GetButtonPairs(InlineKeyboardButton[] buttons)
+        {
+            var pairs = new List<InlineKeyboardButton[]>(buttons.Length / 2);
+
+            for (int i = 0; i < buttons.Length; i += 2)
+            {
+                pairs.Add(new InlineKeyboardButton[] { buttons[i], buttons[i + 1] });
+            }
+
+            return pairs;
+        }
     }
 
     #region Private methods
