@@ -191,9 +191,9 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
         var applicationResponse = await _httpClient.PostApplication(command.ChatId, command.City, identifier, startPageFormData, cToken);
 
-        var startPageResultFormData = _htmlDocument.GetApplicationFormData(applicationResponse);
+        var applicationFormData = _htmlDocument.GetApplicationFormData(applicationResponse);
 
-        var calendarResponse = await _httpClient.PostCalendar(command.City, identifier, startPageResultFormData, cToken);
+        var calendarResponse = await _httpClient.PostCalendar(command.City, identifier, applicationFormData, cToken);
 
         var calendar = _htmlDocument.GetCalendar(calendarResponse);
 
@@ -211,21 +211,61 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
         var confirmCommand = BuildCommand(command.City.Id, Kdmid.Commands.Confirm);
 
+        //TODO: To Improve
+        #region Improve Auto Confirmation
+        (bool IsReady, string ButtonGuid) autoConfirmation = (false, string.Empty);
+        
+        (DateTime Start, DateTime End) BelgradeAutoConfirmationTime = 
+            (
+                DateTime.UtcNow.AddHours(2)
+                , new(2023, 09, 20)
+            );
+        
+        (DateTime Start, DateTime End) BudapestAutoConfirmationTime =
+            (
+                new(2023, 09, 22)
+                , new(2023, 09, 29)
+            );
+        #endregion
+
         var confirmButtons = calendar.Variants
             .Select(x =>
             {
                 var guid = Guid.NewGuid().ToString("N");
+
+                #region Improve Auto Confirmation
+                if (!autoConfirmation.IsReady && DateTime.TryParse(x.Value.Split('|')[1], out var date))
+                {
+                    autoConfirmation = command.City.Id switch
+                    {
+                        Kdmid.Cities.Belgrade => date >= BelgradeAutoConfirmationTime.Start && date <= BelgradeAutoConfirmationTime.End 
+                            ? (true, guid) 
+                            : (false, string.Empty),
+                        Kdmid.Cities.Budapest => date >= BudapestAutoConfirmationTime.Start && date <= BudapestAutoConfirmationTime.End 
+                            ? (true, guid) 
+                            : (false, string.Empty),
+                        _ => (false, string.Empty),
+                    };
+                }
+                #endregion
 
                 var buttonKey = GetConfirmButtonKey(command.City, guid);
 
                 _cache.AddOrUpdate(command.ChatId, buttonKey, x.Value);
 
                 return (x.Key, $"{confirmCommand}?{guid}");
-            });
+            })
+            .ToArray();
 
-        var buttons = new TelegramButtons(command.ChatId, confirmText, confirmButtons, ButtonStyle.VerticallyStrict);
-
-        await _telegramClient.SendButtons(buttons, cToken);
+        if (autoConfirmation.IsReady)
+        {
+            await Confirm(new(command.ChatId, Kdmid.Commands.Confirm, command.City, autoConfirmation.ButtonGuid), cToken);
+        }
+        else
+        {
+            var buttons = new TelegramButtons(command.ChatId, confirmText, confirmButtons, ButtonStyle.VerticallyStrict);
+            await _telegramClient.SendButtons(buttons, cToken);
+        }
     }
     public async Task Confirm(KdmidCommand command, CancellationToken cToken)
     {
@@ -252,7 +292,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
         const string ButtonKey = "ctl00%24MainContent%24TextBox1=";
 
         var data = confirmFormData!.Replace(ButtonKey, $"{ButtonKey}{encodedButtonValue}");
-        
+
         var confirmationResponse = await _httpClient.PostConfirmation(command.ChatId, command.City, id, data, cToken);
 
         var confirmation = _htmlDocument.GetConfirmation(confirmationResponse);

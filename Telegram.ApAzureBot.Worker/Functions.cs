@@ -16,7 +16,7 @@ public class Functions
         Core.Constants.Kdmid.Cities.Budapest,
         Core.Constants.Kdmid.Cities.Belgrade
     });
-    
+
     [Function("slowseek")]
-    public async Task RunSlowSeek([TimerTrigger("*/30 8-16 * * 1-5")] TelegramTimer timer) => await _service.Process(Array.Empty<string>());
+    public async Task RunSlowSeek([TimerTrigger("0/30 8-16 * * 1-5")] TelegramTimer timer) => await _service.Process(Array.Empty<string>());
 }

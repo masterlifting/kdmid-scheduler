@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 
 using Telegram.ApAzureBot.Core.Abstractions.Services;
 using Telegram.ApAzureBot.Core.Abstractions.Services.CommandProcesses;
@@ -44,12 +44,12 @@ public sealed class TelegramCommand : ITelegramCommand
         catch (ApAzureBotCoreException exception)
         {
             _logger.Error(exception);
-            await _serviceProvider.GetTelegramClient().SendMessage(new(message.ChatId, "Something went wrong. Please try again later."), cToken);
+            await _serviceProvider.GetTelegramClient().SendMessage(new(message.ChatId, exception.Message), cToken);
         }
         catch (Exception exception)
         {
             _logger.Error(new ApAzureBotCoreException(exception));
-            await _serviceProvider.GetTelegramClient().SendMessage(new(message.ChatId, "Something went wrong. Please try again later."), cToken);
+            await _serviceProvider.GetTelegramClient().SendMessage(new(message.ChatId, exception.Message), cToken);
         }
     }
     private Task ProcessCommand(long chatId, ReadOnlySpan<char> command, CancellationToken cToken)

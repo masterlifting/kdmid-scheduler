@@ -122,17 +122,17 @@ public sealed class KdmidHtmlDocument : IKdmidHtmlDocument
 
         formData.Remove(0, 1);
 
-        var scheduling = new Dictionary<string, string>(22);
+        var variants = new Dictionary<string, string>(22);
 
         foreach (var radio in resultTable.SelectNodes("//input[@type='radio']"))
         {
             var radioKey = radio.NextSibling.InnerText.Trim();
             var radioValue = radio.GetAttributeValue("value", "");
 
-            scheduling.Add(radioKey, radioValue);
+            variants.Add(radioKey, radioValue);
         }
 
-        return new KdmidCalendar(formData.ToString(), scheduling);
+        return new KdmidCalendar(formData.ToString(), variants);
     }
     public KdmidConfirmation GetConfirmation(string page)
     {
