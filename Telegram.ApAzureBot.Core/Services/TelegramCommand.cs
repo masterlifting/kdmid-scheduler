@@ -43,13 +43,21 @@ public sealed class TelegramCommand : ITelegramCommand
         }
         catch (ApAzureBotCoreException exception)
         {
+            //var errorMessage = $"An error occurred while processing the command {message.Text}.";
+
+            // This is only for MVP version
+            var errorMessage = $"{message.Text}: {exception.Message}";
             _logger.Error(exception);
-            await _serviceProvider.GetTelegramClient().SendMessage(new(message.ChatId, exception.Message), cToken);
+            await _serviceProvider.GetTelegramClient().SendMessage(new(message.ChatId, errorMessage), cToken);
         }
         catch (Exception exception)
         {
-            _logger.Error(new ApAzureBotCoreException(exception));
-            await _serviceProvider.GetTelegramClient().SendMessage(new(message.ChatId, exception.Message), cToken);
+            //var errorMessage = $"An error occurred while processing the command {message.Text}.";
+
+            // This is only for MVP version
+            var errorMessage = $"{message.Text}: {exception.Message}";
+            _logger.Error(new ApAzureBotCoreException(errorMessage));
+            await _serviceProvider.GetTelegramClient().SendMessage(new(message.ChatId, errorMessage), cToken);
         }
     }
     private Task ProcessCommand(long chatId, ReadOnlySpan<char> command, CancellationToken cToken)

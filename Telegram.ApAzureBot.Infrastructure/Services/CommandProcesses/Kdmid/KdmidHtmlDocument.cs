@@ -20,7 +20,7 @@ public sealed class KdmidHtmlDocument : IKdmidHtmlDocument
         var pageNodes = _htmlDocument.DocumentNode.SelectNodes("//input | //img");
 
         if (pageNodes is null || !pageNodes.Any())
-            throw new ApAzureBotInfrastructureException("The Start page data was not found.");
+            throw new ApAzureBotInfrastructureException("The Start page was not found.");
 
         var captchaCode = string.Empty;
 
@@ -44,7 +44,7 @@ public sealed class KdmidHtmlDocument : IKdmidHtmlDocument
 
                 if (string.IsNullOrWhiteSpace(captchaCode) || !captchaCode.Contains("CodeImage", StringComparison.OrdinalIgnoreCase))
                 {
-                    throw new ApAzureBotInfrastructureException("The captcha code was not found.");
+                    throw new ApAzureBotInfrastructureException("The Captcha code was not found.");
                 }
             }
         }
@@ -62,7 +62,7 @@ public sealed class KdmidHtmlDocument : IKdmidHtmlDocument
         var pageNodes = _htmlDocument.DocumentNode.SelectNodes("//input");
 
         if (pageNodes is null || !pageNodes.Any())
-            throw new ApAzureBotInfrastructureException("The Start page data was not found.");
+            throw new ApAzureBotInfrastructureException("The Application form data was not found.");
 
         StringBuilder formBuilder = new();
 
@@ -105,7 +105,7 @@ public sealed class KdmidHtmlDocument : IKdmidHtmlDocument
         var pageNodes = _htmlDocument.DocumentNode.SelectNodes("//input");
 
         if (pageNodes is null || !pageNodes.Any())
-            throw new ApAzureBotInfrastructureException("The Confirm page data was not found.");
+            throw new ApAzureBotInfrastructureException("The Calendar page was not found.");
 
         var formData = new StringBuilder();
 
@@ -144,7 +144,7 @@ public sealed class KdmidHtmlDocument : IKdmidHtmlDocument
             .FirstOrDefault();
 
         if (resultTable is null)
-            return new("Confirmation page data was not found.");
+            return new("The Confirmation page was not found.");
 
         var result = resultTable.ChildNodes
             .Where(x => x.Name == "div" && !string.IsNullOrWhiteSpace(x.InnerText))
@@ -155,7 +155,7 @@ public sealed class KdmidHtmlDocument : IKdmidHtmlDocument
             ?.InnerText;
 
         return result is null
-            ? new("Confirmation page data was not recognized.")
+            ? new("The Confirmation page was not recognized.")
             : new(string.Join(" ", result.Split("\n").Select(x => x.Trim())));
     }
 }
