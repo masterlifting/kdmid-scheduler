@@ -1,9 +1,0 @@
-{
-  "profiles": {
-    "Telegram.ApAzureBot.Worker": {
-      "commandName": "Project",
-      "commandLineArgs": "--port 7063",
-      "launchBrowser": false
-    }
-  }
-}
