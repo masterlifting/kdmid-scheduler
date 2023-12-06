@@ -7,14 +7,6 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="bin\**" />
-    <Compile Remove="Content\**" />
-    <EmbeddedResource Remove="bin\**" />
-    <EmbeddedResource Remove="Content\**" />
-    <None Remove="bin\**" />
-    <None Remove="Content\**" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.18.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.0.13" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.13.0" />

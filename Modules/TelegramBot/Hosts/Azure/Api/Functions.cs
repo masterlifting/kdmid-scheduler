@@ -1,8 +1,7 @@
 ﻿using System.Globalization;
 
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.IdentityModel.Protocols;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 
 using Telegram.ApAzureBot.Core.Abstractions.Services;
 
