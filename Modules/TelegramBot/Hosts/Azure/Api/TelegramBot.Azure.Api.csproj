@@ -8,18 +8,17 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="bin\**" />
+    <Compile Remove="Content\**" />
     <EmbeddedResource Remove="bin\**" />
+    <EmbeddedResource Remove="Content\**" />
     <None Remove="bin\**" />
+    <None Remove="Content\**" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.18.0" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.0.13" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.13.0" />
+    <ProjectReference Include="..\..\..\App\Core\TelegramBot.Core.csproj" />
+    <ProjectReference Include="..\..\..\App\Infrastructure\TelegramBot.Infrastructure.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <None Update="Content\confirmation.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Update="host.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -30,12 +29,5 @@
   </ItemGroup>
   <ItemGroup>
     <Using Include="System.Threading.ExecutionContext" Alias="ExecutionContext" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Content\" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\App\Core\TelegramBot.Core.csproj" />
-    <ProjectReference Include="..\App\Infrastructure\TelegramBot.Infrastructure.csproj" />
   </ItemGroup>
 </Project>

@@ -1,24 +1,20 @@
 ﻿using System.Globalization;
 
-using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.IdentityModel.Protocols;
+
 using Telegram.ApAzureBot.Core.Abstractions.Services;
 
-namespace Telegram.ApAzureBot.Api;
+namespace TelegramBot.Azure;
 
-public class Functions
+public class Functions(ITelegramClient client)
 {
+    private readonly ITelegramClient _client = client;
+
     private const string SetReceiverFunction = "set";
     private const string ReceiveFunction = "receive";
     private const string ListenFunction = "listen";
-
-    private readonly ITelegramClient _client;
-    private readonly ITelegramCommandTaskService _service;
-    public Functions(ITelegramClient telegramClient, ITelegramCommandTaskService service)
-    {
-        _client = telegramClient;
-        _service = service
-    }
 
     [Function(SetReceiverFunction)]
     public Task SetReceiver([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData request, CancellationToken cToken)
@@ -39,16 +35,6 @@ public class Functions
     }
 
     [Function(ListenFunction)]
-    public Task Listen([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData request, CancellationToken cToken) =>
+    public Task Listen([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData _, CancellationToken cToken) =>
         _client.ListenMessages(cToken);
-
-    [Function("fastseek")]
-    public async Task RunFastSeek([TimerTrigger("15,40 6-7 * * 1-5")] TelegramTimer timer) => await _service.Process(new[]
-    {
-        Core.Constants.Kdmid.Cities.Budapest,
-        Core.Constants.Kdmid.Cities.Belgrade
-    });
-
-    [Function("slowseek")]
-    public async Task RunSlowSeek([TimerTrigger("0/30 7-14 * * 1-5")] TelegramTimer timer) => await _service.Process(Array.Empty<string>());
 }
