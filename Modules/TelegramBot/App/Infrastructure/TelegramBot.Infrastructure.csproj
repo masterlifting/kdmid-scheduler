@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Telegram.Bot" Version="19.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Submodules\Net.Shared.Background\src\Net.Shared.Background\Net.Shared.Background.csproj" />
+    <ProjectReference Include="..\..\..\..\Submodules\Net.Shared.Exceptions\src\Net.Shared.Exceptions\Net.Shared.Exceptions.csproj" />
+    <ProjectReference Include="..\..\..\..\Submodules\Net.Shared.Extensions\src\Net.Shared.Extensions\Net.Shared.Extensions.csproj" />
+    <ProjectReference Include="..\..\..\..\Submodules\Net.Shared.Persistence\src\Net.Shared.Persistence\Net.Shared.Persistence.csproj" />
+    <ProjectReference Include="..\..\..\..\Submodules\Net.Shared.Queues\src\Net.Shared.Queues\Net.Shared.Queues.csproj" />
+    <ProjectReference Include="..\..\..\..\Submodules\Net.Shared.Web\src\Net.Shared.Web\Net.Shared.Web.csproj" />
+    <ProjectReference Include="..\..\..\..\Submodules\Net.Shared\src\Net.Shared\Net.Shared.csproj" />
+    <ProjectReference Include="..\Abstractions\TelegramBot.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>
