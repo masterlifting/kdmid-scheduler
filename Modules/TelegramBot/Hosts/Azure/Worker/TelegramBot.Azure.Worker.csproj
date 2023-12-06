@@ -15,6 +15,9 @@
     <None Remove="Content\**" />
   </ItemGroup>
   <ItemGroup>
+    
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\..\App\Core\TelegramBot.Core.csproj" />
     <ProjectReference Include="..\..\..\App\Infrastructure\TelegramBot.Infrastructure.csproj" />
   </ItemGroup>
