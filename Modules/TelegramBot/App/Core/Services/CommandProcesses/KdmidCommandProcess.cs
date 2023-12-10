@@ -10,15 +10,20 @@ using TelegramBot.Abstractions.Interfaces.Services.CommandProcesses.Kdmid;
 using TelegramBot.Abstractions.Models.CommandProcesses.Kdmid;
 using TelegramBot.Abstractions.Models.Persistence.Entities;
 
+using TelegramBot.Abstractions.Models.Telegram;
+
+using static TelegramBot.Abstractions.Constants;
+using TelegramBot.Abstractions.Models.Exceptions;
+
 namespace TelegramBot.Services.CommandProcesses;
 
-public sealed class KdmidCommandProcess : IKdmidCommandProcess
+public sealed class KdmidCommandProcess : IKdmidCommand
 {
     public static string BuildCommand(string cityId, string commandId) => $"/{Kdmid.Key}_{cityId}_{commandId}";
-    private static string GetConfirmDataKey(KdmidCity city) => $"{Kdmid.Key}.{city.Id}.confirm";
-    private static string GetConfirmButtonKey(KdmidCity city, string key) => $"{GetConfirmDataKey(city)}.button.{key}";
+    private static string GetConfirmDataKey(City city) => $"{Kdmid.Key}.{city.Id}.confirm";
+    private static string GetConfirmButtonKey(City city, string key) => $"{GetConfirmDataKey(city)}.button.{key}";
 
-    public static readonly Dictionary<string, KdmidCity> Cities = new()
+    public static readonly Dictionary<string, City> Cities = new()
     {
         { Kdmid.Cities.Belgrade, new(Kdmid.Cities.Belgrade, "belgrad", nameof(Kdmid.Cities.Belgrade))},
         { Kdmid.Cities.Budapest, new(Kdmid.Cities.Budapest, "budapest", nameof(Kdmid.Cities.Budapest))},
@@ -46,7 +51,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
     private readonly ITelegramCommandTaskRepository _commandTaskRepository;
     private readonly IKdmidCaptchaService _captchaService;
 
-    private readonly Dictionary<string, Func<KdmidCommand, CancellationToken, Task>> _functions;
+    private readonly Dictionary<string, Func<Command, CancellationToken, Task>> _functions;
 
     public KdmidCommandProcess(
         TelegramMemoryCache cache
@@ -87,17 +92,17 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
     public Task Start(long chatId, ReadOnlySpan<char> message, CancellationToken cToken)
     {
         if (message.Length == 0)
-            throw new ApAzureBotCoreException("The message is empty.");
+            throw new TelegramBotException("The message is empty.");
 
         var cityIndex = message.IndexOf('_');
 
         if (cityIndex < 0)
-            throw new ApAzureBotCoreException("The city index is not found.");
+            throw new TelegramBotException("The city index is not found.");
 
         var cityId = message[0..cityIndex].ToString();
 
         if (!Cities.TryGetValue(cityId, out var city))
-            throw new ApAzureBotCoreException($"The cityId: {cityId} is not supported.");
+            throw new TelegramBotException($"The cityId: {cityId} is not supported.");
 
         message = message[(cityIndex + 1)..];
 
@@ -109,18 +114,18 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
 
         var commandParameters = commandParametersIndex > 0
             ? message[(commandParametersIndex + 1)..]
-            : ReadOnlySpan<char>.Empty;
+            : [];
 
-        var command = new KdmidCommand(chatId, commandId, city, commandParameters.IsEmpty ? null : commandParameters.ToString());
+        var command = new Command(chatId, commandId, city, commandParameters.IsEmpty ? null : commandParameters.ToString());
 
-        return !_functions.TryGetValue(commandId.ToString(), out var call)
-            ? throw new ApAzureBotCoreException($"The command: {commandId} is not supported.")
-            : call(command, cToken);
+        return !_functions.TryGetValue(commandId, out var invoke)
+            ? throw new TelegramBotException($"The command: {commandId} is not supported.")
+            : invoke(command, cToken);
     }
 
-    public async Task Menu(KdmidCommand command, CancellationToken cToken)
+    public async Task Menu(Command command, CancellationToken cToken)
     {
-        var message = new TelegramMessage(command.ChatId, BuildCommand(command.City.Id, Kdmid.Commands.Request));
+        var message = new Message(command.ChatId, BuildCommand(command.City.Id, Kdmid.Commands.Request));
 
         var isScheduled = await _commandTaskRepository.IsExists(message, cToken);
 
@@ -134,11 +139,11 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
         else
             buttons.Add(("Stop seek", BuildCommand(command.City.Id, Kdmid.Commands.Seek) + "?stop"));
 
-        var menuButton = new TelegramButtons(command.ChatId, $"Choose the action for {command.City.Name}.", buttons, ButtonStyle.Horizontally);
+        var menuButton = new Buttons(command.ChatId, $"Choose the action for {command.City.Name}.", buttons, ButtonStyle.Horizontally);
 
         await _telegramClient.SendButtons(menuButton, cToken);
     }
-    public async Task Seek(KdmidCommand command, CancellationToken cToken)
+    public async Task Seek(Command command, CancellationToken cToken)
     {
         if (string.IsNullOrEmpty(command.Parameters))
             throw new ApAzureBotCoreException("The command parameters for the seek is empty.");
@@ -162,7 +167,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
         await _telegramClient.SendMessage(new(command.ChatId, text), cToken);
     }
 
-    public async Task Request(KdmidCommand command, CancellationToken cToken)
+    public async Task Request(Command command, CancellationToken cToken)
     {
         var identifier = await GetOrAddIdentifier(command.ChatId, command.City.Id, command.Parameters, cToken);
 
@@ -262,7 +267,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
             await _telegramClient.SendButtons(buttons, cToken);
         }
     }
-    public async Task Confirm(KdmidCommand command, CancellationToken cToken)
+    public async Task Confirm(Command command, CancellationToken cToken)
     {
         var identifier = await GetOrAddIdentifier(command.ChatId, command.City.Id, null, cToken);
 
@@ -299,7 +304,7 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
         _cache.Clear(command.ChatId);
     }
 
-    private Task AskIdentifier(KdmidCommand command, CancellationToken cToken)
+    private Task AskIdentifier(Command command, CancellationToken cToken)
     {
         var templateCommand = BuildCommand(command.City.Id, command.Id);
 

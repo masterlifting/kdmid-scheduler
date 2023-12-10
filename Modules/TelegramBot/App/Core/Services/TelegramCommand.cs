@@ -6,11 +6,11 @@ using TelegramBot.Abstractions.Models;
 
 namespace TelegramBot.Services;
 
-public sealed class TelegramCommand : ITelegramCommand
+public sealed class TelegramCommand : Abstractions.Interfaces.Services.ITelegramCommand
 {
     ILogger _logger;
     private readonly ITelegramServiceProvider _serviceProvider;
-    private readonly Dictionary<string, Func<ITelegramCommandProcess>> _services;
+    private readonly Dictionary<string, Func<Abstractions.Interfaces.Services.CommandProcesses.ITelegramCommand>> _services;
     public TelegramCommand(ILogger<TelegramCommand> logger, ITelegramServiceProvider serviceProvider)
     {
         _logger = logger;
@@ -19,7 +19,7 @@ public sealed class TelegramCommand : ITelegramCommand
         {
             {"start", _serviceProvider.GetService<ITelegramMenuCommandProcess>},
             {"menu", _serviceProvider.GetService<ITelegramMenuCommandProcess>},
-            {Constants.Kdmid.Key, _serviceProvider.GetService<IKdmidCommandProcess>},
+            {Constants.Kdmid.Key, _serviceProvider.GetService<IKdmidCommand>},
         };
     }
 
@@ -44,7 +44,7 @@ public sealed class TelegramCommand : ITelegramCommand
             // This is only for MVP version
             var errorMessage = $"{message.Text}: {exception.Message}";
             _logger.Error(exception);
-            await _serviceProvider.GetTelegramClient().SendMessage(new(message.ChatId, errorMessage), cToken);
+            await _serviceProvider.GetClient().SendMessage(new(message.ChatId, errorMessage), cToken);
         }
         catch (Exception exception)
         {
@@ -53,7 +53,7 @@ public sealed class TelegramCommand : ITelegramCommand
             // This is only for MVP version
             var errorMessage = $"{message.Text}: {exception.Message}";
             _logger.Error(new TelegramBotException(errorMessage));
-            await _serviceProvider.GetTelegramClient().SendMessage(new(message.ChatId, errorMessage), cToken);
+            await _serviceProvider.GetClient().SendMessage(new(message.ChatId, errorMessage), cToken);
         }
     }
     private Task ProcessCommand(long chatId, ReadOnlySpan<char> command, CancellationToken cToken)

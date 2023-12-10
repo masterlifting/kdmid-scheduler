@@ -4,8 +4,8 @@ namespace TelegramBot.Abstractions.Interfaces.Services.CommandProcesses.Kdmid;
 
 public interface IKdmidHtmlDocument
 {
-    KdmidStart GetStart(string page);
+    Start GetStart(string page);
     string GetApplicationFormData(string page);
-    KdmidCalendar GetCalendar(string page);
-    KdmidConfirmation GetConfirmation(string page);
+    Calendar GetCalendar(string page);
+    Confirmation GetConfirmation(string page);
 }

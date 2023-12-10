@@ -1,5 +1,5 @@
 ﻿namespace TelegramBot.Abstractions.Interfaces.Services.CommandProcesses;
 
-public interface ITelegramMenuCommandProcess : ITelegramCommandProcess
+public interface ITelegramMenuCommandProcess : ITelegramCommand
 {
 }
