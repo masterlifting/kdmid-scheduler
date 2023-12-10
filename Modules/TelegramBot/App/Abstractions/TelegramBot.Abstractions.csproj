@@ -12,7 +12,6 @@
     <ProjectReference Include="..\..\..\..\Submodules\Net.Shared.Queues\src\Net.Shared.Queues.Abstractions\Net.Shared.Queues.Abstractions.csproj" />
     <ProjectReference Include="..\..\..\..\Submodules\Net.Shared.Web\src\Net.Shared.Web.Abstractions\Net.Shared.Web.Abstractions.csproj" />
     <ProjectReference Include="..\..\..\..\Submodules\Net.Shared\src\Net.Shared.Abstractions\Net.Shared.Abstractions.csproj" />
-    <ProjectReference Include="..\Models\TelegramBot.Models.csproj" />
   </ItemGroup>
 
 </Project>

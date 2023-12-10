@@ -1,10 +1,7 @@
-﻿using Telegram.ApAzureBot.Core.Abstractions.Services;
-using Telegram.ApAzureBot.Core.Abstractions.Services.CommandProcesses;
-using Telegram.ApAzureBot.Core.Models;
+﻿using TelegramBot.Abstractions.Interfaces.Services;
+using TelegramBot.Abstractions.Interfaces.Services.CommandProcesses;
 
-using static Telegram.ApAzureBot.Core.Constants;
-
-namespace Telegram.ApAzureBot.Core.Services.CommandProcesses;
+namespace TelegramBot.Services.CommandProcesses;
 
 public sealed class TelegramMenuCommandProcess : ITelegramMenuCommandProcess
 {

@@ -1,4 +1,4 @@
-﻿namespace TelegramBot.Azure.Models;
+﻿namespace TelegramBot.Azure.Worker.Models;
 
 public record Schedule(bool AdjustForDST);
 public record ScheduleStatus(DateTime Last, DateTime LastUpdated, DateTime Next);

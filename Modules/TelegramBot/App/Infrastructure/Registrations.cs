@@ -2,18 +2,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Net.Shared.Persistence;
 
-using Telegram.ApAzureBot.Core.Abstractions.Persistence.Repositories;
-using Telegram.ApAzureBot.Core.Abstractions.Services;
-using Telegram.ApAzureBot.Core.Abstractions.Services.CommandProcesses;
-using Telegram.ApAzureBot.Core.Abstractions.Services.CommandProcesses.Kdmid;
-using Telegram.ApAzureBot.Core.Services;
-using Telegram.ApAzureBot.Core.Services.CommandProcesses;
-using Telegram.ApAzureBot.Infrastructure.Persistence.Context;
-using Telegram.ApAzureBot.Infrastructure.Persistence.Repositories;
-using Telegram.ApAzureBot.Infrastructure.Services;
-using Telegram.ApAzureBot.Infrastructure.Services.CommandProcesses.Kdmid;
+using TelegramBot.Infrastructure.Persistence.Context;
+using TelegramBot.Infrastructure.Persistence.Repositories;
+using TelegramBot.Infrastructure.Services;
+using TelegramBot.Infrastructure.Services.CommandProcesses.Kdmid;
 
-namespace Telegram.ApAzureBot.Infrastructure;
+namespace TelegramBot.Infrastructure;
 
 public static class Registrations
 {

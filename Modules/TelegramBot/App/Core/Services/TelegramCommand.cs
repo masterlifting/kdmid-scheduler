@@ -1,14 +1,10 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using TelegramBot.Abstractions.Interfaces.Services.CommandProcesses;
+using TelegramBot.Abstractions.Interfaces.Services.CommandProcesses.Kdmid;
+using TelegramBot.Abstractions.Interfaces.Services;
+using TelegramBot.Abstractions.Models.Exceptions;
+using TelegramBot.Abstractions.Models;
 
-using Telegram.ApAzureBot.Core.Abstractions.Services;
-using Telegram.ApAzureBot.Core.Abstractions.Services.CommandProcesses;
-using Telegram.ApAzureBot.Core.Abstractions.Services.CommandProcesses.Kdmid;
-using Telegram.ApAzureBot.Core.Exceptions;
-using Telegram.ApAzureBot.Core.Models;
-
-using Net.Shared.Extensions;
-
-namespace Telegram.ApAzureBot.Core.Services;
+namespace TelegramBot.Services;
 
 public sealed class TelegramCommand : ITelegramCommand
 {
@@ -32,16 +28,16 @@ public sealed class TelegramCommand : ITelegramCommand
         try
         {
             if (string.IsNullOrWhiteSpace(message.Text) || message.Text.Length < 4)
-                throw new ApAzureBotCoreException("The message is empty.");
+                throw new TelegramBotException("The message is empty.");
 
             var text = message.Text.Trim();
 
             if (!text.StartsWith('/'))
-                throw new ApAzureBotCoreException($"The message {text} is not a command.");
+                throw new TelegramBotException($"The message {text} is not a command.");
 
             await ProcessCommand(message.ChatId, text[1..].AsSpan(), cToken);
         }
-        catch (ApAzureBotCoreException exception)
+        catch (TelegramBotException exception)
         {
             //var errorMessage = $"An error occurred while processing the command {message.Text}.";
 
@@ -56,7 +52,7 @@ public sealed class TelegramCommand : ITelegramCommand
 
             // This is only for MVP version
             var errorMessage = $"{message.Text}: {exception.Message}";
-            _logger.Error(new ApAzureBotCoreException(errorMessage));
+            _logger.Error(new TelegramBotException(errorMessage));
             await _serviceProvider.GetTelegramClient().SendMessage(new(message.ChatId, errorMessage), cToken);
         }
     }
@@ -69,7 +65,7 @@ public sealed class TelegramCommand : ITelegramCommand
             : command;
 
         return !_services.TryGetValue(commandName.ToString(), out var service)
-            ? throw new ApAzureBotCoreException($"The service {commandName} is not supported.")
+            ? throw new TelegramBotException($"The service {commandName} is not supported.")
             : service().Start(chatId, command[(commandParametersStartIndex + 1)..], cToken);
     }
 }

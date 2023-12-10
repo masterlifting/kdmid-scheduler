@@ -2,20 +2,15 @@
 
 using Microsoft.Extensions.Configuration;
 
-using Net.Shared.Persistence.Abstractions.Repositories;
-using Net.Shared.Persistence.Models.Contexts;
+using Net.Shared.Persistence.Abstractions.Interfaces.Repositories;
 
-using Telegram.ApAzureBot.Core.Abstractions.Persistence.Repositories;
-using Telegram.ApAzureBot.Core.Abstractions.Services;
-using Telegram.ApAzureBot.Core.Abstractions.Services.CommandProcesses.Kdmid;
-using Telegram.ApAzureBot.Core.Exceptions;
-using Telegram.ApAzureBot.Core.Models;
-using Telegram.ApAzureBot.Core.Models.CommandProcesses.Kdmid;
-using Telegram.ApAzureBot.Core.Persistence.Entities;
+using TelegramBot.Abstractions.Interfaces.Persistence.Repositories;
+using TelegramBot.Abstractions.Interfaces.Services;
+using TelegramBot.Abstractions.Interfaces.Services.CommandProcesses.Kdmid;
+using TelegramBot.Abstractions.Models.CommandProcesses.Kdmid;
+using TelegramBot.Abstractions.Models.Persistence.Entities;
 
-using static Telegram.ApAzureBot.Core.Constants;
-
-namespace Telegram.ApAzureBot.Core.Services.CommandProcesses;
+namespace TelegramBot.Services.CommandProcesses;
 
 public sealed class KdmidCommandProcess : IKdmidCommandProcess
 {
@@ -214,13 +209,13 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
         //TODO: To Improve
         #region Improve Auto Confirmation
         (bool IsReady, string ButtonGuid) autoConfirmation = (false, string.Empty);
-        
-        (DateTime Start, DateTime End) BelgradeAutoConfirmationTime = 
+
+        (DateTime Start, DateTime End) BelgradeAutoConfirmationTime =
             (
                 DateTime.UtcNow.AddHours(2)
                 , new(2023, 09, 20)
             );
-        
+
         (DateTime Start, DateTime End) BudapestAutoConfirmationTime =
             (
                 new(2023, 09, 22)
@@ -238,11 +233,11 @@ public sealed class KdmidCommandProcess : IKdmidCommandProcess
                 {
                     autoConfirmation = command.City.Id switch
                     {
-                        Kdmid.Cities.Belgrade => date >= BelgradeAutoConfirmationTime.Start && date <= BelgradeAutoConfirmationTime.End 
-                            ? (true, guid) 
+                        Kdmid.Cities.Belgrade => date >= BelgradeAutoConfirmationTime.Start && date <= BelgradeAutoConfirmationTime.End
+                            ? (true, guid)
                             : (false, string.Empty),
-                        Kdmid.Cities.Budapest => date >= BudapestAutoConfirmationTime.Start && date <= BudapestAutoConfirmationTime.End 
-                            ? (true, guid) 
+                        Kdmid.Cities.Budapest => date >= BudapestAutoConfirmationTime.Start && date <= BudapestAutoConfirmationTime.End
+                            ? (true, guid)
                             : (false, string.Empty),
                         _ => (false, string.Empty),
                     };

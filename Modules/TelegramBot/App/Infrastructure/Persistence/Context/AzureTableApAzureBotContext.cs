@@ -1,9 +1,8 @@
 using Microsoft.Extensions.Configuration;
 
 using Net.Shared.Persistence.Contexts;
-using Telegram.ApAzureBot.Core.Persistence.Entities;
 
-namespace Telegram.ApAzureBot.Infrastructure.Persistence.Context;
+namespace TelegramBot.Infrastructure.Persistence.Context;
 
 public sealed class AzureTableApAzureBotContext : AzureTableContext
 {

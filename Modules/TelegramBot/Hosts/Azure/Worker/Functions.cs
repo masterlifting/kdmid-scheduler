@@ -1,10 +1,9 @@
 ﻿using Microsoft.Azure.Functions.Worker;
 
-using Telegram.ApAzureBot.Core.Abstractions.Services;
+using TelegramBot.Abstractions.Interfaces.Services;
+using TelegramBot.Azure.Worker.Models;
 
-using TelegramBot.Azure.Models;
-
-namespace TelegramBot.Azure;
+namespace TelegramBot.Azure.Worker;
 
 public class Functions(ITelegramCommandTaskService service)
 {
@@ -16,8 +15,8 @@ public class Functions(ITelegramCommandTaskService service)
     [Function(FastSeekFunction)]
     public async Task RunFastSeek([TimerTrigger("15,40 6-7 * * 1-5")] TelegramTimer timer) => await _service.Process(
     [
-        TelegramBot.Models.Constants.Kdmid.Cities.Budapest,
-        TelegramBot.Models.Constants.Kdmid.Cities.Belgrade
+        TelegramBot.Constants.Kdmid.Cities.Budapest,
+        TelegramBot.Constants.Kdmid.Cities.Belgrade
     ]);
 
     [Function(SlowSeekFunction)]

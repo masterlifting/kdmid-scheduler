@@ -4,18 +4,9 @@ using Azure.Data.Tables;
 
 using Microsoft.Extensions.Configuration;
 
-using Net.Shared.Persistence.Abstractions.Repositories;
-using Net.Shared.Persistence.Models.Contexts;
+using Net.Shared.Persistence.Abstractions.Interfaces.Repositories;
 
-using Telegram.ApAzureBot.Core;
-using Telegram.ApAzureBot.Core.Abstractions.Persistence.Repositories;
-using Telegram.ApAzureBot.Core.Models;
-using Telegram.ApAzureBot.Core.Persistence.Entities;
-using Telegram.ApAzureBot.Core.Services.CommandProcesses;
-
-using static Net.Shared.Persistence.Models.Constants.Enums;
-
-namespace Telegram.ApAzureBot.Infrastructure.Persistence.Repositories;
+namespace TelegramBot.Infrastructure.Persistence.Repositories;
 
 public sealed class TelegramCommandTaskRepository : ITelegramCommandTaskRepository
 {

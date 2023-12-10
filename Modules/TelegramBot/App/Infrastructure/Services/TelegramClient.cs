@@ -5,17 +5,12 @@ using Net.Shared.Extensions;
 
 using Newtonsoft.Json;
 
-using Telegram.ApAzureBot.Core.Abstractions.Services;
-using Telegram.ApAzureBot.Core.Models;
-using Telegram.ApAzureBot.Infrastructure.Exceptions;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 
-using static Telegram.ApAzureBot.Core.Constants;
-
-namespace Telegram.ApAzureBot.Infrastructure.Services;
+namespace TelegramBot.Infrastructure.Services;
 
 public sealed class TelegramClient : ITelegramClient
 {
@@ -78,7 +73,7 @@ public sealed class TelegramClient : ITelegramClient
         {
             var pairs = new List<InlineKeyboardButton[]>(buttons.Length / 2);
 
-            for (int i = 0; i < buttons.Length; i += 2)
+            for (var i = 0; i < buttons.Length; i += 2)
             {
                 pairs.Add(new InlineKeyboardButton[] { buttons[i], buttons[i + 1] });
             }

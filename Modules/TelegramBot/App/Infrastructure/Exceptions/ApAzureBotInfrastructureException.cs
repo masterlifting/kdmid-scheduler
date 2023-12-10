@@ -1,6 +1,6 @@
 ﻿using Net.Shared.Exceptions;
 
-namespace Telegram.ApAzureBot.Infrastructure.Exceptions;
+namespace TelegramBot.Infrastructure.Exceptions;
 
 public sealed class ApAzureBotInfrastructureException : NetSharedException
 {

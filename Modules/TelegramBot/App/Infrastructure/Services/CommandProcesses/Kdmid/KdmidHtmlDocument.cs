@@ -2,11 +2,7 @@
 
 using HtmlAgilityPack;
 
-using Telegram.ApAzureBot.Core.Abstractions.Services.CommandProcesses.Kdmid;
-using Telegram.ApAzureBot.Core.Models.CommandProcesses.Kdmid;
-using Telegram.ApAzureBot.Infrastructure.Exceptions;
-
-namespace Telegram.ApAzureBot.Infrastructure.Services.CommandProcesses.Kdmid;
+namespace TelegramBot.Infrastructure.Services.CommandProcesses.Kdmid;
 
 public sealed class KdmidHtmlDocument : IKdmidHtmlDocument
 {

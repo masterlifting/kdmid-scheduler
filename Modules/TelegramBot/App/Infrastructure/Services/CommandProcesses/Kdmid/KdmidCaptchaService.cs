@@ -2,9 +2,8 @@
 using System.Text.Json;
 
 using Microsoft.Extensions.Configuration;
-using Telegram.ApAzureBot.Core.Abstractions.Services.CommandProcesses.Kdmid;
 
-namespace Telegram.ApAzureBot.Infrastructure.Services.CommandProcesses.Kdmid;
+namespace TelegramBot.Infrastructure.Services.CommandProcesses.Kdmid;
 
 public sealed class KdmidCaptchaService : IKdmidCaptchaService
 {

@@ -2,13 +2,7 @@
 using System.Net.Http.Headers;
 using System.Text;
 
-using Telegram.ApAzureBot.Core;
-using Telegram.ApAzureBot.Core.Abstractions.Services.CommandProcesses.Kdmid;
-using Telegram.ApAzureBot.Core.Models.CommandProcesses.Kdmid;
-using Telegram.ApAzureBot.Core.Services;
-using Telegram.ApAzureBot.Infrastructure.Exceptions;
-
-namespace Telegram.ApAzureBot.Infrastructure.Services.CommandProcesses.Kdmid;
+namespace TelegramBot.Infrastructure.Services.CommandProcesses.Kdmid;
 
 public sealed class KdmidHttpClient : IKdmidHttpClient
 {
@@ -145,7 +139,7 @@ public sealed class KdmidHttpClient : IKdmidHttpClient
 
             if (!_cache.TryGetValue(chatId, SessionIdKey, out var sessionIdValue))
                 throw new ApAzureBotInfrastructureException("The SessionId is not found in the cache.");
-            
+
             var content = new StringContent(data, Encoding.UTF8, FormDataMediaType);
 
             _httpClient.DefaultRequestHeaders.Add("Cookie", $"{SessionIdKey}={sessionIdValue}");

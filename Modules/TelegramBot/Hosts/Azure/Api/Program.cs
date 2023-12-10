@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-using static Telegram.ApAzureBot.Infrastructure.Registrations;
+using TelegramBot.Infrastructure;
+
+using static TelegramBot.Infrastructure.Registrations;
 
 new HostBuilder()
     .ConfigureLogging(logger => logger.AddSimpleConsole())

@@ -3,9 +3,9 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 
-using Telegram.ApAzureBot.Core.Abstractions.Services;
+using TelegramBot.Abstractions.Interfaces.Services;
 
-namespace TelegramBot.Azure;
+namespace TelegramBot.Azure.Api;
 
 public class Functions(ITelegramClient client)
 {
