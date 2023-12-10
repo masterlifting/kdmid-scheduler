@@ -1,6 +1,6 @@
-﻿using TelegramBot.Abstractions.Models.CommandProcesses.Kdmid;
+﻿using TelegramBot.Abstractions.Models;
 
-namespace TelegramBot.Abstractions.Interfaces.Services.CommandProcesses.Kdmid;
+namespace TelegramBot.Abstractions.Interfaces.Services.Kdmid;
 
 public interface IKdmidHttpClient
 {

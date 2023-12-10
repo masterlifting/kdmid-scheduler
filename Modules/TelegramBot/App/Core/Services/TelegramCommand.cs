@@ -1,8 +1,8 @@
 ﻿using TelegramBot.Abstractions.Interfaces.Services.CommandProcesses;
-using TelegramBot.Abstractions.Interfaces.Services.CommandProcesses.Kdmid;
 using TelegramBot.Abstractions.Interfaces.Services;
 using TelegramBot.Abstractions.Models.Exceptions;
 using TelegramBot.Abstractions.Models;
+using TelegramBot.Abstractions.Interfaces.Services.Kdmid;
 
 namespace TelegramBot.Services;
 
@@ -10,7 +10,7 @@ public sealed class TelegramCommand : Abstractions.Interfaces.Services.ITelegram
 {
     ILogger _logger;
     private readonly ITelegramServiceProvider _serviceProvider;
-    private readonly Dictionary<string, Func<Abstractions.Interfaces.Services.CommandProcesses.ITelegramCommand>> _services;
+    private readonly Dictionary<string, Func<ITelegramBot>> _services;
     public TelegramCommand(ILogger<TelegramCommand> logger, ITelegramServiceProvider serviceProvider)
     {
         _logger = logger;
@@ -19,7 +19,7 @@ public sealed class TelegramCommand : Abstractions.Interfaces.Services.ITelegram
         {
             {"start", _serviceProvider.GetService<ITelegramMenuCommandProcess>},
             {"menu", _serviceProvider.GetService<ITelegramMenuCommandProcess>},
-            {Constants.Kdmid.Key, _serviceProvider.GetService<IKdmidCommand>},
+            {Constants.Kdmid.Key, _serviceProvider.GetService<IKdmidService>},
         };
     }
 

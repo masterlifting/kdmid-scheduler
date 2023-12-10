@@ -6,18 +6,18 @@ using Net.Shared.Persistence.Abstractions.Interfaces.Repositories;
 
 using TelegramBot.Abstractions.Interfaces.Persistence.Repositories;
 using TelegramBot.Abstractions.Interfaces.Services;
-using TelegramBot.Abstractions.Interfaces.Services.CommandProcesses.Kdmid;
-using TelegramBot.Abstractions.Models.CommandProcesses.Kdmid;
 using TelegramBot.Abstractions.Models.Persistence.Entities;
 
 using TelegramBot.Abstractions.Models.Telegram;
 
 using static TelegramBot.Abstractions.Constants;
 using TelegramBot.Abstractions.Models.Exceptions;
+using TelegramBot.Abstractions.Interfaces.Services.Kdmid;
+using TelegramBot.Abstractions.Models;
 
 namespace TelegramBot.Services.CommandProcesses;
 
-public sealed class KdmidCommandProcess : IKdmidCommand
+public sealed class KdmidCommandProcess : IKdmidService
 {
     public static string BuildCommand(string cityId, string commandId) => $"/{Kdmid.Key}_{cityId}_{commandId}";
     private static string GetConfirmDataKey(City city) => $"{Kdmid.Key}.{city.Id}.confirm";
@@ -82,10 +82,10 @@ public sealed class KdmidCommandProcess : IKdmidCommand
 
         _functions = new(StringComparer.OrdinalIgnoreCase)
         {
-            { Kdmid.Commands.Menu, Menu },
-            { Kdmid.Commands.Request, Request },
-            { Kdmid.Commands.Seek, Seek },
-            { Kdmid.Commands.Confirm, Confirm },
+            { Kdmid.Commands.Menu, SendAvailableEmbassies },
+            { Kdmid.Commands.Request, ConfirmChosenBooking },
+            { Kdmid.Commands.Seek, SendAvailableBookingsForChosenEmbassy },
+            { Kdmid.Commands.Confirm, SetAutoSeekAvailableBookingsForEmbassy },
         };
     }
 
@@ -123,7 +123,7 @@ public sealed class KdmidCommandProcess : IKdmidCommand
             : invoke(command, cToken);
     }
 
-    public async Task Menu(Command command, CancellationToken cToken)
+    public async Task SendAvailableEmbassies(Command command, CancellationToken cToken)
     {
         var message = new Message(command.ChatId, BuildCommand(command.City.Id, Kdmid.Commands.Request));
 
@@ -143,31 +143,30 @@ public sealed class KdmidCommandProcess : IKdmidCommand
 
         await _telegramClient.SendButtons(menuButton, cToken);
     }
-    public async Task Seek(Command command, CancellationToken cToken)
+    public async Task SetAutoSeekAvailableBookingsForEmbassy(Command command, CancellationToken cToken)
     {
         if (string.IsNullOrEmpty(command.Parameters))
-            throw new ApAzureBotCoreException("The command parameters for the seek is empty.");
+            throw new TelegramBotException("The command parameters for the seek is empty.");
 
         string text;
         if (command.Parameters.Equals("start", StringComparison.OrdinalIgnoreCase))
         {
-            var message = new TelegramMessage(command.ChatId, BuildCommand(command.City.Id, Kdmid.Commands.Request));
+            var message = new Message(command.ChatId, BuildCommand(command.City.Id, Kdmid.Commands.Request));
             await _commandTaskRepository.StartTask(message, cToken);
             text = $"Auto seek for {command.City.Name} was started.";
         }
         else if (command.Parameters.Equals("stop", StringComparison.OrdinalIgnoreCase))
         {
-            var message = new TelegramMessage(command.ChatId, BuildCommand(command.City.Id, Kdmid.Commands.Request));
+            var message = new Message(command.ChatId, BuildCommand(command.City.Id, Kdmid.Commands.Request));
             await _commandTaskRepository.StopTask(message, cToken);
             text = $"Auto seek for {command.City.Name} was stopped.";
         }
         else
-            throw new ApAzureBotCoreException($"The command parameters: {command.Parameters} is not supported.");
+            throw new TelegramBotException($"The command parameters: {command.Parameters} is not supported.");
 
         await _telegramClient.SendMessage(new(command.ChatId, text), cToken);
     }
-
-    public async Task Request(Command command, CancellationToken cToken)
+    public async Task SendAvailableBookingsForChosenEmbassy(Command command, CancellationToken cToken)
     {
         var identifier = await GetOrAddIdentifier(command.ChatId, command.City.Id, command.Parameters, cToken);
 
@@ -259,7 +258,7 @@ public sealed class KdmidCommandProcess : IKdmidCommand
 
         if (autoConfirmation.IsReady)
         {
-            await Confirm(new(command.ChatId, Kdmid.Commands.Confirm, command.City, autoConfirmation.ButtonGuid), cToken);
+            await SetAutoSeekAvailableBookingsForEmbassy(new(command.ChatId, Kdmid.Commands.Confirm, command.City, autoConfirmation.ButtonGuid), cToken);
         }
         else
         {
@@ -267,7 +266,7 @@ public sealed class KdmidCommandProcess : IKdmidCommand
             await _telegramClient.SendButtons(buttons, cToken);
         }
     }
-    public async Task Confirm(Command command, CancellationToken cToken)
+    public async Task ConfirmChosenBooking(Command command, CancellationToken cToken)
     {
         var identifier = await GetOrAddIdentifier(command.ChatId, command.City.Id, null, cToken);
 

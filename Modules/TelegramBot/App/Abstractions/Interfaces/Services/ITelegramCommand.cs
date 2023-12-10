@@ -4,5 +4,5 @@ namespace TelegramBot.Abstractions.Interfaces.Services;
 
 public interface ITelegramCommand
 {
-    Task Execute(Message message, CancellationToken cToken);
+    Task<Command> Map(Message message, CancellationToken cToken);
 }

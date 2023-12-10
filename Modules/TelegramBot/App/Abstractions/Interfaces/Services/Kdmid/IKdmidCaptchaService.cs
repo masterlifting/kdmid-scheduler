@@ -1,4 +1,4 @@
-﻿namespace TelegramBot.Abstractions.Interfaces.Services.CommandProcesses.Kdmid;
+﻿namespace TelegramBot.Abstractions.Interfaces.Services.Kdmid;
 
 public interface IKdmidCaptchaService
 {
