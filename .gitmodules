@@ -21,7 +21,7 @@
 [submodule "Submodules/Net.Shared"]
 	path = Submodules/Net.Shared
 	url = https://github.com/masterlifting/Net.Shared
-	branch = defeature-improve_architecturev
+	branch = feature-improve_architecture
 [submodule "Submodules/Net.Shared.Background"]
 	path = Submodules/Net.Shared.Background
 	url = https://github.com/masterlifting/Net.Shared.Background
