@@ -1,12 +1,20 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using KdmidScheduler.Services;
+
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-using TelegramBot.Infrastructure;
+using Net.Shared.Bots;
 
-using static TelegramBot.Infrastructure.Registrations;
+using TelegramBot.Abstractions.Interfaces.Services.Kdmid;
+using TelegramBot.Services;
 
 new HostBuilder()
     .ConfigureLogging(logger => logger.AddSimpleConsole())
-    .ConfigureFunctionsWorkerDefaults((_, builder) => builder.Services.ConfigureApi())
+    .ConfigureFunctionsWorkerDefaults((_, builder) =>
+    {
+        builder.Services.AddTelegramBot<KdmidBotService>();
+        builder.Services.AddTransient<IKdmidService, KdmidService>();
+    })
     .Build()
     .Run();

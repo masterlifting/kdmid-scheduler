@@ -11,7 +11,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Abstractions\TelegramBot.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\..\Submodules\Net.Shared.Extensions\src\Net.Shared.Extensions\Net.Shared.Extensions.csproj" />
+    <ProjectReference Include="..\Abstractions\KdmidScheduler.Abstractions.csproj" />
+    <ProjectReference Include="..\Infrastructure\KdmidScheduler.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

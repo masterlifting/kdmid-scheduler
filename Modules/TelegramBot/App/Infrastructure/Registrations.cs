@@ -1,5 +1,6 @@
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 
+using Net.Shared.Bots;
 using Net.Shared.Persistence;
 
 using TelegramBot.Infrastructure.Persistence.Context;

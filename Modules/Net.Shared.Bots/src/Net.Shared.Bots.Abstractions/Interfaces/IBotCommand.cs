@@ -1,6 +1,8 @@
-﻿namespace Net.Shared.Bots.Abstractions.Interfaces;
-
-public interface IBotCommand
+﻿namespace Net.Shared.Bots.Abstractions.Interfaces
 {
-    Task Process(IBotMessage message, CancellationToken cToken);
+    public interface IBotCommand
+    {
+        List<string> Commands { get; }
+        Dictionary<string, string> Parameters { get; }
+    }
 }

@@ -6,4 +6,5 @@ public interface IBotClient
     Task Listen(CancellationToken cToken);
     Task Send(IBotMessage message, CancellationToken cToken);
     Task Receive(string data, CancellationToken cToken);
+    Task<byte[]> LoadFile(string fileId, CancellationToken cToken);
 }

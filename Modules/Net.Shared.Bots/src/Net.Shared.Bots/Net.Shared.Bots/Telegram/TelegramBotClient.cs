@@ -1,9 +1,8 @@
-﻿using System.Globalization;
+﻿using System.Collections.Immutable;
 
 using Microsoft.Extensions.Logging;
 
 using Net.Shared.Bots.Abstractions.Interfaces;
-using Net.Shared.Bots.Abstractions.Models;
 
 using Newtonsoft.Json;
 
@@ -12,14 +11,12 @@ using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
-using static Net.Shared.Bots.Abstractions.Constants;
-
 namespace Net.Shared.Bots.Telegram;
 
-public sealed class TelegramBotClient(ILogger<TelegramBotClient> logger, IBotCommand command, ITelegramBotClient client) : IBotClient
+public sealed class TelegramBotClient(ILogger<TelegramBotClient> logger, ITelegramBotClient client, IBotService service) : IBotClient
 {
     private readonly ILogger _logger = logger;
-    private readonly IBotCommand _command = command;
+    private readonly IBotService _service = service;
     private readonly ITelegramBotClient _client = client;
 
     public async Task Listen(Uri uri, CancellationToken cToken)
@@ -44,56 +41,61 @@ public sealed class TelegramBotClient(ILogger<TelegramBotClient> logger, IBotCom
     {
         var update = JsonConvert.DeserializeObject<Update>(data);
 
-        ArgumentNullException.ThrowIfNull(update, "Received data was not recognized.");
-
         await HandleReceivedMessage(_client, update, cToken);
     }
+    public async Task<byte[]> LoadFile(string fileId, CancellationToken cToken)
+    {
+        using var stream = new MemoryStream();
+        var file = await _client.GetInfoAndDownloadFileAsync(fileId, stream, cancellationToken:cToken);
+        return stream.ToArray();
+    }
 
-    Task HandleReceivedMessage(ITelegramBotClient client, Update update, CancellationToken cToken)
+    Task HandleReceivedMessage(ITelegramBotClient client, Update? update, CancellationToken cToken)
     {
         ArgumentNullException.ThrowIfNull(update, "Received data was not recognized.");
 
-        var(type, data, chatId) = update.Type switch
+        Task result = update.Type switch
         {
-            UpdateType.Message => HandleReceivedMessageType(update.Message),
-            UpdateType.EditedMessage => HandleReceivedMessageType(update.Message),
-            UpdateType.ChannelPost => HandleReceivedMessageType(update.Message),
-            UpdateType.EditedChannelPost => HandleReceivedMessageType(update.Message),
-            UpdateType.CallbackQuery => (BotMessageType.Command, update.CallbackQuery?.Data, update.CallbackQuery?.Message?.Chat.Id),
-            UpdateType.InlineQuery => (BotMessageType.Command, update.InlineQuery?.Query, update.InlineQuery?.From.Id),
-            UpdateType.ChosenInlineResult => (BotMessageType.Command, update.ChosenInlineResult?.Query, update.ChosenInlineResult?.From.Id),
+            UpdateType.Message => HandleMessage(update.Message, _service),
+            UpdateType.EditedMessage => HandleMessage(update.Message, _service),
+            UpdateType.ChannelPost => HandleMessage(update.Message, _service),
+            UpdateType.EditedChannelPost => HandleMessage(update.Message, _service),
+            UpdateType.CallbackQuery => HandleMessage(update.CallbackQuery?.Message, _service),
             _ => throw new NotSupportedException($"Update type {update.Type} is not supported.")
         };
 
-        if(chatId is null)
-            throw new InvalidOperationException("Received chat id is empty.");
+        return result;
 
-        if(string.IsNullOrWhiteSpace(data))
-            throw new InvalidOperationException("Received data is empty.");
-
-        var message = new BotMessage
-        {
-            ChatId = chatId.Value,
-            Data = data,
-            Type = type
-        };
-
-        return _command.Process(message, cToken);
-
-        static (BotMessageType type, string? data, long? chatId) HandleReceivedMessageType(Message? message)
+        static Task HandleMessage(Message? message, IBotService service)
         {
             ArgumentNullException.ThrowIfNull(message, "Received data was not recognized.");
 
             return message.Type switch
             {
-                MessageType.Text => (BotMessageType.Command, message.Text, message.Chat.Id),
-                MessageType.Photo => (BotMessageType.Image, message.Photo?.FirstOrDefault()?.FileId, message.Chat.Id),
-                MessageType.Audio => (BotMessageType.Audio, message.Audio?.FileId, message.Chat.Id),
-                MessageType.Video => (BotMessageType.Video, message.Video?.FileId, message.Chat.Id),
-                MessageType.Voice => (BotMessageType.Voice, message.Voice?.FileId, message.Chat.Id),
-                MessageType.Document => (BotMessageType.Document, message.Document?.FileId, message.Chat.Id),
-                MessageType.Location => (BotMessageType.Location, $"{message.Location?.Longitude.ToString(CultureInfo.InvariantCulture)}, {message.Location?.Latitude.ToString(CultureInfo.InvariantCulture)}", message.Chat.Id),
-                MessageType.Contact => (BotMessageType.Contact, message.Contact?.PhoneNumber, message.Chat.Id),
+                MessageType.Text => !string.IsNullOrWhiteSpace(message.Text) 
+                    ? service.HandleText(message.Chat.Id.ToString(), message.Text)
+                    : throw new InvalidOperationException("Text is required."),
+                MessageType.Photo => message.Photo is not null 
+                    ? service.HandlePhoto(message.Chat.Id.ToString(), message.Photo.Select(x => (x.FileId, x.FileSize)).ToImmutableArray())
+                    : throw new InvalidOperationException("Photo is required."),
+                MessageType.Audio => message.Audio is not null
+                    ? service.HandleAudio(message.Chat.Id.ToString(), message.Audio.FileId, message.Audio.FileSize, message.Audio.MimeType, message.Audio.Title)
+                    : throw new InvalidOperationException("Audio is required."),
+                MessageType.Video => message.Video is not null 
+                    ? service.HandleVideo(message.Chat.Id.ToString(), message.Video.FileId, message.Video.FileSize, message.Video.MimeType, message.Video.FileName)
+                    : throw new InvalidOperationException("Video is required."),
+                MessageType.Voice => message.Voice is not null 
+                    ? service.HandleVoice(message.Chat.Id.ToString(), message.Voice.FileId, message.Voice.FileSize, message.Voice.MimeType)
+                    : throw new InvalidOperationException("Voice is required."),
+                MessageType.Document => message.Document is not null 
+                    ? service.HandleDocument(message.Chat.Id.ToString(), message.Document.FileId, message.Document.FileSize, message.Document.MimeType, message.Document.FileName)
+                    : throw new InvalidOperationException("Document is required."),
+                MessageType.Location => message.Location is not null
+                    ? service.HandleLocation(message.Chat.Id.ToString(), message.Location.Latitude, message.Location.Longitude)
+                    : throw new InvalidOperationException("Location is required."),
+                MessageType.Contact => message.Contact is not null
+                    ? service.HandleContact(message.Chat.Id.ToString(), message.Contact.PhoneNumber, message.Contact.FirstName, message.Contact.LastName)
+                    : throw new InvalidOperationException("Contact is required."),
                 _ => throw new NotSupportedException($"Message type {message.Type} is not supported.")
             };
         }

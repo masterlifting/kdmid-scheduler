@@ -1,11 +1,13 @@
-﻿namespace Net.Shared.Bots.Parsers;
+﻿using Net.Shared.Bots.Abstractions.Interfaces;
 
-public sealed class CommandParser
+namespace Net.Shared.Bots;
+
+public readonly struct BotCommand : IBotCommand
 {
-    public Queue<string> Commands { get; } = new();
+    public List<string> Commands { get; } = [];
     public Dictionary<string, string> Parameters { get; } = [];
-    
-    public CommandParser(string input)
+
+    public BotCommand(string input)
     {
         var span = input.AsSpan();
         var delimiterPos = span.IndexOf('?');
@@ -15,13 +17,18 @@ public sealed class CommandParser
 
         foreach (var item in commands.ToString().Split('/'))
         {
-            Commands.Enqueue(item);
+            Commands.Add(item);
+        }
+
+        if(Commands.Count == 0)
+        {
+            throw new InvalidOperationException($"Command {input} is not valid.");
         }
 
         foreach (var item in parameters.ToString().Split('&'))
         {
             var keyValue = item.Split('=');
-            
+
             if (keyValue.Length == 2)
             {
                 Parameters[keyValue[0]] = keyValue[1];
