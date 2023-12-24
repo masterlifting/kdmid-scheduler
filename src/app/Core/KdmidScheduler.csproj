@@ -11,9 +11,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Submodules\Net.Shared.Extensions\src\Net.Shared.Extensions\Net.Shared.Extensions.csproj" />
+    <ProjectReference Include="..\..\..\submodules\shared-extensions\src\Net.Shared.Extensions\Net.Shared.Extensions.csproj" />
     <ProjectReference Include="..\Abstractions\KdmidScheduler.Abstractions.csproj" />
-    <ProjectReference Include="..\Infrastructure\KdmidScheduler.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
