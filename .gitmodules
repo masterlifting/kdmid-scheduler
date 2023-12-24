@@ -2,6 +2,14 @@
 	path = Submodules/Net.Shared
 	url = https://github.com/masterlifting/net-shared
 	branch = feature-improve_architecture
+[submodule "Submodules/Net.Shared.Background"]
+	path = Submodules/Net.Shared.Background
+	url = https://github.com/masterlifting/net-shared-background
+	branch = feature-improve_architecture
+[submodule "Submodules/Net.Shared.Bots"]
+	path = Submodules/Net.Shared.Bots
+	url = https://github.com/masterlifting/net-shared-bots
+    branch = feature-improve_architecture
 [submodule "Submodules/Net.Shared.Web"]
 	path = Submodules/Net.Shared.Web
 	url = https://github.com/masterlifting/net-shared-web
@@ -22,10 +30,3 @@
 	path = Submodules/Net.Shared.Extensions
 	url = https://github.com/masterlifting/net-shared-extensions
 	branch = feature-improve_architecture
-[submodule "Submodules/Net.Shared.Background"]
-	path = Submodules/Net.Shared.Background
-	url = https://github.com/masterlifting/net-shared-background
-	branch = feature-improve_architecture
-[submodule "Submodules/Net.Shared.Bots"]
-	path = Submodules/Net.Shared.Bots
-	url = https://github.com/masterlifting/net-shared-queues.git
