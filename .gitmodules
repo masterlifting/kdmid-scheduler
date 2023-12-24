@@ -1,28 +1,31 @@
+[submodule "Submodules/Net.Shared"]
+	path = Submodules/Net.Shared
+	url = https://github.com/masterlifting/net-shared
+	branch = feature-improve_architecture
 [submodule "Submodules/Net.Shared.Web"]
 	path = Submodules/Net.Shared.Web
-	url = https://github.com/masterlifting/Net.Shared.Web
+	url = https://github.com/masterlifting/net-shared-web
 	branch = feature-improve_architecture
 [submodule "Submodules/Net.Shared.Exceptions"]
 	path = Submodules/Net.Shared.Exceptions
-	url = https://github.com/masterlifting/Net.Shared.Exceptions
+	url = https://github.com/masterlifting/net-shared-exceptions
 	branch = feature-improve_architecture
 [submodule "Submodules/Net.Shared.Persistence"]
 	path = Submodules/Net.Shared.Persistence
-	url = https://github.com/masterlifting/Net.Shared.Persistence
+	url = https://github.com/masterlifting/net-shared-persistence
 	branch = feature-improve_architecture
 [submodule "Submodules/Net.Shared.Queues"]
 	path = Submodules/Net.Shared.Queues
-	url = https://github.com/masterlifting/Net.Shared.Queues
+	url = https://github.com/masterlifting/net-shared-queues
 	branch = feature-improve_architecture
 [submodule "Submodules/Net.Shared.Extensions"]
 	path = Submodules/Net.Shared.Extensions
-	url = https://github.com/masterlifting/Net.Shared.Extensions
-	branch = feature-improve_architecture
-[submodule "Submodules/Net.Shared"]
-	path = Submodules/Net.Shared
-	url = https://github.com/masterlifting/Net.Shared
+	url = https://github.com/masterlifting/net-shared-extensions
 	branch = feature-improve_architecture
 [submodule "Submodules/Net.Shared.Background"]
 	path = Submodules/Net.Shared.Background
-	url = https://github.com/masterlifting/Net.Shared.Background
+	url = https://github.com/masterlifting/net-shared-background
 	branch = feature-improve_architecture
+[submodule "Submodules/Net.Shared.Bots"]
+	path = Submodules/Net.Shared.Bots
+	url = https://github.com/masterlifting/net-shared-queues.git
