@@ -16,6 +16,11 @@ builder.Services
 
 var app = builder.Build();
 
+app.MapGet("/start", (IBotClient client, CancellationToken cToken) =>
+{
+    return client.Listen(cToken);
+});
+
 app.MapGet("/listen", (IBotClient client, HttpRequest request, CancellationToken cToken) =>
 {
     var url = request.QueryString.Value?.Replace("/listen", "/receive", true, CultureInfo.InvariantCulture);

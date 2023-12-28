@@ -3,55 +3,52 @@
 using Net.Shared.Bots.Abstractions.Interfaces;
 using Net.Shared.Bots.Abstractions.Models;
 
-namespace KdmidScheduler.Services
+namespace KdmidScheduler.Services;
+
+public sealed class KdmidBotRequestService(IBotCommandsStore commandsStore,IBotResponseService responseService) : IBotRequestService
 {
-    public sealed class KdmidBotRequestService(
-        IBotCommandsStore commandsStore,
-        IBotResponseService responseService) : IBotRequestService
+    private readonly IBotCommandsStore _commandsStore = commandsStore;
+    private readonly IBotResponseService _responseService = responseService;
+
+    public async Task OnTextHandler(TextEventArgs args)
     {
-        private readonly IBotCommandsStore _commandsStore = commandsStore;
-        private readonly IBotResponseService _responseService = responseService;
+        BotCommand command;
 
-        public async Task HandleText(string chatId, string text, CancellationToken cToken)
-        {
-            BotCommand command;
+        if (args.Text.Value.StartsWith('/'))
+            command = new BotCommand(args.Text.Value);
+        else if (Guid.TryParse(args.Text.Value, out var guid))
+            command = await _commandsStore.GetCommand(args.ChatId, guid, CancellationToken.None);
+        else
+            throw new NotSupportedException($"The message '{args.Text.Value}' is not supported.");
 
-            if (text.StartsWith('/'))
-                command = new BotCommand(text);
-            else if (Guid.TryParse(text, out var guid))
-                command = await _commandsStore.GetCommand(chatId, guid, cToken);
-            else
-                throw new NotSupportedException($"The message '{text}' is not supported.");
-
-            await _responseService.CreateResponse(chatId, command, cToken);
-        }
-        public Task HandlePhoto(string chatId, ImmutableArray<(string FileId, long? FileSize)> photos, CancellationToken cToken)
-        {
-            throw new NotImplementedException();
-        }
-        public Task HandleVideo(string chatId, string fileId, long? fileSize, string? mimeType, string? fileName, CancellationToken cToken)
-        {
-            throw new NotImplementedException();
-        }
-        public Task HandleAudio(string chatId, string fileId, long? fileSize, string? mimeType, string? title, CancellationToken cToken)
-        {
-            throw new NotImplementedException();
-        }
-        public Task HandleVoice(string chatId, string fileId, long? fileSize, string? mimeType, CancellationToken cToken)
-        {
-            throw new NotImplementedException();
-        }
-        public Task HandleDocument(string chatId, string fileId, long? fileSize, string? mimeType, string? fileName, CancellationToken cToken)
-        {
-            throw new NotImplementedException();
-        }
-        public Task HandleLocation(string chatId, double latitude, double longitude, CancellationToken cToken)
-        {
-            throw new NotImplementedException();
-        }
-        public Task HandleContact(string chatId, string phoneNumber, string firstName, string? lastName, CancellationToken cToken)
-        {
-            throw new NotImplementedException();
-        }
+        await _responseService.CreateResponse(args.ChatId, command, CancellationToken.None);
+    }
+    public Task OnPhotoHandler(PhotoEventArgs photo)
+    {
+        throw new NotImplementedException();
+    }
+    public Task OnAudioHandler(AudioEventArgs audio)
+    {
+        throw new NotImplementedException();
+    }
+    public Task OnVideoHandler(VideoEventArgs video)
+    {
+        throw new NotImplementedException();
+    }
+    public Task OnVoiceHandler(VoiceEventArgs voice)
+    {
+        throw new NotImplementedException();
+    }
+    public Task OnDocumentHandler(DocumentEventArgs document)
+    {
+        throw new NotImplementedException();
+    }
+    public Task OnLocationHandler(LocationEventArgs location)
+    {
+        throw new NotImplementedException();
+    }
+    public Task OnContactHandler(ContactEventArgs contact)
+    {
+        throw new NotImplementedException();
     }
 }
