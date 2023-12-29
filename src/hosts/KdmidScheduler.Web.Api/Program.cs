@@ -10,9 +10,13 @@ using Net.Shared.Bots.Abstractions.Interfaces;
 var builder = WebApplication.CreateSlimBuilder(args);
 
 builder.Services
-        .AddTransient<IKdmidService, KdmidService>()
-        .AddKdmidInfrastructure()
-        .AddTelegramBot<KdmidBotRequestService, KdmidBotResponseService>();
+    .AddTransient<IKdmidService, KdmidService>()
+    .AddKdmidInfrastructure()
+    .AddTelegramBot(builder.Configuration, x =>
+    {
+        x.AddRequestHandler<KdmidBotRequestService>();
+        x.AddResponseHandler<KdmidBotResponseService>();
+    });
 
 var app = builder.Build();
 

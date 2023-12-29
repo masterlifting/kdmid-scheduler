@@ -9,14 +9,14 @@ using Net.Shared.Bots.Abstractions.Models;
 namespace KdmidScheduler.Services;
 
 public sealed class KdmidBotResponseService(
-    IBotClient botClient,
-    IBotCommandsStore botCommandStore,
+    IBotClient client,
+    IBotCommandsStore commandStore,
     IKdmidService kdmidService) : IBotResponseService
 {
 
-    private readonly IBotClient _botClient = botClient;
+    private readonly IBotClient _client = client;
     private readonly IKdmidService _kdmidService = kdmidService;
-    private readonly IBotCommandsStore _botCommandStore = botCommandStore;
+    private readonly IBotCommandsStore _commandStore = commandStore;
 
     public Task CreateResponse(string chatId, BotCommand command, CancellationToken cToken) => command.Name switch
     {
@@ -38,27 +38,29 @@ public sealed class KdmidBotResponseService(
 
             var nextCommand = new BotCommand($"/sendAvailableDates?city={jsonCity}");
 
-            var nextCommandId = await _botCommandStore.SetCommand(chatId, nextCommand, cToken);
+            var nextCommandId = await _commandStore.SetCommand(chatId, nextCommand, cToken);
 
             clientButtons.Add(nextCommandId.ToString(), city.Name);
         }
 
-        await _botClient.SendButtons(chatId, clientButtons, cToken);
+        await _client.SendButtons(chatId, clientButtons, cToken);
     }
     private async Task SendIdentifiersWebForm(string chatId, IReadOnlyDictionary<string, string> parameters, CancellationToken cToken)
     {
-        await _botClient.SendWebForm(chatId, new Identifier(), cToken);
+        await _client.SendWebForm(chatId, new Identifier(), cToken);
     }
     private async Task SendAvailableDates(string chatId, IReadOnlyDictionary<string, string> parameters, CancellationToken cToken)
     {
-        var kdmidId = JsonSerializer.Deserialize<Identifier>(parameters["kdmidId"]);
-
-        if (kdmidId is null)
+        if (!parameters.ContainsKey("kdmidId"))
         {
             await SendIdentifiersWebForm(chatId, parameters, cToken);
         }
         else
         {
+            var kdmidId =
+                JsonSerializer.Deserialize<Identifier>(parameters["kdmidId"])
+                ?? throw new ArgumentException("The kdmidId is not specified.");
+
             var city =
                 JsonSerializer.Deserialize<City>(parameters["city"])
                 ?? throw new ArgumentException("The city is not specified.");
@@ -72,12 +74,12 @@ public sealed class KdmidBotResponseService(
                 var jsonChosenResult = JsonSerializer.Serialize(new ChosenDateResult(availableDatesResult.FormData, date.Key, date.Value));
 
                 var nextCommand = new BotCommand($"/sendConfirmResult?city={parameters["city"]}&kdmidId={parameters["kdmidId"]}&choice={jsonChosenResult}");
-                var nextCommandId = await _botCommandStore.SetCommand(chatId, nextCommand, cToken);
+                var nextCommandId = await _commandStore.SetCommand(chatId, nextCommand, cToken);
 
                 clientButtons.Add(nextCommandId.ToString(), date.Value);
             }
 
-            await _botClient.SendButtons(chatId, clientButtons, cToken);
+            await _client.SendButtons(chatId, clientButtons, cToken);
         }
     }
     private async Task SendConfirmResult(string chatId, IReadOnlyDictionary<string, string> parameters, CancellationToken cToken)
@@ -94,20 +96,15 @@ public sealed class KdmidBotResponseService(
             JsonSerializer.Deserialize<ChosenDateResult>(parameters["choice"])
             ?? throw new ArgumentException("The chosenResult is not specified.");
 
-        if(chosenResult is null)
-        {
-            throw new InvalidOperationException("The chosenResult is not specified.");
-        }
-            
         var confirmResult = await _kdmidService.ConfirmDate(city, kdmidId, chosenResult, cToken);
 
         if (confirmResult.IsSuccess)
         {
-            await _botClient.SendText(chatId, "The date is confirmed.", cToken);
+            await _client.SendText(chatId, "The date is confirmed.", cToken);
         }
         else
         {
-            await _botClient.SendText(chatId, confirmResult.Message, cToken);
+            await _client.SendText(chatId, confirmResult.Message, cToken);
         }
     }
 }

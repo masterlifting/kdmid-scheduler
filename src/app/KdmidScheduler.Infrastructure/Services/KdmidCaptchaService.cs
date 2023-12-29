@@ -3,8 +3,6 @@ using System.Text.Json;
 
 using KdmidScheduler.Abstractions.Interfaces;
 
-using Microsoft.Extensions.Configuration;
-
 namespace KdmidScheduler.Infrastructure.Services;
 
 public sealed class KdmidCaptchaService : IKdmidCaptcha
@@ -12,12 +10,14 @@ public sealed class KdmidCaptchaService : IKdmidCaptcha
     private readonly string _apiKey;
     private readonly IHttpClientFactory _httpClientFactory;
 
-    public KdmidCaptchaService(IHttpClientFactory httpClientFactory, IConfiguration configuration)
+    public KdmidCaptchaService(IHttpClientFactory httpClientFactory)
     {
         _httpClientFactory = httpClientFactory;
 
-        var apiKey = configuration["AntiCaptchaKey"];
+        var apiKey = Environment.GetEnvironmentVariable("AntiCaptchaKey");
+
         ArgumentNullException.ThrowIfNull(apiKey, "AntiCaptchaKey is not set");
+        
         _apiKey = apiKey;
     }
 

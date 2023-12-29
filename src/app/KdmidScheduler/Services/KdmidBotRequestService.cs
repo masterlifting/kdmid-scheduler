@@ -1,6 +1,4 @@
-﻿using System.Collections.Immutable;
-
-using Net.Shared.Bots.Abstractions.Interfaces;
+﻿using Net.Shared.Bots.Abstractions.Interfaces;
 using Net.Shared.Bots.Abstractions.Models;
 
 namespace KdmidScheduler.Services;
