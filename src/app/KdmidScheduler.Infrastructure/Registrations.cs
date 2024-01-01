@@ -1,7 +1,10 @@
 ﻿using KdmidScheduler.Abstractions.Interfaces;
+using KdmidScheduler.Infrastructure.Persistence.Context;
 using KdmidScheduler.Infrastructure.Services;
 
 using Microsoft.Extensions.DependencyInjection;
+
+using Net.Shared.Persistence;
 
 namespace KdmidScheduler.Infrastructure;
 
@@ -12,8 +15,7 @@ public static class Registrations
         services.AddLogging();
         services.AddMemoryCache();
 
-        //services.AddAzureTable<AzureTableApAzureBotContext>(ServiceLifetime.Transient);
-        //services.AddTransient<ITelegramCommandTaskRepository, TelegramCommandTaskRepository>();
+        services.AddMongoDb<KdmidMongoDbContext>(ServiceLifetime.Transient);
 
         services.AddHttpClient(Constants.Kdmid, x =>
         {

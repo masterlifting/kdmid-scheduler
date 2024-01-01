@@ -1,25 +1,30 @@
-﻿using Net.Shared.Bots.Abstractions.Interfaces;
+﻿using Microsoft.Extensions.Logging;
+
+using Net.Shared.Bots.Abstractions.Interfaces;
 using Net.Shared.Bots.Abstractions.Models;
 
 namespace KdmidScheduler.Services;
 
-public sealed class KdmidBotRequestService(IBotCommandsStore commandsStore,IBotResponseService responseService) : IBotRequestService
+public sealed class KdmidBotRequestService(
+    ILogger<KdmidBotRequestService> logger, 
+    IBotCommandsStore commandsStore,
+    IBotResponseService responseService) : IBotRequestService
 {
+    private readonly ILogger<KdmidBotRequestService> _log = logger;
     private readonly IBotCommandsStore _commandsStore = commandsStore;
     private readonly IBotResponseService _responseService = responseService;
 
     public async Task OnTextHandler(TextEventArgs args)
     {
-        BotCommand command;
-
         if (args.Text.Value.StartsWith('/'))
-            command = new BotCommand(args.Text.Value);
+            await _responseService.CreateResponse(args.ChatId, args.Text.Value.TrimStart('/'), CancellationToken.None);
         else if (Guid.TryParse(args.Text.Value, out var guid))
-            command = await _commandsStore.GetCommand(args.ChatId, guid, CancellationToken.None);
+        {
+            var command = await _commandsStore.Get(args.ChatId, guid, CancellationToken.None);
+            await _responseService.CreateResponse(args.ChatId, command, CancellationToken.None);
+        }
         else
             throw new NotSupportedException($"The message '{args.Text.Value}' is not supported.");
-
-        await _responseService.CreateResponse(args.ChatId, command, CancellationToken.None);
     }
     public Task OnPhotoHandler(PhotoEventArgs photo)
     {

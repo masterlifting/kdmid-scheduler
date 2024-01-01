@@ -1,4 +1,4 @@
-﻿using KdmidScheduler.Abstractions.Models;
+﻿using KdmidScheduler.Abstractions.Models.v1;
 
 namespace KdmidScheduler.Abstractions.Interfaces;
 

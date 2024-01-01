@@ -2,6 +2,7 @@
 
 using KdmidScheduler.Abstractions.Interfaces;
 using KdmidScheduler.Infrastructure;
+using KdmidScheduler.Infrastructure.Services;
 using KdmidScheduler.Services;
 
 using Net.Shared.Bots;
@@ -10,12 +11,13 @@ using Net.Shared.Bots.Abstractions.Interfaces;
 var builder = WebApplication.CreateSlimBuilder(args);
 
 builder.Services
-    .AddTransient<IKdmidService, KdmidService>()
     .AddKdmidInfrastructure()
-    .AddTelegramBot(builder.Configuration, x =>
+    .AddTransient<IKdmidService, KdmidService>()
+    .AddTelegramBot(x =>
     {
         x.AddRequestHandler<KdmidBotRequestService>();
         x.AddResponseHandler<KdmidBotResponseService>();
+        x.AddCommandsStore<KdmidBotCommandsStore>();
     });
 
 var app = builder.Build();

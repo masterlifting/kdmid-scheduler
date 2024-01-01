@@ -3,7 +3,7 @@ using System.Net.Http.Headers;
 using System.Text;
 
 using KdmidScheduler.Abstractions.Interfaces;
-using KdmidScheduler.Abstractions.Models;
+using KdmidScheduler.Abstractions.Models.v1;
 
 using Microsoft.Extensions.Caching.Memory;
 

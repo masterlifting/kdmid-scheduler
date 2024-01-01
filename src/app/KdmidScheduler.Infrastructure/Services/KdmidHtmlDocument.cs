@@ -3,7 +3,7 @@
 using HtmlAgilityPack;
 
 using KdmidScheduler.Abstractions.Interfaces;
-using KdmidScheduler.Abstractions.Models;
+using KdmidScheduler.Abstractions.Models.v1;
 
 namespace KdmidScheduler.Infrastructure.Services;
 
