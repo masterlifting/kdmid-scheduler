@@ -5,7 +5,7 @@ using Net.Shared.Persistence.Contexts;
 
 namespace KdmidScheduler.Infrastructure.Persistence.Context;
 
-public sealed class KdmidAzureTableContext(IOptions<AzureTableConnection> options) : AzureTableContext(options.Value)
+public sealed class KdmidAzureTableContext(IOptions<AzureTableConnectionSettings> options) : AzureTableContext(options.Value)
 {
     public override void OnModelCreating(AzureTableBuilder builder)
     {

@@ -2,29 +2,22 @@
 using System.Text.Json;
 
 using KdmidScheduler.Abstractions.Interfaces;
+using KdmidScheduler.Infrastructure.Settings;
+using Microsoft.Extensions.Options;
 
 namespace KdmidScheduler.Infrastructure.Services;
 
-public sealed class KdmidCaptchaService : IKdmidCaptcha
+public sealed class KdmidCaptchaService(
+    IOptions<AntiCaptchaConnectionSettings> options,
+    IHttpClientFactory httpClientFactory) : IKdmidCaptcha
 {
-    private readonly string _apiKey;
-    private readonly IHttpClientFactory _httpClientFactory;
-
-    public KdmidCaptchaService(IHttpClientFactory httpClientFactory)
-    {
-        _httpClientFactory = httpClientFactory;
-
-        var apiKey = Environment.GetEnvironmentVariable("AntiCaptchaKey");
-
-        ArgumentNullException.ThrowIfNull(apiKey, "AntiCaptchaKey is not set");
-        
-        _apiKey = apiKey;
-    }
+    private readonly AntiCaptchaConnectionSettings _settings = options.Value;
+    private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
 
     public async Task<string> SolveIntegerCaptcha(byte[] image, CancellationToken cToken)
     {
         var captcha = Convert.ToBase64String(image);
-        var content = new StringContent($"{{\"clientKey\": \"{_apiKey}\", \"task\": {{\"type\": \"ImageToTextTask\", \"body\": \"{captcha}\", \"phrase\": false, \"case\": false, \"numeric\": true, \"math\": 0, \"minLength\": 1, \"maxLength\": 1}}}}", Encoding.UTF8, "application/json");
+        var content = new StringContent($"{{\"clientKey\": \"{_settings.ApiKey}\", \"task\": {{\"type\": \"ImageToTextTask\", \"body\": \"{captcha}\", \"phrase\": false, \"case\": false, \"numeric\": true, \"math\": 0, \"minLength\": 1, \"maxLength\": 1}}}}", Encoding.UTF8, "application/json");
 
         var httpClient = _httpClientFactory.CreateClient(Constants.AntiCaptcha);
 
@@ -35,7 +28,7 @@ public sealed class KdmidCaptchaService : IKdmidCaptcha
 
         var status = "processing";
 
-        content = new StringContent($"{{\"clientKey\": \"{_apiKey}\", \"taskId\": \"{taskId}\"}}", Encoding.UTF8, "application/json");
+        content = new StringContent($"{{\"clientKey\": \"{_settings.ApiKey}\", \"taskId\": \"{taskId}\"}}", Encoding.UTF8, "application/json");
 
         while (status == "processing")
         {
@@ -57,10 +50,10 @@ public sealed class KdmidCaptchaService : IKdmidCaptcha
                     throw new InvalidOperationException("Captcha solving failed.");
                 }
 
-                var resultObject = 
-                    JsonSerializer.Deserialize<Dictionary<string, object?>>(resultContent) 
+                var resultObject =
+                    JsonSerializer.Deserialize<Dictionary<string, object?>>(resultContent)
                     ?? throw new InvalidOperationException("Captcha solving failed.");
-                
+
                 var result = resultObject["text"]?.ToString();
 
                 return string.IsNullOrWhiteSpace(result)

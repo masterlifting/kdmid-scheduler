@@ -1,0 +1,32 @@
+version: "3.7"
+
+services:
+  mongodb:
+    image: ${DOCKER_REGISTRY-}mongodb:${PLATFORM:-linux}-${TAG:-latest}
+    container_name: mongodb
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb_data_container:/data/db
+      - mongodb_data_container:/data/configdb
+  # kdmidscheduler.web.api:
+  #   image: ${DOCKER_REGISTRY-}kdmidscheduler.web.api:${PLATFORM:-linux}-${TAG:-latest}
+  #   container_name: kdmidscheduler.web.api
+  #   build:
+  #     context: .
+  #     dockerfile: src/hosts/KDMIDScheduler.Web.Api/Dockerfile
+  #   ports:
+  #     - 83:83
+  #   environment:
+  #     - ASPNETCORE_URLS=http://+:83
+  #     - TelegramBotConnection__Token=${TELEGRAM_BOT_TOKEN}
+  #     - AntiCaptchaConnection__ApiKey=${CAPTCHA_SECRET_KEY}
+  #     - MongoDbConnection__Password=${MONGODB_PASSWORD}
+  #   depends_on:
+  #     - mongodb
+volumes:
+  mongodb_data_container:

@@ -7,7 +7,7 @@ using Net.Shared.Persistence.Contexts;
 
 namespace KdmidScheduler.Infrastructure.Persistence.Context;
 
-public sealed class KdmidMongoDbContext(IOptions<MongoDbConnection> options) : MongoDbContext(options.Value)
+public sealed class KdmidMongoDbContext(IOptions<MongoDbConnectionSettings> options) : MongoDbContext(options.Value)
 {
     public override void OnModelCreating(MongoDbBuilder builder)
     {

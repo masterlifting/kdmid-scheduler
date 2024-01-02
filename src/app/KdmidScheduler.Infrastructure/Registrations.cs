@@ -1,7 +1,8 @@
 ﻿using KdmidScheduler.Abstractions.Interfaces;
 using KdmidScheduler.Infrastructure.Persistence.Context;
 using KdmidScheduler.Infrastructure.Services;
-
+using KdmidScheduler.Infrastructure.Settings;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using Net.Shared.Persistence;
@@ -14,6 +15,15 @@ public static class Registrations
     {
         services.AddLogging();
         services.AddMemoryCache();
+
+        services.
+            AddOptions<AntiCaptchaConnectionSettings>()
+            .Configure<IConfiguration>((settings, configuration) =>
+            {
+                configuration
+                    .GetSection(AntiCaptchaConnectionSettings.SectionName)
+                    .Bind(settings);
+            });
 
         services.AddMongoDb<KdmidMongoDbContext>(ServiceLifetime.Transient);
 
