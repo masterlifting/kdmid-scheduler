@@ -2,7 +2,7 @@ version: "3.7"
 
 services:
   mongodb:
-    image: ${DOCKER_REGISTRY-}mongodb:${PLATFORM:-linux}-${TAG:-latest}
+    image: mongo:latest
     container_name: mongodb
     restart: always
     environment:
