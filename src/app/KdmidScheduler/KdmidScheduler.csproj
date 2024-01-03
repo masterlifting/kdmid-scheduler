@@ -11,7 +11,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\submodules\shared-extensions\src\Net.Shared.Extensions\Net.Shared.Extensions.csproj" />
     <ProjectReference Include="..\KdmidScheduler.Abstractions\KdmidScheduler.Abstractions.csproj" />
   </ItemGroup>
 

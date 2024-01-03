@@ -6,6 +6,11 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{99ED28AC-5842-48A8-8D20-A1F121735B10}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		.env = .env
+		.gitignore = .gitignore
+		.gitmodules = .gitmodules
+		docker-compose.yml = docker-compose.yml
+		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{94A66592-49ED-4329-8332-3DF370E2BF5C}"
@@ -51,10 +56,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Net.Shared.Web", "submodules\shared-web\src\Net.Shared.Web\Net.Shared.Web.csproj", "{7C40BEA9-A773-4184-B89C-CBDCE45FA03F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Net.Shared.Web.Abstractions", "submodules\shared-web\src\Net.Shared.Web.Abstractions\Net.Shared.Web.Abstractions.csproj", "{A60A6269-405E-491E-8939-C825B7A464F5}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Net.Shared.Exceptions", "submodules\shared-exceptions\src\Net.Shared.Exceptions\Net.Shared.Exceptions.csproj", "{8DABC8C3-BBA2-4A4E-A50B-9AD8D96D459F}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Net.Shared.Extensions", "submodules\shared-extensions\src\Net.Shared.Extensions\Net.Shared.Extensions.csproj", "{1D06D70B-906A-4746-ADAB-1AE2E94EE15B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KdmidScheduler", "src\app\KdmidScheduler\KdmidScheduler.csproj", "{370D2ACA-D26A-45C9-AC07-B48E545E339A}"
 EndProject
@@ -122,14 +123,6 @@ Global
 		{A60A6269-405E-491E-8939-C825B7A464F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A60A6269-405E-491E-8939-C825B7A464F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A60A6269-405E-491E-8939-C825B7A464F5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8DABC8C3-BBA2-4A4E-A50B-9AD8D96D459F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8DABC8C3-BBA2-4A4E-A50B-9AD8D96D459F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8DABC8C3-BBA2-4A4E-A50B-9AD8D96D459F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8DABC8C3-BBA2-4A4E-A50B-9AD8D96D459F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1D06D70B-906A-4746-ADAB-1AE2E94EE15B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1D06D70B-906A-4746-ADAB-1AE2E94EE15B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1D06D70B-906A-4746-ADAB-1AE2E94EE15B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1D06D70B-906A-4746-ADAB-1AE2E94EE15B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{370D2ACA-D26A-45C9-AC07-B48E545E339A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{370D2ACA-D26A-45C9-AC07-B48E545E339A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{370D2ACA-D26A-45C9-AC07-B48E545E339A}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -179,8 +172,6 @@ Global
 		{9E070C11-A592-40F3-A0DB-E6C81EF8A514} = {A17F3114-10D3-457D-B293-6CF9916D9492}
 		{7C40BEA9-A773-4184-B89C-CBDCE45FA03F} = {91FB1760-DBB2-4E9C-9A5C-518BC61D01C4}
 		{A60A6269-405E-491E-8939-C825B7A464F5} = {91FB1760-DBB2-4E9C-9A5C-518BC61D01C4}
-		{8DABC8C3-BBA2-4A4E-A50B-9AD8D96D459F} = {5FC70407-8D13-47C0-A473-2571151E7AB9}
-		{1D06D70B-906A-4746-ADAB-1AE2E94EE15B} = {5FC70407-8D13-47C0-A473-2571151E7AB9}
 		{370D2ACA-D26A-45C9-AC07-B48E545E339A} = {EBF76C7A-D31B-48DC-854F-685C98B1D796}
 		{DDF3BD25-E1B0-491E-9778-2E8C4FD7FA55} = {EBF76C7A-D31B-48DC-854F-685C98B1D796}
 		{DE695DF4-D346-4BAA-BF5A-70F0EF064974} = {C074AB80-7524-433B-BC60-5052110BECA3}

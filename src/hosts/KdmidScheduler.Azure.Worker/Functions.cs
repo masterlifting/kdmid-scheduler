@@ -1,9 +1,6 @@
-﻿using KdmidScheduler;
-using KdmidScheduler.Azure.Worker.Models;
+﻿using KdmidScheduler.Azure.Worker.Models;
 
 using Microsoft.Azure.Functions.Worker;
-
-using TelegramBot.Abstractions.Interfaces.Services;
 
 namespace KdmidScheduler.Azure.Worker;
 

@@ -17,8 +17,8 @@ new HostBuilder()
         .AddKdmidInfrastructure()
         .AddTelegramBot(x =>
         {
-            x.AddRequestService<KdmidBotRequestService>(builder.Services);
-            x.AddResponseService<KdmidBotResponseService>(builder.Services);
+            x.AddRequestHandler<KdmidBotRequestService>();
+            x.AddResponseHandler<KdmidBotResponseService>();
         });
     })
     .Build()

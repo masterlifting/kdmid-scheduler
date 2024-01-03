@@ -16,7 +16,6 @@
     <ProjectReference Include="..\..\..\submodules\shared-persistence\src\Net.Shared.Persistence\Net.Shared.Persistence.csproj" />
     <ProjectReference Include="..\..\..\submodules\shared-queues\src\Net.Shared.Queues\Net.Shared.Queues.csproj" />
     <ProjectReference Include="..\..\..\submodules\shared-web\src\Net.Shared.Web\Net.Shared.Web.csproj" />
-    <ProjectReference Include="..\..\..\submodules\shared\src\Net.Shared\Net.Shared.csproj" />
     <ProjectReference Include="..\KdmidScheduler.Abstractions\KdmidScheduler.Abstractions.csproj" />
   </ItemGroup>
 

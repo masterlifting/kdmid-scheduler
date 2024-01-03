@@ -1,18 +1,51 @@
 version: "3.7"
 
 services:
-  mongodb:
+  # mongodb:
+  #   image: mongo:latest
+  #   container_name: mongodb
+  #   restart: always
+  #   environment:
+  #     MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USER}
+  #     MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
+  #   ports:
+  #     - 27017:27017
+  #   volumes:
+  #     - mongodb_data_container:/data/db
+  #     - mongodb_data_container:/data/configdb
+  mongodb-1:
     image: mongo:latest
-    container_name: mongodb
-    restart: always
+    container_name: mongodb-1
+    command: mongod --replSet rs0 --bind_ip_all
+    volumes:
+      - mongodb-1_data_container:/data/db
+    networks:
+      - mongodb-network_cluster
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USER}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
-    ports:
-      - 27017:27017
+  mongodb-2:
+    image: mongo:latest
+    container_name: mongodb-2
+    command: mongod --replSet rs0 --bind_ip_all
     volumes:
-      - mongodb_data_container:/data/db
-      - mongodb_data_container:/data/configdb
+      - mongodb-2_data_container:/data/db
+    networks:
+      - mongodb-network_cluster
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
+  mongodb-3:
+    image: mongo:latest
+    container_name: mongodb-3
+    command: mongod --replSet rs0 --bind_ip_all
+    volumes:
+      - mongodb-3_data_container:/data/db
+    networks:
+      - mongodb-network_cluster
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
   # kdmidscheduler.web.api:
   #   image: ${DOCKER_REGISTRY-}kdmidscheduler.web.api:${PLATFORM:-linux}-${TAG:-latest}
   #   container_name: kdmidscheduler.web.api
@@ -28,5 +61,11 @@ services:
   #     - MongoDbConnection__Password=${MONGODB_PASSWORD}
   #   depends_on:
   #     - mongodb
+networks:
+  mongodb-network_cluster:
+    driver: bridge
+
 volumes:
-  mongodb_data_container:
+  mongodb-1_data_container:
+  mongodb-2_data_container:
+  mongodb-3_data_container:

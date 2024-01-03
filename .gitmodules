@@ -10,14 +10,6 @@
 	path = submodules/shared-background
 	url = https://github.com/masterlifting/net-shared-background
 	branch = feature-improve_architecture
-[submodule "submodules/shared-exceptions"]
-	path = submodules/shared-exceptions
-	url = https://github.com/masterlifting/net-shared-exceptions
-	branch = feature-improve_architecture
-[submodule "submodules/shared-extensions"]
-	path = submodules/shared-extensions
-	url = https://github.com/masterlifting/net-shared-extensions
-	branch = feature-improve_architecture
 [submodule "submodules/shared-persistence"]
 	path = submodules/shared-persistence
 	url = https://github.com/masterlifting/net-shared-persistence
