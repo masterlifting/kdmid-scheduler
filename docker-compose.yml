@@ -3,6 +3,7 @@ version: "3.8"
 services:
   mongo1:
     image: mongo:latest
+    container_name: mongo1
     command: >
       bash -c "
       chmod 400 /opt/keyfiles/mongo-keyfile && 
@@ -10,14 +11,12 @@ services:
       "
     volumes:
       - mongo1data:/data/db
-      - ./mongo-keyfile:/opt/keyfiles/mongo-keyfile
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=your_username
-      - MONGO_INITDB_ROOT_PASSWORD=your_password
+      - ./infrastructure/mongodb/mongo-keyfile:/opt/keyfiles/mongo-keyfile
     ports:
       - 27017:27017
   mongo2:
     image: mongo:latest
+    container_name: mongo2
     command: >
       bash -c "
       chmod 400 /opt/keyfiles/mongo-keyfile && 
@@ -25,14 +24,12 @@ services:
       "
     volumes:
       - mongo2data:/data/db
-      - ./mongo-keyfile:/opt/keyfiles/mongo-keyfile
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=your_username
-      - MONGO_INITDB_ROOT_PASSWORD=your_password
+      - ./infrastructure/mongodb/mongo-keyfile:/opt/keyfiles/mongo-keyfile
     ports:
       - 27018:27017
   mongo3:
     image: mongo:latest
+    container_name: mongo3
     command: >
       bash -c "
       chmod 400 /opt/keyfiles/mongo-keyfile && 
@@ -40,10 +37,7 @@ services:
       "
     volumes:
       - mongo3data:/data/db
-      - ./mongo-keyfile:/opt/keyfiles/mongo-keyfile
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=your_username
-      - MONGO_INITDB_ROOT_PASSWORD=your_password
+      - ./infrastructure/mongodb/mongo-keyfile:/opt/keyfiles/mongo-keyfile
     ports:
       - 27019:27017
 
