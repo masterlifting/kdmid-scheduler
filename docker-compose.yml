@@ -1,61 +1,53 @@
-version: "3.7"
+version: "3.8"
+
 services:
   mongo1:
-    image: mongo:4.4
-    container_name: mongo1
-    restart: always
-    volumes:
-      - mongo2-data:/data/db
-      - ./mongo-keyfile:/opt/keyfiles/mongo-keyfile
-    command: mongod --replSet rs0 --keyFile /opt/keyfiles/mongo-keyfile --bind_ip_all
-    ports:
-      - "27017:27017"
-  mongo2:
-    image: mongo:4.4
-    container_name: mongo2
-    restart: always
-    volumes:
-      - mongo2-data:/data/db
-      - ./mongo-keyfile:/opt/keyfiles/mongo-keyfile
-    command: mongod --replSet rs0 --keyFile /opt/keyfiles/mongo-keyfile --bind_ip_all
-    ports:
-      - "27018:27017"
-  mongo3:
-    image: mongo:4.4
-    container_name: mongo3
-    restart: always
-    volumes:
-      - mongo3-data:/data/db
-      - ./mongo-keyfile:/opt/keyfiles/mongo-keyfile
-    command: mongod --replSet rs0 --keyFile /opt/keyfiles/mongo-keyfile --bind_ip_all
-    ports:
-      - "27019:27017"
-  setup:
-    image: mongo:4.4
-    container_name: mongo-setup
-    depends_on:
-      - mongo1
-      - mongo2
-      - mongo3
-    volumes:
-      - ./mongo-keyfile:/opt/keyfiles/mongo-keyfile:ro
+    image: mongo:latest
     command: >
-      mongo --host mongo1:27017 --eval '
-        rs.initiate({
-          _id: "rs0",
-          members: [
-            { _id: 0, host: "mongo1:27017" },
-            { _id: 1, host: "mongo2:27017" },
-            { _id: 2, host: "mongo3:27017" }
-          ]
-        });
-        db.getSiblingDB("admin").createUser({
-          user: "admin",
-          pwd: "password",
-          roles: [ { role: "root", db: "admin" } ]
-        });
-      '
+      bash -c "
+      chmod 400 /opt/keyfiles/mongo-keyfile && 
+      mongod --replSet rs0 --bind_ip_all --keyFile /opt/keyfiles/mongo-keyfile
+      "
+    volumes:
+      - mongo1data:/data/db
+      - ./mongo-keyfile:/opt/keyfiles/mongo-keyfile
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=your_username
+      - MONGO_INITDB_ROOT_PASSWORD=your_password
+    ports:
+      - 27017:27017
+  mongo2:
+    image: mongo:latest
+    command: >
+      bash -c "
+      chmod 400 /opt/keyfiles/mongo-keyfile && 
+      mongod --replSet rs0 --bind_ip_all --keyFile /opt/keyfiles/mongo-keyfile
+      "
+    volumes:
+      - mongo2data:/data/db
+      - ./mongo-keyfile:/opt/keyfiles/mongo-keyfile
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=your_username
+      - MONGO_INITDB_ROOT_PASSWORD=your_password
+    ports:
+      - 27018:27017
+  mongo3:
+    image: mongo:latest
+    command: >
+      bash -c "
+      chmod 400 /opt/keyfiles/mongo-keyfile && 
+      mongod --replSet rs0 --bind_ip_all --keyFile /opt/keyfiles/mongo-keyfile
+      "
+    volumes:
+      - mongo3data:/data/db
+      - ./mongo-keyfile:/opt/keyfiles/mongo-keyfile
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=your_username
+      - MONGO_INITDB_ROOT_PASSWORD=your_password
+    ports:
+      - 27019:27017
+
 volumes:
-  mongo1-data:
-  mongo2-data:
-  mongo3-data:
+  mongo1data:
+  mongo2data:
+  mongo3data:
