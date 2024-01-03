@@ -1,71 +1,61 @@
 version: "3.7"
-
 services:
-  # mongodb:
-  #   image: mongo:latest
-  #   container_name: mongodb
-  #   restart: always
-  #   environment:
-  #     MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USER}
-  #     MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
-  #   ports:
-  #     - 27017:27017
-  #   volumes:
-  #     - mongodb_data_container:/data/db
-  #     - mongodb_data_container:/data/configdb
-  mongodb-1:
-    image: mongo:latest
-    container_name: mongodb-1
-    command: mongod --replSet rs0 --bind_ip_all
+  mongo1:
+    image: mongo:4.4
+    container_name: mongo1
+    restart: always
     volumes:
-      - mongodb-1_data_container:/data/db
-    networks:
-      - mongodb-network_cluster
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USER}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
-  mongodb-2:
-    image: mongo:latest
-    container_name: mongodb-2
-    command: mongod --replSet rs0 --bind_ip_all
+      - mongo2-data:/data/db
+      - ./mongo-keyfile:/opt/keyfiles/mongo-keyfile
+    command: mongod --replSet rs0 --keyFile /opt/keyfiles/mongo-keyfile --bind_ip_all
+    ports:
+      - "27017:27017"
+  mongo2:
+    image: mongo:4.4
+    container_name: mongo2
+    restart: always
     volumes:
-      - mongodb-2_data_container:/data/db
-    networks:
-      - mongodb-network_cluster
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USER}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
-  mongodb-3:
-    image: mongo:latest
-    container_name: mongodb-3
-    command: mongod --replSet rs0 --bind_ip_all
+      - mongo2-data:/data/db
+      - ./mongo-keyfile:/opt/keyfiles/mongo-keyfile
+    command: mongod --replSet rs0 --keyFile /opt/keyfiles/mongo-keyfile --bind_ip_all
+    ports:
+      - "27018:27017"
+  mongo3:
+    image: mongo:4.4
+    container_name: mongo3
+    restart: always
     volumes:
-      - mongodb-3_data_container:/data/db
-    networks:
-      - mongodb-network_cluster
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USER}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
-  # kdmidscheduler.web.api:
-  #   image: ${DOCKER_REGISTRY-}kdmidscheduler.web.api:${PLATFORM:-linux}-${TAG:-latest}
-  #   container_name: kdmidscheduler.web.api
-  #   build:
-  #     context: .
-  #     dockerfile: src/hosts/KDMIDScheduler.Web.Api/Dockerfile
-  #   ports:
-  #     - 83:83
-  #   environment:
-  #     - ASPNETCORE_URLS=http://+:83
-  #     - TelegramBotConnection__Token=${TELEGRAM_BOT_TOKEN}
-  #     - AntiCaptchaConnection__ApiKey=${CAPTCHA_SECRET_KEY}
-  #     - MongoDbConnection__Password=${MONGODB_PASSWORD}
-  #   depends_on:
-  #     - mongodb
-networks:
-  mongodb-network_cluster:
-    driver: bridge
-
+      - mongo3-data:/data/db
+      - ./mongo-keyfile:/opt/keyfiles/mongo-keyfile
+    command: mongod --replSet rs0 --keyFile /opt/keyfiles/mongo-keyfile --bind_ip_all
+    ports:
+      - "27019:27017"
+  setup:
+    image: mongo:4.4
+    container_name: mongo-setup
+    depends_on:
+      - mongo1
+      - mongo2
+      - mongo3
+    volumes:
+      - ./mongo-keyfile:/opt/keyfiles/mongo-keyfile:ro
+    command: >
+      mongo --host mongo1:27017 --eval '
+        rs.initiate({
+          _id: "rs0",
+          members: [
+            { _id: 0, host: "mongo1:27017" },
+            { _id: 1, host: "mongo2:27017" },
+            { _id: 2, host: "mongo3:27017" }
+          ]
+        });
+        db.getSiblingDB("admin").createUser({
+          user: "admin",
+          pwd: "password",
+          roles: [ { role: "root", db: "admin" } ]
+        });
+      '
 volumes:
-  mongodb-1_data_container:
-  mongodb-2_data_container:
-  mongodb-3_data_container:
+  mongo1-data:
+  mongo2-data:
+  mongo3-data:
