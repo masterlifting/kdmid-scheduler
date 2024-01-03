@@ -2,7 +2,7 @@
 
 using KdmidScheduler.Abstractions.Interfaces;
 using KdmidScheduler.Infrastructure;
-using KdmidScheduler.Infrastructure.Services;
+using KdmidScheduler.Infrastructure.Persistence.Repositories;
 using KdmidScheduler.Services;
 
 using Net.Shared.Bots;

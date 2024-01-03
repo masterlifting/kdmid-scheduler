@@ -1,16 +1,10 @@
-﻿using Microsoft.Extensions.Logging;
-
-using Net.Shared.Bots.Abstractions.Interfaces;
+﻿using Net.Shared.Bots.Abstractions.Interfaces;
 using Net.Shared.Bots.Abstractions.Models;
 
 namespace KdmidScheduler.Services;
 
-public sealed class KdmidBotRequestService(
-    ILogger<KdmidBotRequestService> logger, 
-    IBotCommandsStore commandsStore,
-    IBotResponseService responseService) : IBotRequestService
+public sealed class KdmidBotRequestService(IBotCommandsStore commandsStore, IBotResponseService responseService) : IBotRequestService
 {
-    private readonly ILogger<KdmidBotRequestService> _log = logger;
     private readonly IBotCommandsStore _commandsStore = commandsStore;
     private readonly IBotResponseService _responseService = responseService;
 
@@ -19,7 +13,7 @@ public sealed class KdmidBotRequestService(
         if (args.Text.Value.StartsWith('/'))
         {
             await _commandsStore.Clear(args.ChatId, cToken);
-            await _responseService.CreateResponse(args.ChatId, args.Text.Value.TrimStart('/'), CancellationToken.None);
+            await _responseService.CreateResponse(args.ChatId, args.Text.Value.TrimStart('/'), cToken);
         }
         else if (Guid.TryParse(args.Text.Value, out var guid))
         {

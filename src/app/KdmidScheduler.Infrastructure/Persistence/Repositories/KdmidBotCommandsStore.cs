@@ -1,13 +1,14 @@
-﻿using KdmidScheduler.Abstractions.Models.Persistence.MongoDb;
+﻿using KdmidScheduler.Abstractions.Models.v1.Persistence.MongoDb;
+
 using Net.Shared.Bots.Abstractions.Interfaces;
 using Net.Shared.Bots.Abstractions.Models;
 using Net.Shared.Persistence.Abstractions.Interfaces.Repositories.NoSql;
 using Net.Shared.Persistence.Abstractions.Models.Contexts;
 
-namespace KdmidScheduler.Infrastructure.Services;
+namespace KdmidScheduler.Infrastructure.Persistence.Repositories;
 
 public sealed class KdmidBotCommandsStore(
-    IPersistenceNoSqlReaderRepository readerRepository, 
+    IPersistenceNoSqlReaderRepository readerRepository,
     IPersistenceNoSqlWriterRepository writerRepository) : IBotCommandsStore
 {
     private readonly IPersistenceNoSqlReaderRepository _readerRepository = readerRepository;
@@ -15,20 +16,20 @@ public sealed class KdmidBotCommandsStore(
 
     public async Task<BotCommand> Get(string chatId, Guid commandId, CancellationToken cToken)
     {
-        var queryOptions = new PersistenceQueryOptions<KdmidBotCommand>
+        var queryOptions = new PersistenceQueryOptions<KdmidBotCommands>
         {
             Filter = x => x.ChatId == chatId && x.CommandId == commandId,
         };
 
-        var queryResult = await _readerRepository.FindSingle(queryOptions,cToken);
+        var queryResult = await _readerRepository.FindSingle(queryOptions, cToken);
 
-        return queryResult is not null 
+        return queryResult is not null
             ? queryResult.Command
             : throw new InvalidOperationException($"The command '{commandId}' was not found");
     }
     public async Task<Guid> Create(string chatId, BotCommand command, CancellationToken cToken)
     {
-        var entity = new KdmidBotCommand
+        var entity = new KdmidBotCommands
         {
             ChatId = chatId,
             CommandId = Guid.NewGuid(),
@@ -41,7 +42,7 @@ public sealed class KdmidBotCommandsStore(
     }
     public async Task Delete(string chatId, Guid commandId, CancellationToken cToken)
     {
-        var deleteOptions = new PersistenceQueryOptions<KdmidBotCommand>
+        var deleteOptions = new PersistenceQueryOptions<KdmidBotCommands>
         {
             Filter = x => x.ChatId == chatId && x.CommandId == commandId,
         };
@@ -50,9 +51,9 @@ public sealed class KdmidBotCommandsStore(
     }
     public async Task Update(string chatId, Guid commandId, BotCommand command, CancellationToken cToken)
     {
-        var updateOptions = new PersistenceUpdateOptions<KdmidBotCommand>(x => x.Command = command)
+        var updateOptions = new PersistenceUpdateOptions<KdmidBotCommands>(x => x.Command = command)
         {
-            QueryOptions = new PersistenceQueryOptions<KdmidBotCommand>
+            QueryOptions = new PersistenceQueryOptions<KdmidBotCommands>
             {
                 Filter = x => x.ChatId == chatId && x.CommandId == commandId,
             }
@@ -62,7 +63,7 @@ public sealed class KdmidBotCommandsStore(
     }
     public async Task Clear(string chatId, CancellationToken cToken)
     {
-        var deleteOptions = new PersistenceQueryOptions<KdmidBotCommand>
+        var deleteOptions = new PersistenceQueryOptions<KdmidBotCommands>
         {
             Filter = x => x.ChatId == chatId,
         };

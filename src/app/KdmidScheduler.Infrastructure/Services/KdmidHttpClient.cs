@@ -9,9 +9,7 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace KdmidScheduler.Infrastructure.Services;
 
-public sealed class KdmidHttpClient(
-    IHttpClientFactory httpClientFactory, 
-    IMemoryCache cache) : IKdmidHttpClient
+public sealed class KdmidHttpClient(IHttpClientFactory httpClientFactory, IMemoryCache cache) : IKdmidHttpClient
 {
     private readonly IMemoryCache _cache = cache;
     private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;

@@ -7,9 +7,7 @@ using Microsoft.Extensions.Options;
 
 namespace KdmidScheduler.Infrastructure.Services;
 
-public sealed class KdmidCaptchaService(
-    IOptions<AntiCaptchaConnectionSettings> options,
-    IHttpClientFactory httpClientFactory) : IKdmidCaptcha
+public sealed class KdmidCaptchaService(IOptions<AntiCaptchaConnectionSettings> options, IHttpClientFactory httpClientFactory) : IKdmidCaptcha
 {
     private readonly AntiCaptchaConnectionSettings _settings = options.Value;
     private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;

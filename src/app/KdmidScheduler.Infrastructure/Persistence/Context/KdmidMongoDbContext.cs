@@ -1,4 +1,4 @@
-﻿using KdmidScheduler.Abstractions.Models.Persistence.MongoDb;
+﻿using KdmidScheduler.Abstractions.Models.v1.Persistence.MongoDb;
 
 using Microsoft.Extensions.Options;
 
@@ -11,6 +11,6 @@ public sealed class KdmidMongoDbContext(IOptions<MongoDbConnectionSettings> opti
 {
     public override void OnModelCreating(MongoDbBuilder builder)
     {
-        builder.SetCollection<KdmidBotCommand>();
+        builder.SetCollection<KdmidBotCommands>();
     }
 }
