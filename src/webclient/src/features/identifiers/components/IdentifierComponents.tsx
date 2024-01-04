@@ -1,6 +1,7 @@
 import React from "react";
-import { useGetCommandQuery } from "../identifierApi";
-import { ICity, IIdentifier } from "../identifierTypes";
+import { InputClass } from "../../../styles/input";
+import { ButtonClass } from "../../../styles/button";
+import { useIdentifier } from "../../../features/identifiers/identifierHooks";
 
 interface IdentifierProps {
   chatId: string;
@@ -8,65 +9,52 @@ interface IdentifierProps {
 }
 
 export const Identifier = ({ chatId, commandId }: IdentifierProps) => {
-  const {
-    data: response,
-    isLoading,
-    isError,
-    error,
-  } = useGetCommandQuery({
-    chatId,
-    commandId,
-  });
+  const { city, identifier, onSubmit, onChangeId, onChangeCd, onChangeEms } =
+    useIdentifier({ chatId, commandId });
 
-  if (!isError && response) {
-    if (response.isSuccess) {
-      const command = response.data;
-      const city: ICity = JSON.parse(
-        command.parameters["KdmidScheduler.Abstractions.Models.v1.City"]
-      );
-
-      const identifier: IIdentifier = {
-        id: "",
-        cd: "",
-      };
-
-      return (
-        <form>
-          <div className="form-group">
-            <label htmlFor="identifier">Identifier for the {city?.name}</label>
-            <input
-              type="text"
-              className="form-control"
-              id="identifier"
-              aria-describedby="identifierHelp"
-              placeholder="Enter identifier"
-              value={identifier.id}
-            />
-            <small id="identifierHelp" className="form-text text-muted">
-              Identifier
-            </small>
-          </div>
-          <div className="form-group">
-            <label htmlFor="cd">CD</label>
-            <input
-              type="text"
-              className="form-control"
-              id="cd"
-              aria-describedby="cdHelp"
-              placeholder="Enter cd"
-              value={identifier.cd}
-            />
-            <small id="cdHelp" className="form-text text-muted">
-              CD
-            </small>
-          </div>
-        </form>
-      );
-    }
-  } else
-    return (
-      <div>
-        <h1>Identifier</h1>
+  return (
+    <form
+      onSubmit={onSubmit}
+      className="w-80 absolute rounded-md left-1/2 top-1/3 transform -translate-x-1/2 -translate-y-1/3"
+    >
+      <h1 className="text-2xl font-bold mb-2">Embassy of {city?.name}</h1>
+      <div className="flex flex-col items-center">
+        <input
+          className={InputClass.Text}
+          name="id"
+          title="id"
+          type="text"
+          placeholder="id"
+          autoComplete="id"
+          value={identifier.id}
+          onChange={onChangeId}
+        />
+        <input
+          className={InputClass.Text}
+          name="cd"
+          title="cd"
+          type="text"
+          placeholder="cd"
+          autoComplete="cd"
+          value={identifier.cd}
+          onChange={onChangeCd}
+        />
+        <input
+          className={InputClass.Text}
+          name="ems"
+          title="ems"
+          type="text"
+          placeholder="ems"
+          autoComplete="ems"
+          value={identifier.ems}
+          onChange={onChangeEms}
+        />
       </div>
-    );
+      <div className="flex justify-end">
+        <button type="submit" className={ButtonClass.Success}>
+          Submit
+        </button>
+      </div>
+    </form>
+  );
 };

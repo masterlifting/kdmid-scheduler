@@ -22,7 +22,6 @@ export interface ICommandGetRequest {
 
 export interface ICommandPostRequest {
   chatId: string;
-  commandId: string;
   command: ICommand;
 }
 

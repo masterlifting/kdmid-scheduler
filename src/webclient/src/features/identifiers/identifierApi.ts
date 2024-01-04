@@ -25,8 +25,8 @@ export const identifierApi = createApi({
       WebApiResponseType<ICommand>,
       ICommandPostRequest
     >({
-      query: ({ chatId, commandId, command }) => ({
-        url: `${controller}/${chatId}/commands/${commandId}`,
+      query: ({ chatId, command }) => ({
+        url: `${controller}/${chatId}/commands/${command.id}`,
         method: constants.http.methods.POST,
         body: command,
       }),
