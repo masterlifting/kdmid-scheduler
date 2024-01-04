@@ -262,5 +262,14 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
+
 .env
 mongo-keyfile
+asset-manifest.json
+main.*.css
+main.*.css.map
+main.*.js
+main.*.js.map
+main.*.LICENSE.txt
+build/
+package-lock.json
