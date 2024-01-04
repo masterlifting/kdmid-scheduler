@@ -11,6 +11,7 @@ services:
       "
     volumes:
       - mongo1data:/data/db
+      - mongo1config:/data/configdb
       - ./infrastructure/mongodb/mongo-keyfile:/opt/keyfiles/mongo-keyfile
     ports:
       - 27017:27017
@@ -24,6 +25,7 @@ services:
       "
     volumes:
       - mongo2data:/data/db
+      - mongo2config:/data/configdb
       - ./infrastructure/mongodb/mongo-keyfile:/opt/keyfiles/mongo-keyfile
     ports:
       - 27018:27017
@@ -37,11 +39,15 @@ services:
       "
     volumes:
       - mongo3data:/data/db
+      - mongo3config:/data/configdb
       - ./infrastructure/mongodb/mongo-keyfile:/opt/keyfiles/mongo-keyfile
     ports:
       - 27019:27017
 
 volumes:
   mongo1data:
+  mongo1config:
   mongo2data:
+  mongo2config:
   mongo3data:
+  mongo3config:
