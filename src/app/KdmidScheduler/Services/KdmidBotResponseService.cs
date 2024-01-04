@@ -11,6 +11,7 @@ namespace KdmidScheduler.Services;
 public sealed class KdmidBotResponseService(IBotClient botClient, IBotCommandsStore commandStore, IKdmidService kdmidService) : IBotResponseService
 {
     private const string StartCommand = "start";
+    private const string MineCommand = "mine";
     private const string SendAvailableDatesCommand = "sendAvailableDates";
     private const string SendConfirmResultCommand = "sendConfirmResult";
 
@@ -25,6 +26,7 @@ public sealed class KdmidBotResponseService(IBotClient botClient, IBotCommandsSt
     public Task CreateResponse(string chatId, string commandName, CancellationToken cToken) => commandName switch
     {
         StartCommand => SendAvailableEmbassies(chatId, cToken),
+        MineCommand => SendMyEmbassies(chatId, cToken),
         _ => throw new NotSupportedException($"The command '{commandName}' is not supported.")
     };
     public Task CreateResponse(string chatId, BotCommand command, CancellationToken cToken) => command.Name switch
@@ -36,25 +38,74 @@ public sealed class KdmidBotResponseService(IBotClient botClient, IBotCommandsSt
 
     private async Task SendAvailableEmbassies(string chatId, CancellationToken cToken)
     {
-        var availableCities = _kdmidService.GetAvailableCities(cToken);
+        var supportedCities = _kdmidService.GetSupportedCities(cToken);
 
-        var buttonsData = new Dictionary<string, string>(availableCities.Length);
+        var commands = await _commandStore.Get(chatId, cToken);
+
+        var myCities = commands
+            .Where(x => x.Parameters.ContainsKey(KdmidIdKey))
+            .Select(x => JsonSerializer.Deserialize<City>(x.Parameters[CityKey]))
+            .Select(x => x!.Code)
+            .ToArray();
+
+        var availableCities = supportedCities.ExceptBy(myCities, x => x.Code);
+
+        var webAppData = new Dictionary<string, Uri>(myCities.Length);
 
         foreach (var city in availableCities)
         {
-            var nextCommand = new BotCommand(SendAvailableDatesCommand, new()
+            var command = await _commandStore.Create(chatId, SendAvailableDatesCommand, new()
             {
                 { CityKey, JsonSerializer.Serialize(city)}
-            });
+            }, cToken);
 
-            var nextCommandId = await _commandStore.Create(chatId, nextCommand, cToken);
+            var uri = new Uri($"https://kdmid-scheduler/identifier?chatId={chatId}&commandId={command.Id}");
 
-            buttonsData.Add(nextCommandId.ToString(), city.Name);
+            webAppData.Add(city.Name, uri);
         }
 
-        var buttonsArgs = new ButtonsEventArgs(chatId, new("Available embassies", 3, buttonsData));
+        if (webAppData.Count == 0)
+        {
+            var messageArgs = new MessageEventArgs(chatId, new("There are no available embassies."));
+            await _botClient.SendMessage(messageArgs, cToken);
+        }
+        else
+        {
+            var webAppArgs = new WebAppEventArgs(chatId, new("Available embassies", 3, webAppData));
+            await _botClient.SendWebApp(webAppArgs, cToken);
+        }
+    }
+    private async Task SendMyEmbassies(string chatId, CancellationToken cToken)
+    {
+        var supportedCities = _kdmidService.GetSupportedCities(cToken);
 
-        await _botClient.SendButtons(buttonsArgs, cToken);
+        var commands = await _commandStore.Get(chatId, cToken);
+
+        var availableCommands = commands
+            .Where(x => x.Parameters.ContainsKey(KdmidIdKey))
+            .ToArray();
+
+        var buttonsData = new Dictionary<string, string>(availableCommands.Length);
+
+        foreach (var command in availableCommands)
+        {
+            var city =
+                JsonSerializer.Deserialize<City>(command.Parameters[CityKey])
+                ?? throw new ArgumentException("The city is not specified.");
+
+            buttonsData.Add(command.Id.ToString(), city.Name);
+        }
+
+        if (buttonsData.Count == 0)
+        {
+            var messageArgs = new MessageEventArgs(chatId, new("You have no embassies in your list."));
+            await _botClient.SendMessage(messageArgs, cToken);
+        }
+        else
+        {
+            var buttonsArgs = new ButtonsEventArgs(chatId, new("My embassies", 3, buttonsData));
+            await _botClient.SendButtons(buttonsArgs, cToken);
+        }
     }
     private async Task SendAvailableDates(string chatId, BotCommand command, CancellationToken cToken)
     {
@@ -72,16 +123,14 @@ public sealed class KdmidBotResponseService(IBotClient botClient, IBotCommandsSt
 
         foreach (var date in availableDatesResult.Dates)
         {
-            var nextCommand = new BotCommand(SendConfirmResultCommand, new()
+            var nextCommand = await _commandStore.Create(chatId, SendConfirmResultCommand, new()
                 {
                     { CityKey, command.Parameters[CityKey] },
                     { KdmidIdKey, command.Parameters[KdmidIdKey] },
                     { ChosenResultKey, JsonSerializer.Serialize(new ChosenDateResult(availableDatesResult.FormData, date.Key, date.Value)) }
-                });
+                }, cToken);
 
-            var nextCommandId = await _commandStore.Create(chatId, nextCommand, cToken);
-
-            buttonsData.Add(nextCommandId.ToString(), date.Value);
+            buttonsData.Add(nextCommand.Id.ToString(), date.Value);
         }
 
         var buttonsArgs = new ButtonsEventArgs(chatId, new("Available dates", 1, buttonsData));
@@ -106,11 +155,13 @@ public sealed class KdmidBotResponseService(IBotClient botClient, IBotCommandsSt
 
         if (confirmResult.IsSuccess)
         {
-            await _botClient.SendText(chatId, "The date is confirmed.", cToken);
+            var messageArgs = new MessageEventArgs(chatId, new("The date is confirmed."));
+            await _botClient.SendMessage(messageArgs, cToken);
         }
         else
         {
-            await _botClient.SendText(chatId, confirmResult.Message, cToken);
+            var messageArgs = new MessageEventArgs(chatId, new(confirmResult.Message));
+            await _botClient.SendMessage(messageArgs, cToken);
         }
     }
 }

@@ -12,7 +12,7 @@ public sealed class KdmidService(
     private readonly IKdmidCaptcha _captchaService = captchaService;
     private readonly IKdmidHtmlDocument _htmlDocument = htmlDocument;
 
-    public City[] GetAvailableCities(CancellationToken cToken) => new City[]
+    public City[] GetSupportedCities(CancellationToken cToken) => new City[]
     {
         new("belgrad", "Belgrade"),
         new("budapest", "Budapest"),

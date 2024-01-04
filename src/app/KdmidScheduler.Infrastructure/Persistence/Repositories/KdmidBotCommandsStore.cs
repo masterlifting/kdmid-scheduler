@@ -7,44 +7,28 @@ using Net.Shared.Persistence.Abstractions.Models.Contexts;
 
 namespace KdmidScheduler.Infrastructure.Persistence.Repositories;
 
-public sealed class KdmidBotCommandsStore(
-    IPersistenceNoSqlReaderRepository readerRepository,
-    IPersistenceNoSqlWriterRepository writerRepository) : IBotCommandsStore
+public sealed class KdmidBotCommandsStore(IPersistenceNoSqlReaderRepository readerRepository, IPersistenceNoSqlWriterRepository writerRepository) : IBotCommandsStore
 {
     private readonly IPersistenceNoSqlReaderRepository _readerRepository = readerRepository;
     private readonly IPersistenceNoSqlWriterRepository _writerRepository = writerRepository;
 
-    public async Task<BotCommand> Get(string chatId, Guid commandId, CancellationToken cToken)
-    {
-        var queryOptions = new PersistenceQueryOptions<KdmidBotCommands>
-        {
-            Filter = x => x.ChatId == chatId && x.CommandId == commandId,
-        };
-
-        var queryResult = await _readerRepository.FindSingle(queryOptions, cToken);
-
-        return queryResult is not null
-            ? queryResult.Command
-            : throw new InvalidOperationException($"The command '{commandId}' was not found");
-    }
-    public async Task<Guid> Create(string chatId, BotCommand command, CancellationToken cToken)
+    public async Task<BotCommand> Create(string chatId, string Name, Dictionary<string, string> Parameters, CancellationToken cToken)
     {
         var entity = new KdmidBotCommands
         {
             ChatId = chatId,
-            CommandId = Guid.NewGuid(),
-            Command = command,
+            Command = new BotCommand(Guid.NewGuid(), Name, Parameters)
         };
 
         await _writerRepository.CreateOne(entity, cToken);
 
-        return entity.CommandId;
+        return entity.Command;
     }
     public async Task Delete(string chatId, Guid commandId, CancellationToken cToken)
     {
         var deleteOptions = new PersistenceQueryOptions<KdmidBotCommands>
         {
-            Filter = x => x.ChatId == chatId && x.CommandId == commandId,
+            Filter = x => x.ChatId == chatId && x.Command.Id == commandId,
         };
 
         await _writerRepository.Delete(deleteOptions, cToken);
@@ -55,7 +39,7 @@ public sealed class KdmidBotCommandsStore(
         {
             QueryOptions = new PersistenceQueryOptions<KdmidBotCommands>
             {
-                Filter = x => x.ChatId == chatId && x.CommandId == commandId,
+                Filter = x => x.ChatId == chatId && x.Command.Id == commandId,
             }
         };
 
@@ -69,5 +53,30 @@ public sealed class KdmidBotCommandsStore(
         };
 
         await _writerRepository.Delete(deleteOptions, cToken);
+    }
+
+    public async Task<BotCommand> Get(string chatId, Guid commandId, CancellationToken cToken)
+    {
+        var queryOptions = new PersistenceQueryOptions<KdmidBotCommands>
+        {
+            Filter = x => x.ChatId == chatId && x.Command.Id == commandId,
+        };
+
+        var queryResult = await _readerRepository.FindSingle(queryOptions, cToken);
+
+        return queryResult is not null
+            ? queryResult.Command
+            : throw new InvalidOperationException($"The command '{commandId}' was not found");
+    }
+    public async Task<BotCommand[]> Get(string chatId, CancellationToken cToken)
+    {
+        var queryOptions = new PersistenceQueryOptions<KdmidBotCommands>
+        {
+            Filter = x => x.ChatId == chatId,
+        };
+
+        var data = await _readerRepository.FindMany(queryOptions, cToken);
+
+        return data.Select(x => x.Command).ToArray();
     }
 }
