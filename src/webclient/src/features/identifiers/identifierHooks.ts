@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ICity,
   ICommand,
@@ -8,12 +8,18 @@ import {
 } from "./identifierTypes";
 import { useGetCommandQuery, useUpdateCommandMutation } from "./identifierApi";
 
+//const telegram = window.Telegram.WebApp;
+
 export const useIdentifier = (commandParams: ICommandGetRequest) => {
   const [identifier, setIdentifier] = useState<IIdentifier>({
     id: "",
     cd: "",
     ems: "",
   });
+
+  // useEffect(() => {
+  //   telegram.ready();
+  // }, []);
 
   const {
     data: getCommandResponse,
@@ -60,6 +66,8 @@ export const useIdentifier = (commandParams: ICommandGetRequest) => {
       };
 
       updateCommand(updatedCommand);
+
+      //telegram.close();
     }
   };
 
