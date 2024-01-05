@@ -1,7 +1,7 @@
 {
   "name": "kdmid-scheduler",
   "version": "1.0.0",
-  "homepage": "/identifier",
+  "homepage": "/",
   "private": true,
   "eslintConfig": {
     "extends": [

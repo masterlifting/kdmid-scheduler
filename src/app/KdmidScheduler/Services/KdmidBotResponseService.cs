@@ -62,9 +62,7 @@ public sealed class KdmidBotResponseService(IBotClient botClient, IBotCommandsSt
                 { CityKey, JsonSerializer.Serialize(city, _jsonSerializerOptions)}
             }, cToken);
 
-            //var uri = new Uri($"https://kdmid-scheduler/netlify.app?chatId={chatId}&commandId={command.Id}");
-            var uri = new Uri("https://google.com");
-            var a = $"http://localhost:3000/identifier?chatId={chatId}&commandId={command.Id}";
+            var uri = new Uri($"https://kdmid-scheduler.netlify.app/identifier?chatId={chatId}&commandId={command.Id}");
 
             webAppData.Add(city.Name, uri);
         }
