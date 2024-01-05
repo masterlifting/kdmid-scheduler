@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 using KdmidScheduler.Abstractions.Interfaces;
 using KdmidScheduler.Infrastructure;
@@ -44,11 +43,7 @@ app.MapGet("/start", (IBotClient client, CancellationToken cToken) =>
 });
 app.MapGet("/listen", (IBotClient client, HttpRequest request, CancellationToken cToken) =>
 {
-    var url = request.QueryString.Value?.Replace("/listen", "/receive", true, CultureInfo.InvariantCulture);
-
-    ArgumentNullException.ThrowIfNull(url, "Received url is empty.");
-
-    var uri = new Uri(url);
+    var uri = new Uri($"{request.Scheme}://{request.Host}/receive");
 
     return client.Listen(uri, cToken);
 });

@@ -4,17 +4,14 @@ services:
   mongo1:
     image: mongo:latest
     container_name: mongo1
-    command: >
-      bash -c "
-      chmod 400 /opt/keyfiles/mongo-keyfile && 
-      mongod --replSet rs0 --bind_ip_all --keyFile /opt/keyfiles/mongo-keyfile
-      "
     volumes:
       - mongo1data:/data/db
       - mongo1config:/data/configdb
       - ./infrastructure/mongodb/mongo-keyfile:/opt/keyfiles/mongo-keyfile
+      - ./infrastructure/mongodb/init.sh:/docker-entrypoint-initdb.d/init.sh
     ports:
       - 27017:27017
+    command: ["/docker-entrypoint-initdb.d/init.sh"]
   mongo2:
     image: mongo:latest
     container_name: mongo2
@@ -43,6 +40,34 @@ services:
       - ./infrastructure/mongodb/mongo-keyfile:/opt/keyfiles/mongo-keyfile
     ports:
       - 27019:27017
+  backend:
+    image: kdmid-scheduler-backend
+    container_name: backend
+    build:
+      context: .
+      dockerfile: ./src/hosts/KdmidScheduler.Web.Api/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+      - AntiCaptchaConnection__ApiKey=${ANTICAPTCHA_API_KEY}
+      - TelegramBotConnection__Token=${TELEGRAM_BOT_TOKEN}
+      - MongoDbConnection__Host=mongo1
+      - MongoDbConnection__Password=${MONGODB_PASSWORD}
+    depends_on:
+      - mongo1
+      - mongo2
+      - mongo3
+  frontend:
+    image: kdmid-scheduler-frontend
+    container_name: frontend
+    build:
+      context: .
+      dockerfile: ./src/webclient/Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
 
 volumes:
   mongo1data:
