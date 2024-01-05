@@ -12,7 +12,7 @@ export interface ICity {
 export interface ICommand {
   id: string;
   name: string;
-  parameters: Map<string, string>;
+  parameters: { [key: string]: string };
 }
 
 export interface ICommandGetRequest {

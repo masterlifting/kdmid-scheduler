@@ -1,11 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { constants } from "../../_constants";
-import { WebApiResponseType } from "../../_types";
-import {
-  ICommand,
-  ICommandGetRequest,
-  ICommandPostRequest,
-} from "./identifierTypes";
+import { ICommandGetRequest, ICommandPostRequest } from "./identifierTypes";
 
 const controller = "chats";
 
@@ -13,20 +8,15 @@ export const identifierApi = createApi({
   reducerPath: "identifierApi",
   baseQuery: fetchBaseQuery({ baseUrl: constants.http.baseFetchUrl }),
   endpoints: (builder) => ({
-    getCommand: builder.query<WebApiResponseType<ICommand>, ICommandGetRequest>(
-      {
-        query: ({ chatId, commandId }) => ({
-          url: `${controller}/${chatId}/commands/${commandId}`,
-          method: constants.http.methods.GET,
-        }),
-      }
-    ),
-    updateCommand: builder.mutation<
-      WebApiResponseType<ICommand>,
-      ICommandPostRequest
-    >({
+    getCommand: builder.query<any, ICommandGetRequest>({
+      query: ({ chatId, commandId }) => ({
+        url: `${controller}/${chatId}/commands/${commandId}`,
+        method: constants.http.methods.GET,
+      }),
+    }),
+    updateCommand: builder.mutation<void, ICommandPostRequest>({
       query: ({ chatId, command }) => ({
-        url: `${controller}/${chatId}/commands/${command.id}`,
+        url: `${controller}/${chatId}`,
         method: constants.http.methods.POST,
         body: command,
       }),

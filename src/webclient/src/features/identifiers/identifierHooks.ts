@@ -3,10 +3,10 @@ import {
   ICity,
   ICommand,
   ICommandGetRequest,
-  ICommandPostRequest,
   IIdentifier,
 } from "./identifierTypes";
 import { useGetCommandQuery, useUpdateCommandMutation } from "./identifierApi";
+import { constants } from "../../_constants";
 
 //const telegram = window.Telegram.WebApp;
 
@@ -44,28 +44,37 @@ export const useIdentifier = (commandParams: ICommandGetRequest) => {
   let city: ICity | undefined = undefined;
   let command: ICommand | undefined = undefined;
 
-  if (!isGetCommandError && getCommandResponse) {
-    if (getCommandResponse.isSuccess) {
-      command = getCommandResponse.data;
-      city = JSON.parse(
-        command.parameters["KdmidScheduler.Abstractions.Models.v1.City"]
-      );
+  if (!isGetCommandError) {
+    command = getCommandResponse;
+    const cityParam = command?.parameters[constants.command.parameterKeys.city];
+
+    if (cityParam) {
+      city = JSON.parse(cityParam);
     }
   }
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (command) {
-      command.parameters["KdmidScheduler.Abstractions.Models.v1.Identifier"] =
-        JSON.stringify(identifier);
+    if (identifier.id === "" || identifier.cd === "" || identifier.ems === "") {
+      alert("Fill all fields");
+      return;
+    }
 
-      const updatedCommand: ICommandPostRequest = {
-        chatId: commandParams.chatId,
-        command,
+    if (command) {
+      command = {
+        ...command,
+        parameters: {
+          ...command.parameters,
+          "KdmidScheduler.Abstractions.Models.v1.Identifier":
+            JSON.stringify(identifier),
+        },
       };
 
-      updateCommand(updatedCommand);
+      updateCommand({
+        chatId: commandParams.chatId,
+        command,
+      });
 
       //telegram.close();
     }
