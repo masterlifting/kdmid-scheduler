@@ -1,4 +1,5 @@
 #!/bin/bash
+
 echo "Waiting for user to be created..."
 sleep 2
 
@@ -10,3 +11,5 @@ mongosh admin --eval 'db.createUser({
   pwd: "$userPassword",
   roles: [{ role: "root", db: "admin" }]
 });'
+
+tail -f /dev/null

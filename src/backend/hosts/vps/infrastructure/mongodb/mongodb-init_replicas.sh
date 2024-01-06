@@ -12,4 +12,4 @@ mongosh --eval 'rs.initiate({
         { _id: 3, host: "mongodb_3:27017", priority: 1 },
     ]}, { force: true });'
 
-# tail -f /dev/null
+tail -f /dev/null

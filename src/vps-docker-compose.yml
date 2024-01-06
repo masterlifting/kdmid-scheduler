@@ -11,17 +11,13 @@ services:
       - mongodb_1-data:/data/db
       - mongodb_1-config:/data/configdb
       - ./backend/hosts/vps/infrastructure/mongodb/mongodb-keyfile:/opt/keyfiles/mongodb-keyfile
-      - ./backend/hosts/vps/infrastructure/mongodb/mongodb-init.sh:/docker-entrypoint-initdb.d/mongodb-init.sh
-      - ./backend/hosts/vps/infrastructure/mongodb/mongodb-init_replicas.sh:/docker-entrypoint-initdb.d/mongodb-init_replicas.sh
-      - ./backend/hosts/vps/infrastructure/mongodb/mongodb-init_user.sh:/docker-entrypoint-initdb.d/mongodb-init_user.sh
+      - ./backend/hosts/vps/infrastructure/mongodb/mongodb-init.sh:/data/configdb/mongodb-init.sh
+      - ./backend/hosts/vps/infrastructure/mongodb/mongodb-init_replicas.sh:/data/configdb/mongodb-init_replicas.sh
+      - ./backend/hosts/vps/infrastructure/mongodb/mongodb-init_user.sh:/data/configdb/mongodb-init_user.sh
     ports:
       - 27017:27017
     command:
-      [
-        '/docker-entrypoint-initdb.d/init.sh',
-        '/docker-entrypoint-initdb.d/init_replicas.sh',
-        '/docker-entrypoint-initdb.d/init_user.sh',
-      ]
+      ['./data/configdb/mongodb-init.sh', './data/configdb/mongodb-init_replicas.sh', './data/configdb/mongodb-init_user.sh']
     depends_on:
       - mongodb_2
       - mongodb_3
@@ -32,10 +28,10 @@ services:
       - mongodb_2-data:/data/db
       - mongodb_2-config:/data/configdb
       - ./backend/hosts/vps/infrastructure/mongodb/mongodb-keyfile:/opt/keyfiles/mongodb-keyfile
-      - ./backend/hosts/vps/infrastructure/mongodb/mongodb-init.sh:/docker-entrypoint-initdb.d/mongodb-init.sh
+      - ./backend/hosts/vps/infrastructure/mongodb/mongodb-init.sh:/data/configdb/mongodb-init.sh
     ports:
       - 27018:27017
-    command: ['/docker-entrypoint-initdb.d/init.sh']
+    command: ['./data/configdb/mongodb-init.sh']
   mongodb_3:
     image: mongo:latest
     container_name: mongodb_3
@@ -43,16 +39,16 @@ services:
       - mongodb_3-data:/data/db
       - mongodb_3-config:/data/configdb
       - ./backend/hosts/vps/infrastructure/mongodb/mongodb-keyfile:/opt/keyfiles/mongodb-keyfile
-      - ./backend/hosts/vps/infrastructure/mongodb/mongodb-init.sh:/docker-entrypoint-initdb.d/mongodb-init.sh
+      - ./backend/hosts/vps/infrastructure/mongodb/mongodb-init.sh:/data/configdb/mongodb-init.sh
     ports:
       - 27019:27017
-    command: ['/docker-entrypoint-initdb.d/init.sh']
+    command: ['./data/configdb/mongodb-init.sh']
   backend:
     image: kdmid-scheduler-backend
     container_name: backend
     build:
       context: ./backend
-      dockerfile: ./backend/hosts/vps/KdmidScheduler.Api/Dockerfile
+      dockerfile: ./hosts/vps/kdmid_scheduler-api/Dockerfile
     ports:
       - '8080:8080'
     environment:
@@ -71,7 +67,7 @@ services:
     container_name: frontend
     build:
       context: ./frontend/telegram-webapp
-      dockerfile: ./frontend/telegram-webapp/Dockerfile
+      dockerfile: ./Dockerfile
     ports:
       - '3000:3000'
     depends_on:
