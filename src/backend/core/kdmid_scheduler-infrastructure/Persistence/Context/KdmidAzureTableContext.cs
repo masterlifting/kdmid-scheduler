@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Options;
+﻿using KdmidScheduler.Abstractions.Models.v1.Persistence.AzureTable;
+
+using Microsoft.Extensions.Options;
 
 using Net.Shared.Persistence.Abstractions.Models.Settings.Connections;
 using Net.Shared.Persistence.Contexts;
@@ -9,6 +11,6 @@ public sealed class KdmidAzureTableContext(IOptions<AzureTableConnectionSettings
 {
     public override void OnModelCreating(AzureTableBuilder builder)
     {
-        //builder.SetTable<KdmidBotCommand>();
+        builder.SetTable<KdmidBotCommand>();
     }
 }

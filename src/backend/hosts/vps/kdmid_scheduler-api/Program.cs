@@ -1,25 +1,17 @@
 ﻿using System.Text.Json;
 
-using KdmidScheduler.Abstractions.Interfaces;
+using KdmidScheduler.Abstractions.Interfaces.Services;
 using KdmidScheduler.Infrastructure;
-using KdmidScheduler.Infrastructure.Persistence.Repositories;
 using KdmidScheduler.Services;
 
-using Net.Shared.Bots;
 using Net.Shared.Bots.Abstractions.Interfaces;
 using Net.Shared.Bots.Abstractions.Models;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
 builder.Services
-    .AddKdmidInfrastructure()
-    .AddTransient<IKdmidService, KdmidService>()
-    .AddTelegramBot(x =>
-    {
-        x.AddRequestHandler<KdmidBotRequestService>();
-        x.AddResponseHandler<KdmidBotResponseService>();
-        x.AddCommandsStore<KdmidBotCommandsStore>();
-    });
+    .AddKdmidVpsInfrastructure()
+    .AddTransient<IKdmidService, KdmidService>();
 
     builder.Services.AddCors(options =>
     {

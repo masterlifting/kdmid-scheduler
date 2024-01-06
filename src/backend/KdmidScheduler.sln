@@ -8,23 +8,23 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "submodules", "submodules", "{5FC70407-8D13-47C0-A473-2571151E7AB9}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Submodules", "Submodules", "{5FC70407-8D13-47C0-A473-2571151E7AB9}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "bots", "bots", "{F3A6E087-A799-42E8-87C5-98DE023C7C50}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Bots", "Bots", "{F3A6E087-A799-42E8-87C5-98DE023C7C50}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "background", "background", "{CDE5BC47-3D31-40DB-A978-CA58D0D1775B}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Background", "Background", "{CDE5BC47-3D31-40DB-A978-CA58D0D1775B}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "web", "web", "{91FB1760-DBB2-4E9C-9A5C-518BC61D01C4}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Web", "Web", "{91FB1760-DBB2-4E9C-9A5C-518BC61D01C4}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "queues", "queues", "{BF8580DD-4865-4CEF-B239-EA85528DD470}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Queues", "Queues", "{BF8580DD-4865-4CEF-B239-EA85528DD470}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "persistence", "persistence", "{0E7AA707-8F1C-43BD-8B7D-316EF2E0CCFD}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Persistence", "Persistence", "{0E7AA707-8F1C-43BD-8B7D-316EF2E0CCFD}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared", "shared", "{A17F3114-10D3-457D-B293-6CF9916D9492}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{A17F3114-10D3-457D-B293-6CF9916D9492}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "core", "core", "{EBF76C7A-D31B-48DC-854F-685C98B1D796}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{EBF76C7A-D31B-48DC-854F-685C98B1D796}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "hosts", "hosts", "{C074AB80-7524-433B-BC60-5052110BECA3}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Hosts", "Hosts", "{C074AB80-7524-433B-BC60-5052110BECA3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Net.Shared.Background", "core\submodules\shared-background\src\background\Net.Shared.Background.csproj", "{34DEE76D-9D4B-43EE-AE6B-5B14853DAC94}"
 EndProject
@@ -50,9 +50,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Net.Shared.Web", "core\subm
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Net.Shared.Web.Abstractions", "core\submodules\shared-web\src\web-abstractions\Net.Shared.Web.Abstractions.csproj", "{D7F0CC76-11A7-40E9-8ACD-59F66F24209F}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "azure", "azure", "{3AD88827-2153-4F75-892C-1FAA43D9160B}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Azure", "Azure", "{3AD88827-2153-4F75-892C-1FAA43D9160B}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "vps", "vps", "{B6137AFD-4FE3-4269-B7EE-EF495982CFA0}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Vps", "Vps", "{B6137AFD-4FE3-4269-B7EE-EF495982CFA0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KdmidScheduler", "core\kdmid_scheduler\KdmidScheduler.csproj", "{56913E40-441B-4280-9D93-1F8C03747EF8}"
 EndProject
@@ -66,7 +66,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KdmidScheduler.Worker", "ho
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KdmidScheduler.Api", "hosts\vps\kdmid_scheduler-api\KdmidScheduler.Api.csproj", "{7B398E8C-9CFE-486F-91DF-745FFFDEE685}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KdmidScheduler.Worker", "hosts\vps\kdmid_scheduler-worker\KdmidScheduler.Worker.csproj", "{73EB62FC-A042-4C9D-BACE-ABB842954551}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KdmidScheduler.Worker", "hosts\vps\kdmid_scheduler-worker\KdmidScheduler.Worker.csproj", "{A4E2A4D3-23BD-4E3E-8490-8A106A043641}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -146,10 +146,10 @@ Global
 		{7B398E8C-9CFE-486F-91DF-745FFFDEE685}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7B398E8C-9CFE-486F-91DF-745FFFDEE685}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7B398E8C-9CFE-486F-91DF-745FFFDEE685}.Release|Any CPU.Build.0 = Release|Any CPU
-		{73EB62FC-A042-4C9D-BACE-ABB842954551}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{73EB62FC-A042-4C9D-BACE-ABB842954551}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{73EB62FC-A042-4C9D-BACE-ABB842954551}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{73EB62FC-A042-4C9D-BACE-ABB842954551}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A4E2A4D3-23BD-4E3E-8490-8A106A043641}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4E2A4D3-23BD-4E3E-8490-8A106A043641}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A4E2A4D3-23BD-4E3E-8490-8A106A043641}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A4E2A4D3-23BD-4E3E-8490-8A106A043641}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -182,7 +182,7 @@ Global
 		{30C3C291-4685-43D9-9946-BD084A02E9CD} = {3AD88827-2153-4F75-892C-1FAA43D9160B}
 		{8BD840C4-C0C3-45C9-BFD9-0CC96ACCB594} = {3AD88827-2153-4F75-892C-1FAA43D9160B}
 		{7B398E8C-9CFE-486F-91DF-745FFFDEE685} = {B6137AFD-4FE3-4269-B7EE-EF495982CFA0}
-		{73EB62FC-A042-4C9D-BACE-ABB842954551} = {B6137AFD-4FE3-4269-B7EE-EF495982CFA0}
+		{A4E2A4D3-23BD-4E3E-8490-8A106A043641} = {B6137AFD-4FE3-4269-B7EE-EF495982CFA0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2EB72F4B-1D54-4234-905E-0EDA63D1A982}

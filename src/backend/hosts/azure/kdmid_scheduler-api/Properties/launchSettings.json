@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "Telegram.ApAzureBot.Api": {
+    "KdmidScheduler.Api": {
       "commandName": "Project",
       "commandLineArgs": "--port 7034",
       "launchBrowser": false

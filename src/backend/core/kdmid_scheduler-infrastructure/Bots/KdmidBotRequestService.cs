@@ -1,9 +1,11 @@
 ﻿using Net.Shared.Bots.Abstractions.Interfaces;
 using Net.Shared.Bots.Abstractions.Models;
 
-namespace KdmidScheduler.Services;
+namespace KdmidScheduler.Infrastructure.Bots;
 
-public sealed class KdmidBotRequestService(IBotCommandsStore commandsStore, IBotResponseService responseService) : IBotRequestService
+public sealed class KdmidBotRequestService(
+    IBotCommandsStore commandsStore,
+    IBotResponseService responseService) : IBotRequestService
 {
     private readonly IBotCommandsStore _commandsStore = commandsStore;
     private readonly IBotResponseService _responseService = responseService;

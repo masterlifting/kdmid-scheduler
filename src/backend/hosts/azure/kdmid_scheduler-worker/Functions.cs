@@ -1,8 +1,8 @@
-﻿using KdmidScheduler.Azure.Worker.Models;
+﻿using KdmidScheduler.Worker.Models;
 
 using Microsoft.Azure.Functions.Worker;
 
-namespace KdmidScheduler.Azure.Worker;
+namespace KdmidScheduler.Worker;
 
 public class Functions(ITelegramCommandTaskService service)
 {

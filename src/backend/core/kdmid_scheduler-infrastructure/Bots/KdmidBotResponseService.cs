@@ -1,14 +1,15 @@
 ﻿using System.Text.Json;
-
-using KdmidScheduler.Abstractions.Interfaces;
+using KdmidScheduler.Abstractions.Interfaces.Services;
 using KdmidScheduler.Abstractions.Models.v1;
-
 using Net.Shared.Bots.Abstractions.Interfaces;
 using Net.Shared.Bots.Abstractions.Models;
 
-namespace KdmidScheduler.Services;
+namespace KdmidScheduler.Infrastructure.Bots;
 
-public sealed class KdmidBotResponseService(IBotClient botClient, IBotCommandsStore commandStore, IKdmidService kdmidService) : IBotResponseService
+public sealed class KdmidBotResponseService(
+    IBotClient botClient,
+    IBotCommandsStore commandStore,
+    IKdmidService kdmidService) : IBotResponseService
 {
     private const string StartCommand = "start";
     private const string MineCommand = "mine";
@@ -22,7 +23,8 @@ public sealed class KdmidBotResponseService(IBotClient botClient, IBotCommandsSt
     private readonly IBotClient _botClient = botClient;
     private readonly IKdmidService _kdmidService = kdmidService;
     private readonly IBotCommandsStore _commandStore = commandStore;
-    private readonly JsonSerializerOptions _jsonSerializerOptions = new() { 
+    private readonly JsonSerializerOptions _jsonSerializerOptions = new()
+    {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 

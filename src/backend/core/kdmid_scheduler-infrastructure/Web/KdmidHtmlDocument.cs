@@ -1,11 +1,10 @@
 ﻿using System.Text;
 
 using HtmlAgilityPack;
-
-using KdmidScheduler.Abstractions.Interfaces;
+using KdmidScheduler.Abstractions.Interfaces.Services;
 using KdmidScheduler.Abstractions.Models.v1;
 
-namespace KdmidScheduler.Infrastructure.Services;
+namespace KdmidScheduler.Infrastructure.Web;
 
 public sealed class KdmidHtmlDocument : IKdmidHtmlDocument
 {

@@ -5,7 +5,7 @@ using Microsoft.Azure.Functions.Worker.Http;
 
 using Net.Shared.Bots.Abstractions.Interfaces;
 
-namespace KdmidScheduler.Azure.Api;
+namespace KdmidScheduler.Api;
 
 public class Functions(IBotClient client)
 {

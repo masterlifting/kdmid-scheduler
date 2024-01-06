@@ -1,17 +1,20 @@
-﻿using KdmidScheduler.Abstractions.Interfaces;
+﻿using KdmidScheduler.Abstractions.Interfaces.Services;
+using KdmidScheduler.Infrastructure.Bots;
 using KdmidScheduler.Infrastructure.Persistence.Context;
-using KdmidScheduler.Infrastructure.Services;
+using KdmidScheduler.Infrastructure.Persistence.Repositories;
 using KdmidScheduler.Infrastructure.Settings;
+using KdmidScheduler.Infrastructure.Web;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
+using Net.Shared.Bots;
 using Net.Shared.Persistence;
 
 namespace KdmidScheduler.Infrastructure;
 
 public static class Registrations
 {
-    public static IServiceCollection AddKdmidInfrastructure(this IServiceCollection services)
+    private static IServiceCollection AddKdmidInfrastructure(this IServiceCollection services)
     {
         services.AddLogging();
         services.AddMemoryCache();
@@ -24,8 +27,6 @@ public static class Registrations
                     .GetSection(AntiCaptchaConnectionSettings.SectionName)
                     .Bind(settings);
             });
-
-        services.AddMongoDb<KdmidMongoDbContext>(ServiceLifetime.Transient);
 
         services.AddHttpClient(Constants.Kdmid, x =>
         {
@@ -45,4 +46,22 @@ public static class Registrations
 
         return services;
     }
+    public static IServiceCollection AddKdmidAzureInfrastructure(this IServiceCollection services) => services
+        .AddKdmidInfrastructure()
+        .AddAzureTable<KdmidAzureTableContext>(ServiceLifetime.Transient)
+        .AddTelegramBot(x =>
+        {
+            x.AddRequestHandler<KdmidBotRequestService>();
+            x.AddResponseHandler<KdmidBotResponseService>();
+            x.AddCommandsStore<KdmidBotCommandsAzureTableStore>();
+        });
+    public static IServiceCollection AddKdmidVpsInfrastructure(this IServiceCollection services) => services
+        .AddKdmidInfrastructure()
+        .AddMongoDb<KdmidMongoDbContext>(ServiceLifetime.Transient)
+        .AddTelegramBot(x =>
+            {
+                x.AddRequestHandler<KdmidBotRequestService>();
+                x.AddResponseHandler<KdmidBotResponseService>();
+                x.AddCommandsStore<KdmidBotCommandsMongoDbStore>();
+            });
 }

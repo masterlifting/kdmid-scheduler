@@ -1,4 +1,4 @@
-﻿namespace KdmidScheduler.Abstractions.Interfaces;
+﻿namespace KdmidScheduler.Abstractions.Interfaces.Services;
 
 public interface IKdmidCaptcha
 {

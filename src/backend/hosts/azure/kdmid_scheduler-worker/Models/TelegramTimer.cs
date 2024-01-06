@@ -1,4 +1,4 @@
-﻿namespace KdmidScheduler.Azure.Worker.Models;
+﻿namespace KdmidScheduler.Worker.Models;
 
 public record Schedule(bool AdjustForDST);
 public record ScheduleStatus(DateTime Last, DateTime LastUpdated, DateTime Next);

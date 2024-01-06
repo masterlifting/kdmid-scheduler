@@ -1,11 +1,10 @@
 ﻿using System.Text;
 using System.Text.Json;
-
-using KdmidScheduler.Abstractions.Interfaces;
+using KdmidScheduler.Abstractions.Interfaces.Services;
 using KdmidScheduler.Infrastructure.Settings;
 using Microsoft.Extensions.Options;
 
-namespace KdmidScheduler.Infrastructure.Services;
+namespace KdmidScheduler.Infrastructure.Web;
 
 public sealed class KdmidCaptchaService(IOptions<AntiCaptchaConnectionSettings> options, IHttpClientFactory httpClientFactory) : IKdmidCaptcha
 {
