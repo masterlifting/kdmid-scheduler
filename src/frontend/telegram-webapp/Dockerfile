@@ -2,7 +2,7 @@ FROM node:14-alpine
 
 WORKDIR /app
 
-COPY ./src/webclient ./
+COPY . .
 
 RUN npm install
 RUN npm run build

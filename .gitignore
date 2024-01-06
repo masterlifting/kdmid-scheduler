@@ -264,7 +264,6 @@ __pycache__/
 *.pyc
 
 .env
-mongo-keyfile
 asset-manifest.json
 main.*.css
 main.*.css.map
