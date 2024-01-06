@@ -11,12 +11,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\submodules\shared-background\src\Net.Shared.Background\Net.Shared.Background.csproj" />
-    <ProjectReference Include="..\..\..\submodules\shared-bots\src\Net.Shared.Bots\Net.Shared.Bots.csproj" />
-    <ProjectReference Include="..\..\..\submodules\shared-persistence\src\Net.Shared.Persistence\Net.Shared.Persistence.csproj" />
-    <ProjectReference Include="..\..\..\submodules\shared-queues\src\Net.Shared.Queues\Net.Shared.Queues.csproj" />
-    <ProjectReference Include="..\..\..\submodules\shared-web\src\Net.Shared.Web\Net.Shared.Web.csproj" />
-    <ProjectReference Include="..\KdmidScheduler.Abstractions\KdmidScheduler.Abstractions.csproj" />
+    <ProjectReference Include="..\kdmid_scheduler-abstractions\KdmidScheduler.Abstractions.csproj" />
+    <ProjectReference Include="..\submodules\shared-background\src\background\Net.Shared.Background.csproj" />
+    <ProjectReference Include="..\submodules\shared-bots\src\bots\Net.Shared.Bots.csproj" />
+    <ProjectReference Include="..\submodules\shared-persistence\src\persistence\Net.Shared.Persistence.csproj" />
+    <ProjectReference Include="..\submodules\shared-queues\src\queues\Net.Shared.Queues.csproj" />
+    <ProjectReference Include="..\submodules\shared-web\src\web\Net.Shared.Web.csproj" />
   </ItemGroup>
 
 </Project>

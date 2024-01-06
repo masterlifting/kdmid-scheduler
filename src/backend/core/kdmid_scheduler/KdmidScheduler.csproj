@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\KdmidScheduler.Abstractions\KdmidScheduler.Abstractions.csproj" />
+    <ProjectReference Include="..\kdmid_scheduler-abstractions\KdmidScheduler.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

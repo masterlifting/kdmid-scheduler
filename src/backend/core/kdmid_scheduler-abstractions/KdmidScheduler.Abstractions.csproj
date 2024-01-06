@@ -11,11 +11,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\submodules\shared-background\src\Net.Shared.Background.Abstractions\Net.Shared.Background.Abstractions.csproj" />
-    <ProjectReference Include="..\..\..\submodules\shared-bots\src\Net.Shared.Bots.Abstractions\Net.Shared.Bots.Abstractions.csproj" />
-    <ProjectReference Include="..\..\..\submodules\shared-persistence\src\Net.Shared.Persistence.Abstractions\Net.Shared.Persistence.Abstractions.csproj" />
-    <ProjectReference Include="..\..\..\submodules\shared-queues\src\Net.Shared.Queues.Abstractions\Net.Shared.Queues.Abstractions.csproj" />
-    <ProjectReference Include="..\..\..\submodules\shared-web\src\Net.Shared.Web.Abstractions\Net.Shared.Web.Abstractions.csproj" />
+    <ProjectReference Include="..\submodules\shared-background\src\background-abstractions\Net.Shared.Background.Abstractions.csproj" />
+    <ProjectReference Include="..\submodules\shared-bots\src\bots-abstractions\Net.Shared.Bots.Abstractions.csproj" />
+    <ProjectReference Include="..\submodules\shared-persistence\src\persistence-abstractions\Net.Shared.Persistence.Abstractions.csproj" />
+    <ProjectReference Include="..\submodules\shared-queues\src\queues-abstractions\Net.Shared.Queues.Abstractions.csproj" />
+    <ProjectReference Include="..\submodules\shared-web\src\web-abstractions\Net.Shared.Web.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

@@ -8,8 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\app\KdmidScheduler.Infrastructure\KdmidScheduler.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\app\KdmidScheduler\KdmidScheduler.csproj" />
+    <ProjectReference Include="..\..\..\core\kdmid_scheduler-infrastructure\KdmidScheduler.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\core\kdmid_scheduler\KdmidScheduler.csproj" />
   </ItemGroup>
 
 </Project>
