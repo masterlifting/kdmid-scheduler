@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Http\**" />
+    <Compile Remove="Interfaces\**" />
+    <EmbeddedResource Remove="Http\**" />
+    <EmbeddedResource Remove="Interfaces\**" />
+    <None Remove="Http\**" />
+    <None Remove="Interfaces\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\shared\src\Net.Shared.Abstractions\Net.Shared.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>
