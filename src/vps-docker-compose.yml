@@ -1,0 +1,85 @@
+# @format
+
+version: '3.8'
+
+services:
+  mongodb_1:
+    image: mongo:latest
+    container_name: mongodb_1
+    hostname: mongodb
+    volumes:
+      - mongodb_1-data:/data/db
+      - mongodb_1-config:/data/configdb
+      - ./backend/hosts/vps/infrastructure/mongodb/mongodb-keyfile:/opt/keyfiles/mongodb-keyfile
+      - ./backend/hosts/vps/infrastructure/mongodb/mongodb-init.sh:/docker-entrypoint-initdb.d/mongodb-init.sh
+      - ./backend/hosts/vps/infrastructure/mongodb/mongodb-init_replicas.sh:/docker-entrypoint-initdb.d/mongodb-init_replicas.sh
+      - ./backend/hosts/vps/infrastructure/mongodb/mongodb-init_user.sh:/docker-entrypoint-initdb.d/mongodb-init_user.sh
+    ports:
+      - 27017:27017
+    command:
+      [
+        '/docker-entrypoint-initdb.d/init.sh',
+        '/docker-entrypoint-initdb.d/init_replicas.sh',
+        '/docker-entrypoint-initdb.d/init_user.sh',
+      ]
+    depends_on:
+      - mongodb_2
+      - mongodb_3
+  mongodb_2:
+    image: mongo:latest
+    container_name: mongodb_2
+    volumes:
+      - mongodb_2-data:/data/db
+      - mongodb_2-config:/data/configdb
+      - ./backend/hosts/vps/infrastructure/mongodb/mongodb-keyfile:/opt/keyfiles/mongodb-keyfile
+      - ./backend/hosts/vps/infrastructure/mongodb/mongodb-init.sh:/docker-entrypoint-initdb.d/mongodb-init.sh
+    ports:
+      - 27018:27017
+    command: ['/docker-entrypoint-initdb.d/init.sh']
+  mongodb_3:
+    image: mongo:latest
+    container_name: mongodb_3
+    volumes:
+      - mongodb_3-data:/data/db
+      - mongodb_3-config:/data/configdb
+      - ./backend/hosts/vps/infrastructure/mongodb/mongodb-keyfile:/opt/keyfiles/mongodb-keyfile
+      - ./backend/hosts/vps/infrastructure/mongodb/mongodb-init.sh:/docker-entrypoint-initdb.d/mongodb-init.sh
+    ports:
+      - 27019:27017
+    command: ['/docker-entrypoint-initdb.d/init.sh']
+  backend:
+    image: kdmid-scheduler-backend
+    container_name: backend
+    build:
+      context: .
+      dockerfile: ./backend/hosts/vps/KdmidScheduler.Api/Dockerfile
+    ports:
+      - '8080:8080'
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+      - MongoDbConnection__Host=mongodb
+      - MongoDbConnection__Password=${MONGODBCONNECTION_PASSWORD}
+      - AntiCaptchaConnection__ApiKey=${TELEGRAMBOTCONNECTION_TOKEN}
+      - TelegramBotConnection__Token=${ANTICAPTCHACONNECTION_APIKEY}
+    depends_on:
+      - mongodb_1
+      - mongodb_2
+      - mongodb_3
+  frontend:
+    image: kdmid-scheduler-frontend
+    container_name: frontend
+    build:
+      context: .
+      dockerfile: ./frontend/telegram-webapp/Dockerfile
+    ports:
+      - '3000:3000'
+    depends_on:
+      - backend
+
+volumes:
+  mongodb_1-data:
+  mongodb_2-data:
+  mongodb_3-data:
+  mongodb_1-config:
+  mongodb_2-config:
+  mongodb_3-config:

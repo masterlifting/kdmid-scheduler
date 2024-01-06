@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MongoDB.Bson" Version="2.23.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\submodules\shared-background\src\Net.Shared.Background.Abstractions\Net.Shared.Background.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\submodules\shared-bots\src\Net.Shared.Bots.Abstractions\Net.Shared.Bots.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\submodules\shared-persistence\src\Net.Shared.Persistence.Abstractions\Net.Shared.Persistence.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\submodules\shared-queues\src\Net.Shared.Queues.Abstractions\Net.Shared.Queues.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\submodules\shared-web\src\Net.Shared.Web.Abstractions\Net.Shared.Web.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>
