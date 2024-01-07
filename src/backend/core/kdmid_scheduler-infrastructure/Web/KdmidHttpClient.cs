@@ -1,13 +1,15 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
-using KdmidScheduler.Abstractions.Interfaces.Services;
-using KdmidScheduler.Abstractions.Models.v1;
+using KdmidScheduler.Abstractions.Interfaces.Infrastructure.Services;
+using KdmidScheduler.Abstractions.Models.Core.v1;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace KdmidScheduler.Infrastructure.Web;
 
-public sealed class KdmidHttpClient(IHttpClientFactory httpClientFactory, IMemoryCache cache) : IKdmidHttpClient
+public sealed class KdmidHttpClient(
+    IHttpClientFactory httpClientFactory, 
+    IMemoryCache cache) : IKdmidHttpClient
 {
     private readonly IMemoryCache _cache = cache;
     private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;

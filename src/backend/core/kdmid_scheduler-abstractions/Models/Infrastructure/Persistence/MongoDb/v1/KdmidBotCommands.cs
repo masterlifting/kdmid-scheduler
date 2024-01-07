@@ -1,11 +1,10 @@
-﻿using KdmidScheduler.Abstractions.Interfaces.Models;
-
+﻿using KdmidScheduler.Abstractions.Interfaces.Infrastructure.Models.Persistence;
 using MongoDB.Bson;
 
 using Net.Shared.Bots.Abstractions.Models;
 using Net.Shared.Persistence.Abstractions.Interfaces.Entities;
 
-namespace KdmidScheduler.Abstractions.Models.v1.Persistence.MongoDb;
+namespace KdmidScheduler.Abstractions.Models.Infrastructure.Persistence.MongoDb.v1;
 
 public sealed class KdmidBotCommands : IKdmidBotCommand, IPersistentNoSql
 {

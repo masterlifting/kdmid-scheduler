@@ -1,12 +1,11 @@
-﻿using KdmidScheduler.Abstractions.Interfaces.Models;
-
-using Azure.Data.Tables;
+﻿using Azure.Data.Tables;
 
 using Net.Shared.Bots.Abstractions.Models;
 using Net.Shared.Persistence.Abstractions.Interfaces.Entities;
 using Azure;
+using KdmidScheduler.Abstractions.Interfaces.Infrastructure.Models.Persistence;
 
-namespace KdmidScheduler.Abstractions.Models.v1.Persistence.AzureTable;
+namespace KdmidScheduler.Abstractions.Models.Infrastructure.Persistence.AzureTable.v1;
 
 public sealed class KdmidBotCommand : IKdmidBotCommand, IPersistent, ITableEntity
 {

@@ -1,18 +1,18 @@
-﻿using KdmidScheduler.Abstractions.Interfaces.Services;
-using KdmidScheduler.Infrastructure;
-using KdmidScheduler.Services;
+﻿using KdmidScheduler.Infrastructure;
 
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+
+using static KdmidScheduler.Registrations;
 
 new HostBuilder()
     .ConfigureLogging(logger => logger.AddSimpleConsole())
     .ConfigureFunctionsWorkerDefaults((_, builder) =>
     {
         builder.Services
+            .AddKdmidInfrastructure()
             .AddKdmidAzureInfrastructure()
-            .AddTransient<IKdmidService, KdmidService>();
+            .AddKdmidCore();
     })
     .Build()
     .Run();

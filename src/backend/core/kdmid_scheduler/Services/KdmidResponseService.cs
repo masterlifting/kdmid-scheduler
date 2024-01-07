@@ -1,52 +1,41 @@
 ﻿using System.Text.Json;
-using KdmidScheduler.Abstractions.Interfaces.Services;
-using KdmidScheduler.Abstractions.Models.v1;
+using KdmidScheduler.Abstractions.Interfaces.Core.Services;
+using KdmidScheduler.Abstractions.Models.Core.v1;
+using KdmidScheduler.Abstractions.Models.Settings;
+
+using Microsoft.Extensions.Options;
+
 using Net.Shared.Bots.Abstractions.Interfaces;
 using Net.Shared.Bots.Abstractions.Models;
 
-namespace KdmidScheduler.Infrastructure.Bots;
+namespace KdmidScheduler.Services;
 
-public sealed class KdmidBotResponseService(
+public sealed class KdmidResponseService(
     IBotClient botClient,
-    IBotCommandsStore commandStore,
-    IKdmidService kdmidService) : IBotResponseService
+    IBotCommandsStore botCommandsStore,
+    IKdmidRequestService kdmidRequestService,
+    IOptions<KdmidSettings> options
+    ) : IKdmidResponseService
 {
-    private const string StartCommand = "start";
-    private const string MineCommand = "mine";
-    private const string SendAvailableDatesCommand = "sendAvailableDates";
-    private const string SendConfirmResultCommand = "sendConfirmResult";
-
     private static readonly string CityKey = typeof(City).FullName!;
     private static readonly string KdmidIdKey = typeof(Identifier).FullName!;
     private static readonly string ChosenResultKey = typeof(ChosenDateResult).FullName!;
 
     private readonly IBotClient _botClient = botClient;
-    private readonly IKdmidService _kdmidService = kdmidService;
-    private readonly IBotCommandsStore _commandStore = commandStore;
+    private readonly IBotCommandsStore _botCommandsStore = botCommandsStore;
+    private readonly IKdmidRequestService _kdmidRequestService = kdmidRequestService;
+    private readonly KdmidSettings _kdmidSettings = options.Value;
     private readonly JsonSerializerOptions _jsonSerializerOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
-    public Task CreateResponse(string chatId, string commandName, CancellationToken cToken) => commandName switch
+    public async Task SendAvailableEmbassies(string chatId, CancellationToken cToken)
     {
-        StartCommand => SendAvailableEmbassies(chatId, cToken),
-        MineCommand => SendMyEmbassies(chatId, cToken),
-        _ => throw new NotSupportedException($"The command '{commandName}' is not supported.")
-    };
-    public Task CreateResponse(string chatId, BotCommand command, CancellationToken cToken) => command.Name switch
-    {
-        SendAvailableDatesCommand => SendAvailableDates(chatId, command, cToken),
-        SendConfirmResultCommand => SendConfirmResult(chatId, command, cToken),
-        _ => throw new NotSupportedException($"The command '{command}' is not supported.")
-    };
+        await _botCommandsStore.Clear(chatId, cToken);
 
-    private async Task SendAvailableEmbassies(string chatId, CancellationToken cToken)
-    {
-        var supportedCities = _kdmidService.GetSupportedCities(cToken);
-
-        var commands = await _commandStore.Get(chatId, cToken);
-
+        var supportedCities = _kdmidRequestService.GetSupportedCities(cToken);
+        var commands = await _botCommandsStore.Get(chatId, cToken);
         var myCities = commands
             .Where(x => x.Parameters.ContainsKey(KdmidIdKey))
             .Select(x => JsonSerializer.Deserialize<City>(x.Parameters[CityKey], _jsonSerializerOptions))
@@ -59,12 +48,12 @@ public sealed class KdmidBotResponseService(
 
         foreach (var city in availableCities)
         {
-            var command = await _commandStore.Create(chatId, SendAvailableDatesCommand, new()
+            var command = await _botCommandsStore.Create(chatId, IKdmidResponseService.SendAvailableDatesCommand, new()
             {
                 { CityKey, JsonSerializer.Serialize(city, _jsonSerializerOptions)}
             }, cToken);
 
-            var uri = new Uri($"https://kdmid-scheduler.netlify.app/identifier?chatId={chatId}&commandId={command.Id}");
+            var uri = new Uri($"{_kdmidSettings.WebAppUrl}?chatId={chatId}&commandId={command.Id}");
 
             webAppData.Add(city.Name, uri);
         }
@@ -80,11 +69,13 @@ public sealed class KdmidBotResponseService(
             await _botClient.SendWebApp(webAppArgs, cToken);
         }
     }
-    private async Task SendMyEmbassies(string chatId, CancellationToken cToken)
+    public async Task SendMyEmbassies(string chatId, CancellationToken cToken)
     {
-        var supportedCities = _kdmidService.GetSupportedCities(cToken);
+        await _botCommandsStore.Clear(chatId, cToken);
 
-        var commands = await _commandStore.Get(chatId, cToken);
+        var supportedCities = _kdmidRequestService.GetSupportedCities(cToken);
+
+        var commands = await _botCommandsStore.Get(chatId, cToken);
 
         var availableCommands = commands
             .Where(x => x.Parameters.ContainsKey(KdmidIdKey))
@@ -112,7 +103,7 @@ public sealed class KdmidBotResponseService(
             await _botClient.SendButtons(buttonsArgs, cToken);
         }
     }
-    private async Task SendAvailableDates(string chatId, BotCommand command, CancellationToken cToken)
+    public async Task SendAvailableDates(string chatId, BotCommand command, CancellationToken cToken)
     {
         var city =
             JsonSerializer.Deserialize<City>(command.Parameters[CityKey], _jsonSerializerOptions)
@@ -122,16 +113,16 @@ public sealed class KdmidBotResponseService(
             JsonSerializer.Deserialize<Identifier>(command.Parameters[KdmidIdKey], _jsonSerializerOptions)
             ?? throw new ArgumentException("The kdmidId is not specified.");
 
-        var availableDatesResult = await _kdmidService.GetAvailableDates(city, kdmidId, cToken);
+        var availableDatesResult = await _kdmidRequestService.GetAvailableDates(city, kdmidId, cToken);
 
         var buttonsData = new Dictionary<string, string>(availableDatesResult.Dates.Count);
 
         foreach (var date in availableDatesResult.Dates)
         {
-            var nextCommand = await _commandStore.Create(chatId, SendConfirmResultCommand, new()
-                {
-                    { CityKey, command.Parameters[CityKey] },
-                    { KdmidIdKey, command.Parameters[KdmidIdKey] },
+            var nextCommand = await _botCommandsStore.Create(chatId, IKdmidResponseService.SendConfirmResultCommand, new()
+            {
+                { CityKey, command.Parameters[CityKey] },
+                { KdmidIdKey, command.Parameters[KdmidIdKey] },
                     { ChosenResultKey, JsonSerializer.Serialize(new ChosenDateResult(availableDatesResult.FormData, date.Key, date.Value), _jsonSerializerOptions) }
                 }, cToken);
 
@@ -149,7 +140,7 @@ public sealed class KdmidBotResponseService(
             await _botClient.SendButtons(buttonsArgs, cToken);
         }
     }
-    private async Task SendConfirmResult(string chatId, BotCommand command, CancellationToken cToken)
+    public async Task SendConfirmationResult(string chatId, BotCommand command, CancellationToken cToken)
     {
         var city =
             JsonSerializer.Deserialize<City>(command.Parameters[CityKey], _jsonSerializerOptions)
@@ -157,13 +148,13 @@ public sealed class KdmidBotResponseService(
 
         var kdmidId =
             JsonSerializer.Deserialize<Identifier>(command.Parameters[KdmidIdKey], _jsonSerializerOptions)
-            ?? throw new ArgumentException("The kdmidId is not specified.");
+        ?? throw new ArgumentException("The kdmidId is not specified.");
 
         var chosenResult =
             JsonSerializer.Deserialize<ChosenDateResult>(command.Parameters[ChosenResultKey], _jsonSerializerOptions)
             ?? throw new ArgumentException("The chosenResult is not specified.");
 
-        var confirmResult = await _kdmidService.ConfirmDate(city, kdmidId, chosenResult, cToken);
+        var confirmResult = await _kdmidRequestService.ConfirmChosenDate(city, kdmidId, chosenResult, cToken);
 
         if (confirmResult.IsSuccess)
         {

@@ -1,6 +1,6 @@
 ﻿using Net.Shared.Bots.Abstractions.Models;
 
-namespace KdmidScheduler.Abstractions.Interfaces.Models;
+namespace KdmidScheduler.Abstractions.Interfaces.Infrastructure.Models.Persistence;
 
 public interface IKdmidBotCommand
 {

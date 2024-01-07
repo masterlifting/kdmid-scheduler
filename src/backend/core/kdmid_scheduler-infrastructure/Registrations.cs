@@ -1,11 +1,14 @@
-﻿using KdmidScheduler.Abstractions.Interfaces.Services;
+﻿using KdmidScheduler.Abstractions.Interfaces.Infrastructure.Services;
+using KdmidScheduler.Abstractions.Models.Settings;
 using KdmidScheduler.Infrastructure.Bots;
-using KdmidScheduler.Infrastructure.Persistence.Context;
-using KdmidScheduler.Infrastructure.Persistence.Repositories;
-using KdmidScheduler.Infrastructure.Settings;
+using KdmidScheduler.Infrastructure.Options;
+using KdmidScheduler.Infrastructure.Persistence.Contexts;
 using KdmidScheduler.Infrastructure.Web;
+
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 using Net.Shared.Bots;
 using Net.Shared.Persistence;
@@ -14,7 +17,7 @@ namespace KdmidScheduler.Infrastructure;
 
 public static class Registrations
 {
-    private static IServiceCollection AddKdmidInfrastructure(this IServiceCollection services)
+    public static IServiceCollection AddKdmidInfrastructure(this IServiceCollection services)
     {
         services.AddLogging();
         services.AddMemoryCache();
@@ -25,6 +28,15 @@ public static class Registrations
             {
                 configuration
                     .GetSection(AntiCaptchaConnectionSettings.SectionName)
+                    .Bind(settings);
+            });
+
+        services
+            .AddOptions<KdmidSettings>()
+            .Configure<IConfiguration>((settings, configuration) =>
+            {
+                configuration
+                    .GetSection(KdmidSettings.SectionName)
                     .Bind(settings);
             });
 
@@ -47,21 +59,16 @@ public static class Registrations
         return services;
     }
     public static IServiceCollection AddKdmidAzureInfrastructure(this IServiceCollection services) => services
-        .AddKdmidInfrastructure()
         .AddAzureTable<KdmidAzureTableContext>(ServiceLifetime.Transient)
-        .AddTelegramBot(x =>
+        .AddTelegramBot<KdmidBotResponse>(x =>
         {
-            x.AddRequestHandler<KdmidBotRequestService>();
-            x.AddResponseHandler<KdmidBotResponseService>();
-            x.AddCommandsStore<KdmidBotCommandsAzureTableStore>();
+            x.AddCommandsStore<Bots.Stores.AzureTable.KdmidBotCommandsStore>();
         });
     public static IServiceCollection AddKdmidVpsInfrastructure(this IServiceCollection services) => services
-        .AddKdmidInfrastructure()
         .AddMongoDb<KdmidMongoDbContext>(ServiceLifetime.Transient)
-        .AddTelegramBot(x =>
-            {
-                x.AddRequestHandler<KdmidBotRequestService>();
-                x.AddResponseHandler<KdmidBotResponseService>();
-                x.AddCommandsStore<KdmidBotCommandsMongoDbStore>();
-            });
+        .AddTelegramBot<KdmidBotResponse>(x =>
+        {
+            x.AddCommandsStore<Bots.Stores.MongoDb.KdmidBotCommandsStore>();
+        })
+        .AddTransient<IConfigureOptions<CorsOptions>, ConfigureCorsOptions>();
 }

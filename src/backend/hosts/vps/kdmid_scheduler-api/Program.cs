@@ -1,33 +1,23 @@
 ﻿using System.Text.Json;
 
-using KdmidScheduler.Abstractions.Interfaces.Services;
 using KdmidScheduler.Infrastructure;
-using KdmidScheduler.Services;
+using KdmidScheduler.Infrastructure.Options;
 
 using Net.Shared.Bots.Abstractions.Interfaces;
 using Net.Shared.Bots.Abstractions.Models;
 
+using static KdmidScheduler.Registrations;
+
 var builder = WebApplication.CreateSlimBuilder(args);
 
 builder.Services
+    .AddKdmidInfrastructure()
     .AddKdmidVpsInfrastructure()
-    .AddTransient<IKdmidService, KdmidService>();
-
-    builder.Services.AddCors(options =>
-    {
-        options.AddPolicy("TelegramWebAppCorsPolicy", builder =>
-        {
-            builder
-                .WithOrigins("http://localhost:3000")
-                .WithMethods("GET", "POST")
-                .AllowCredentials()
-                .WithHeaders("Content-Type");
-        });
-    });
+    .AddKdmidCore();
 
 var app = builder.Build();
 
-app.UseCors("TelegramWebAppCorsPolicy");
+app.UseCors(ConfigureCorsOptions.PolicyName);
 
 app.MapGet("/start", (IBotClient client, CancellationToken cToken) =>
 {
@@ -53,7 +43,7 @@ app.MapGet($"/chats/{{chatId}}/commands/{{commandId}}", async (IBotCommandsStore
 {
     return await commandStore.Get(chatId, new Guid(commandId), cToken);
 });
-app.MapPost($"/chats/{{chatId}}", async (IBotCommandsStore commandStore, IBotResponseService responseService, HttpRequest request, string chatId, CancellationToken cToken) =>
+app.MapPost($"/chats/{{chatId}}", async (IBotCommandsStore commandStore, IBotResponse responseService, HttpRequest request, string chatId, CancellationToken cToken) =>
 {
     using var reader = new StreamReader(request.Body);
 
@@ -67,13 +57,11 @@ app.MapPost($"/chats/{{chatId}}", async (IBotCommandsStore commandStore, IBotRes
     });
 
     if(command is null || command.Id == Guid.Empty)
-    {
         throw new ArgumentNullException(nameof(command), "Received command is empty.");
-    }
 
     await commandStore.Update(chatId, command.Id, command, cToken);
 
-    await responseService.CreateResponse(chatId, command, cToken);
+    await responseService.Create(chatId, command, cToken);
 });
 
 app.Run();

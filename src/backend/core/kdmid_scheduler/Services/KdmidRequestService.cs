@@ -1,12 +1,13 @@
-﻿using KdmidScheduler.Abstractions.Interfaces.Services;
-using KdmidScheduler.Abstractions.Models.v1;
+﻿using KdmidScheduler.Abstractions.Interfaces.Core.Services;
+using KdmidScheduler.Abstractions.Interfaces.Infrastructure.Services;
+using KdmidScheduler.Abstractions.Models.Core.v1;
 
 namespace KdmidScheduler.Services;
 
-public sealed class KdmidService(
+public sealed class KdmidRequestService(
     IKdmidHttpClient httpClient, 
     IKdmidHtmlDocument htmlDocument, 
-    IKdmidCaptcha captchaService) : IKdmidService
+    IKdmidCaptcha captchaService) : IKdmidRequestService
 {
     private readonly IKdmidHttpClient _httpClient = httpClient;
     private readonly IKdmidCaptcha _captchaService = captchaService;
@@ -29,7 +30,7 @@ public sealed class KdmidService(
         new("helsinki", "Helsinki"),
         new("hague", "Hague")
     };
-    public async Task<AvailableDates> GetAvailableDates(City city, Identifier identifier, CancellationToken cToken)
+    public async Task<AvailableDatesResult> GetAvailableDates(City city, Identifier identifier, CancellationToken cToken)
     {
         var startPageResponse = await _httpClient.GetStartPage(city, identifier, cToken);
         var startPage = _htmlDocument.GetStartPage(startPageResponse);
@@ -47,21 +48,19 @@ public sealed class KdmidService(
         var calendarResponse = await _httpClient.PostCalendar(city, identifier, applicationFormData, cToken);
         var calendarPage = _htmlDocument.GetCalendarPage(calendarResponse);
 
-        var availableDates = new Dictionary<DateTime, string>(calendarPage.Variants.Count);
+        var availableDates = new Dictionary<DateTime, string>(calendarPage.Dates.Count);
         
-        foreach (var variant in calendarPage.Variants)
+        foreach (var dateString in calendarPage.Dates)
         {
-            if (!DateTime.TryParse(variant.Value.Split('|')[1], out var date))
-            {
-                throw new InvalidOperationException($"The date '{variant.Value}' is not valid.");
-            }
+            if (!DateTime.TryParse(dateString.Value.Split('|')[1], out var parsedDate))
+                throw new InvalidOperationException($"The date '{dateString.Value}' is not valid.");
 
-            availableDates.Add(date, variant.Value);
+            availableDates.Add(parsedDate, dateString.Value);
         }
 
-        return new AvailableDates(applicationFormData, availableDates);
+        return new AvailableDatesResult(applicationFormData, availableDates);
     }
-    public async Task<ConfirmationResult> ConfirmDate(City city, Identifier identifier, ChosenDateResult chosenResult, CancellationToken cToken)
+    public async Task<ConfirmationResult> ConfirmChosenDate(City city, Identifier identifier, ChosenDateResult chosenResult, CancellationToken cToken)
     {
         const string ButtonKey = "ctl00%24MainContent%24TextBox1=";
         var buttonValue = Uri.EscapeDataString(chosenResult.ChosenValue);

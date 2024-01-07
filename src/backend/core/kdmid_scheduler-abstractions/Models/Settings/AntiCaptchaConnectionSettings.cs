@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace KdmidScheduler.Infrastructure.Settings;
+namespace KdmidScheduler.Abstractions.Models.Settings;
 
 public sealed record AntiCaptchaConnectionSettings
 {

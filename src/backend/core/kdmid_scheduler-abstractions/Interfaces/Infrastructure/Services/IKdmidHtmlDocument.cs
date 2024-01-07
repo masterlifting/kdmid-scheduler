@@ -1,6 +1,6 @@
-﻿using KdmidScheduler.Abstractions.Models.v1;
+﻿using KdmidScheduler.Abstractions.Models.Core.v1;
 
-namespace KdmidScheduler.Abstractions.Interfaces.Services;
+namespace KdmidScheduler.Abstractions.Interfaces.Infrastructure.Services;
 
 public interface IKdmidHtmlDocument
 {

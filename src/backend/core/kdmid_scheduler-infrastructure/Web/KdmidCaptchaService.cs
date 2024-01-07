@@ -1,12 +1,16 @@
 ﻿using System.Text;
 using System.Text.Json;
-using KdmidScheduler.Abstractions.Interfaces.Services;
-using KdmidScheduler.Infrastructure.Settings;
+
+using KdmidScheduler.Abstractions.Interfaces.Infrastructure.Services;
+using KdmidScheduler.Abstractions.Models.Settings;
+
 using Microsoft.Extensions.Options;
 
 namespace KdmidScheduler.Infrastructure.Web;
 
-public sealed class KdmidCaptchaService(IOptions<AntiCaptchaConnectionSettings> options, IHttpClientFactory httpClientFactory) : IKdmidCaptcha
+public sealed class KdmidCaptchaService(
+    IOptions<AntiCaptchaConnectionSettings> options, 
+    IHttpClientFactory httpClientFactory) : IKdmidCaptcha
 {
     private readonly AntiCaptchaConnectionSettings _settings = options.Value;
     private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
@@ -43,9 +47,7 @@ public sealed class KdmidCaptchaService(IOptions<AntiCaptchaConnectionSettings> 
                 var resultContent = taskResult!["solution"]?.ToString();
 
                 if (string.IsNullOrWhiteSpace(resultContent))
-                {
                     throw new InvalidOperationException("Captcha solving failed.");
-                }
 
                 var resultObject =
                     JsonSerializer.Deserialize<Dictionary<string, object?>>(resultContent)

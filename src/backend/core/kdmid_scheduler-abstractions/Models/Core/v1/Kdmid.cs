@@ -1,4 +1,4 @@
-﻿namespace KdmidScheduler.Abstractions.Models.v1;
+﻿namespace KdmidScheduler.Abstractions.Models.Core.v1;
 
 public sealed record Identifier
 {
@@ -12,10 +12,10 @@ public sealed record Identifier
 }
 public sealed record City(string Code, string Name);
 
-public sealed record AvailableDates(string FormData, Dictionary<DateTime, string> Dates);
+public sealed record AvailableDatesResult(string FormData, Dictionary<DateTime, string> Dates);
 public sealed record ChosenDateResult(string FormData, DateTime Date, string ChosenValue);
 public sealed record ConfirmationResult(bool IsSuccess, string Message);
 
 public sealed record StartPage(string FormData, string CaptchaCode);
-public sealed record CalendarPage(string FormData, IDictionary<string, string> Variants);
+public sealed record CalendarPage(string FormData, IDictionary<string, string> Dates);
 public sealed record ConfirmationPage(string Result);

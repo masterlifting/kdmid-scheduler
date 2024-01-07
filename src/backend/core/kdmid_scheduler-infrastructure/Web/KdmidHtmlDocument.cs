@@ -1,8 +1,8 @@
 ﻿using System.Text;
 
 using HtmlAgilityPack;
-using KdmidScheduler.Abstractions.Interfaces.Services;
-using KdmidScheduler.Abstractions.Models.v1;
+using KdmidScheduler.Abstractions.Interfaces.Infrastructure.Services;
+using KdmidScheduler.Abstractions.Models.Core.v1;
 
 namespace KdmidScheduler.Infrastructure.Web;
 
@@ -21,7 +21,7 @@ public sealed class KdmidHtmlDocument : IKdmidHtmlDocument
 
         var captchaCode = string.Empty;
 
-        StringBuilder formBuilder = new();
+        var formDataBuilder = new StringBuilder();
 
         foreach (var node in pageNodes)
         {
@@ -33,22 +33,20 @@ public sealed class KdmidHtmlDocument : IKdmidHtmlDocument
                 var encodedInputName = Uri.EscapeDataString(inputName);
                 var encodedInputValue = Uri.EscapeDataString(inputValue);
 
-                formBuilder.Append($"&{encodedInputName}={encodedInputValue}");
+                formDataBuilder.Append($"&{encodedInputName}={encodedInputValue}");
             }
             else if (node.Name == "img")
             {
                 captchaCode = node.GetAttributeValue("src", "");
 
                 if (string.IsNullOrWhiteSpace(captchaCode) || !captchaCode.Contains("CodeImage", StringComparison.OrdinalIgnoreCase))
-                {
                     throw new InvalidOperationException("The Captcha code was not found.");
-                }
             }
         }
 
-        formBuilder.Remove(0, 1);
+        formDataBuilder.Remove(0, 1);
 
-        var formData = formBuilder.ToString();
+        var formData = formDataBuilder.ToString();
 
         return new StartPage(formData, captchaCode);
     }
@@ -104,7 +102,7 @@ public sealed class KdmidHtmlDocument : IKdmidHtmlDocument
         if (pageNodes is null || pageNodes.Count == 0)
             throw new InvalidOperationException("The Calendar page was not found.");
 
-        var formData = new StringBuilder();
+        var formDataBuilder = new StringBuilder();
 
         foreach (var node in pageNodes)
         {
@@ -114,22 +112,24 @@ public sealed class KdmidHtmlDocument : IKdmidHtmlDocument
             var encodedInputName = Uri.EscapeDataString(inputName);
             var encodedInputValue = Uri.EscapeDataString(inputValue);
 
-            formData.Append($"&{encodedInputName}={encodedInputValue}");
+            formDataBuilder.Append($"&{encodedInputName}={encodedInputValue}");
         }
 
-        formData.Remove(0, 1);
+        formDataBuilder.Remove(0, 1);
 
-        var variants = new Dictionary<string, string>(22);
+        var dates = new Dictionary<string, string>(22);
 
         foreach (var radio in resultTable.SelectNodes("//input[@type='radio']"))
         {
             var radioKey = radio.NextSibling.InnerText.Trim();
             var radioValue = radio.GetAttributeValue("value", "");
 
-            variants.Add(radioKey, radioValue);
+            dates.Add(radioKey, radioValue);
         }
 
-        return new CalendarPage(formData.ToString(), variants);
+        var formData = formDataBuilder.ToString();
+
+        return new CalendarPage(formData, dates);
     }
     public ConfirmationPage GetConfirmationPage(string page)
     {

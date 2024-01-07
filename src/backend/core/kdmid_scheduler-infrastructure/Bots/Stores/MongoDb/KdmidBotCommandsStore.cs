@@ -1,23 +1,21 @@
-﻿using KdmidScheduler.Abstractions.Models.v1.Persistence.AzureTable;
-
+﻿using KdmidScheduler.Abstractions.Models.Infrastructure.Persistence.MongoDb.v1;
 using Net.Shared.Bots.Abstractions.Interfaces;
 using Net.Shared.Bots.Abstractions.Models;
 using Net.Shared.Persistence.Abstractions.Interfaces.Repositories;
 using Net.Shared.Persistence.Abstractions.Models.Contexts;
 
-namespace KdmidScheduler.Infrastructure.Persistence.Repositories;
+namespace KdmidScheduler.Infrastructure.Bots.Stores.MongoDb;
 
-public sealed class KdmidBotCommandsAzureTableStore(
-    IPersistenceReaderRepository<KdmidBotCommand> readerRepository,
-    IPersistenceWriterRepository<KdmidBotCommand> writerRepository
-    ) : IBotCommandsStore
+public sealed class KdmidBotCommandsStore(
+    IPersistenceReaderRepository<KdmidBotCommands> readerRepository,
+    IPersistenceWriterRepository<KdmidBotCommands> writerRepository) : IBotCommandsStore
 {
-    private readonly IPersistenceReaderRepository<KdmidBotCommand> _readerRepository = readerRepository;
-    private readonly IPersistenceWriterRepository<KdmidBotCommand> _writerRepository = writerRepository;
+    private readonly IPersistenceReaderRepository<KdmidBotCommands> _readerRepository = readerRepository;
+    private readonly IPersistenceWriterRepository<KdmidBotCommands> _writerRepository = writerRepository;
 
     public async Task<BotCommand> Create(string chatId, string Name, Dictionary<string, string> Parameters, CancellationToken cToken)
     {
-        var entity = new KdmidBotCommand
+        var entity = new KdmidBotCommands
         {
             ChatId = chatId,
             Command = new BotCommand(Guid.NewGuid(), Name, Parameters)
@@ -29,7 +27,7 @@ public sealed class KdmidBotCommandsAzureTableStore(
     }
     public async Task Delete(string chatId, Guid commandId, CancellationToken cToken)
     {
-        var deleteOptions = new PersistenceQueryOptions<KdmidBotCommand>
+        var deleteOptions = new PersistenceQueryOptions<KdmidBotCommands>
         {
             Filter = x => x.ChatId == chatId && x.Command.Id == commandId,
         };
@@ -38,9 +36,9 @@ public sealed class KdmidBotCommandsAzureTableStore(
     }
     public async Task Update(string chatId, Guid commandId, BotCommand command, CancellationToken cToken)
     {
-        var updateOptions = new PersistenceUpdateOptions<KdmidBotCommand>(x => x.Command = command)
+        var updateOptions = new PersistenceUpdateOptions<KdmidBotCommands>(x => x.Command = command)
         {
-            QueryOptions = new PersistenceQueryOptions<KdmidBotCommand>
+            QueryOptions = new PersistenceQueryOptions<KdmidBotCommands>
             {
                 Filter = x => x.ChatId == chatId && x.Command.Id == commandId,
             }
@@ -50,7 +48,7 @@ public sealed class KdmidBotCommandsAzureTableStore(
     }
     public async Task Clear(string chatId, CancellationToken cToken)
     {
-        var deleteOptions = new PersistenceQueryOptions<KdmidBotCommand>
+        var deleteOptions = new PersistenceQueryOptions<KdmidBotCommands>
         {
             Filter = x => x.ChatId == chatId,
         };
@@ -60,7 +58,7 @@ public sealed class KdmidBotCommandsAzureTableStore(
 
     public async Task<BotCommand> Get(string chatId, Guid commandId, CancellationToken cToken)
     {
-        var queryOptions = new PersistenceQueryOptions<KdmidBotCommand>
+        var queryOptions = new PersistenceQueryOptions<KdmidBotCommands>
         {
             Filter = x => x.ChatId == chatId && x.Command.Id == commandId,
         };
@@ -73,7 +71,7 @@ public sealed class KdmidBotCommandsAzureTableStore(
     }
     public async Task<BotCommand[]> Get(string chatId, CancellationToken cToken)
     {
-        var queryOptions = new PersistenceQueryOptions<KdmidBotCommand>
+        var queryOptions = new PersistenceQueryOptions<KdmidBotCommands>
         {
             Filter = x => x.ChatId == chatId,
         };
