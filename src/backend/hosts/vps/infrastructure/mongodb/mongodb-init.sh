@@ -1,5 +1,3 @@
-#!/bin/bash
-
 echo "Waiting for keyfile to be created..."
 sleep 2
 

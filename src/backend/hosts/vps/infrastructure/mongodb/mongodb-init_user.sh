@@ -1,5 +1,3 @@
-#!/bin/bash
-
 echo "Waiting for user to be created..."
 sleep 2
 

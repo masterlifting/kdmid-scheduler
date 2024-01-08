@@ -1,5 +1,3 @@
-#!/bin/bash
-
 echo "Waiting for replica set to be created..."
 sleep 2
 
