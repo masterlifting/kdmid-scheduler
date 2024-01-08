@@ -1,20 +1,20 @@
 /** @format */
 
 export const constants = {
+  config: {
+    backendBaseUrl:
+      process.env.REACT_APP_BACKEND_URL ||
+      (() => {
+        throw new Error('REACT_APP_BACKEND_URL is not defined');
+      })(),
+  },
   http: {
     methods: {
-      GET: "GET",
-      POST: "POST",
-      PUT: "PUT",
-      DELETE: "DELETE",
+      GET: 'GET',
+      POST: 'POST',
+      PUT: 'PUT',
+      DELETE: 'DELETE',
     },
-    baseFetchUrl: "http://localhost:5000/",
-    defaultErrorMessage: "Something went wrong",
-  },
-  command: {
-    parameterKeys: {
-      city: "KdmidScheduler.Abstractions.Models.v1.City",
-      identifier: "KdmidScheduler.Abstractions.Models.v1.Identifier",
-    },
+    defaultErrorMessage: 'Something went wrong',
   },
 };

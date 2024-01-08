@@ -12,4 +12,4 @@ mongosh admin --eval 'db.createUser({
   roles: [{ role: "root", db: "admin" }]
 });'
 
-tail -f /dev/null
+echo "User created successfully"

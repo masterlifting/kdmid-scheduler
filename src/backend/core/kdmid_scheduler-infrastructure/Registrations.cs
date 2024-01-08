@@ -71,7 +71,7 @@ public static class Registrations
         .AddMongoDb<KdmidMongoDbContext>(ServiceLifetime.Transient)
         .AddTelegramBot<KdmidBotResponse>(x =>
         {
-            //x.AddCommandsStore<Bots.Stores.MongoDb.KdmidBotCommandsStore>();
+            x.AddCommandsStore<Bots.Stores.MongoDb.KdmidBotCommandsStore>();
         })
         .AddCors(options =>
         {

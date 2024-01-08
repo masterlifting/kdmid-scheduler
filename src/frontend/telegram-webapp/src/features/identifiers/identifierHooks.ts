@@ -1,20 +1,16 @@
-import { useEffect, useState } from "react";
-import {
-  ICity,
-  ICommand,
-  ICommandGetRequest,
-  IIdentifier,
-} from "./identifierTypes";
-import { useGetCommandQuery, useUpdateCommandMutation } from "./identifierApi";
-import { constants } from "../../_constants";
+/** @format */
+
+import { useEffect, useState } from 'react';
+import { ICity, ICommand, ICommandGetRequest, IKdmidId } from './identifierTypes';
+import { useGetCommandQuery, useUpdateCommandMutation } from './identifierApi';
 
 //const telegram = window.Telegram.WebApp;
 
 export const useIdentifier = (commandParams: ICommandGetRequest) => {
-  const [identifier, setIdentifier] = useState<IIdentifier>({
-    id: "",
-    cd: "",
-    ems: "",
+  const [kdmidId, setKdmidId] = useState<IKdmidId>({
+    id: '',
+    cd: '',
+    ems: '',
   });
 
   // useEffect(() => {
@@ -33,12 +29,7 @@ export const useIdentifier = (commandParams: ICommandGetRequest) => {
 
   const [
     updateCommand,
-    {
-      data: updateCommandResponse,
-      isLoading: isUpdateCommandLoading,
-      isError: isUpdateCommandError,
-      error: updateCommandError,
-    },
+    { data: updateCommandResponse, isLoading: isUpdateCommandLoading, isError: isUpdateCommandError, error: updateCommandError },
   ] = useUpdateCommandMutation();
 
   let city: ICity | undefined = undefined;
@@ -46,7 +37,7 @@ export const useIdentifier = (commandParams: ICommandGetRequest) => {
 
   if (!isGetCommandError) {
     command = getCommandResponse;
-    const cityParam = command?.parameters[constants.command.parameterKeys.city];
+    const cityParam = command?.parameters['KdmidScheduler.Abstractions.Models.Core.v1.City'];
 
     if (cityParam) {
       city = JSON.parse(cityParam);
@@ -56,8 +47,8 @@ export const useIdentifier = (commandParams: ICommandGetRequest) => {
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (identifier.id === "" || identifier.cd === "" || identifier.ems === "") {
-      alert("Fill all fields");
+    if (kdmidId.id === '' || kdmidId.cd === '' || kdmidId.ems === '') {
+      alert('Fill all fields');
       return;
     }
 
@@ -66,8 +57,7 @@ export const useIdentifier = (commandParams: ICommandGetRequest) => {
         ...command,
         parameters: {
           ...command.parameters,
-          "KdmidScheduler.Abstractions.Models.v1.Identifier":
-            JSON.stringify(identifier),
+          'KdmidScheduler.Abstractions.Models.Core.v1.KdmidId': JSON.stringify(kdmidId),
         },
       };
 
@@ -81,20 +71,20 @@ export const useIdentifier = (commandParams: ICommandGetRequest) => {
   };
 
   const onChangeId = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setIdentifier({ ...identifier, id: e.target.value });
+    setKdmidId({ ...kdmidId, id: e.target.value });
   };
 
   const onChangeCd = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setIdentifier({ ...identifier, cd: e.target.value });
+    setKdmidId({ ...kdmidId, cd: e.target.value });
   };
 
   const onChangeEms = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setIdentifier({ ...identifier, ems: e.target.value });
+    setKdmidId({ ...kdmidId, ems: e.target.value });
   };
 
   return {
     city,
-    identifier,
+    identifier: kdmidId,
     onSubmit,
     onChangeId,
     onChangeCd,

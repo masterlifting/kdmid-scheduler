@@ -1,3 +1,5 @@
+/** @format */
+
 export interface IError {
   message: string;
 }
@@ -16,6 +18,4 @@ export interface IWebApiErrorResponse {
   error: IWebApiError;
 }
 
-export type WebApiResponseType<T> =
-  | IWebApiSuccessResponse<T>
-  | IWebApiErrorResponse;
+export type WebApiResponseType<T> = IWebApiSuccessResponse<T> | IWebApiErrorResponse;

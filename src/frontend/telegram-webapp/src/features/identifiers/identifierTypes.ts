@@ -1,4 +1,6 @@
-export interface IIdentifier {
+/** @format */
+
+export interface IKdmidId {
   id: string;
   cd: string;
   ems?: string;

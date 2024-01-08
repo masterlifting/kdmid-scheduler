@@ -16,11 +16,7 @@ services:
       - ./backend/hosts/vps/infrastructure/mongodb/mongodb-init_user.sh:/data/configdb/mongodb-init_user.sh
     ports:
       - 27017:27017
-    command:
-      ['./data/configdb/mongodb-init.sh', './data/configdb/mongodb-init_replicas.sh', './data/configdb/mongodb-init_user.sh']
-    depends_on:
-      - mongodb_2
-      - mongodb_3
+    command: /bin/bash -c "./data/configdb/mongodb-init.sh && ./data/configdb/mongodb-init_replicas.sh && ./data/configdb/mongodb-init_user.sh"
   mongodb_2:
     image: mongo:latest
     container_name: mongodb_2
@@ -31,7 +27,9 @@ services:
       - ./backend/hosts/vps/infrastructure/mongodb/mongodb-init.sh:/data/configdb/mongodb-init.sh
     ports:
       - 27018:27017
-    command: ['./data/configdb/mongodb-init.sh']
+    command: /bin/bash -c "./data/configdb/mongodb-init.sh"
+    depends_on:
+      - mongodb_1
   mongodb_3:
     image: mongo:latest
     container_name: mongodb_3
@@ -42,22 +40,29 @@ services:
       - ./backend/hosts/vps/infrastructure/mongodb/mongodb-init.sh:/data/configdb/mongodb-init.sh
     ports:
       - 27019:27017
-    command: ['./data/configdb/mongodb-init.sh']
+    command: /bin/bash -c "./data/configdb/mongodb-init.sh"
+    depends_on:
+      - mongodb_1
   backend:
     image: kdmid-scheduler-backend
     container_name: backend
+    hostname: backend
     build:
       context: ./backend
       dockerfile: ./hosts/vps/kdmid_scheduler-api/Dockerfile
     ports:
       - '8080:8080'
+    env_file:
+      - .env
     environment:
       - ASPNETCORE_URLS=http://+:8080
       - MongoDbConnection__Host=mongodb
       - MongoDbConnection__User=${MONGODBCONNECTION_USERNAME}
       - MongoDbConnection__Password=${MONGODBCONNECTION_PASSWORD}
-      - AntiCaptchaConnection__ApiKey=${TELEGRAMBOTCONNECTION_TOKEN}
-      - TelegramBotConnection__Token=${ANTICAPTCHACONNECTION_APIKEY}
+      - AntiCaptchaConnection__ApiKey=${ANTICAPTCHACONNECTION_APIKEY}
+      - TelegramBotConnection__Token=${TELEGRAMBOTCONNECTION_TOKEN}
+      - TelegramBotConnection__AdminChatId=${TELEGRAMBOTCONNECTION_ADMINCHATID}
+      - Kdmid__WebAppUrl=${KDMID_WEBAPPURL}
     depends_on:
       - mongodb_1
       - mongodb_2
@@ -70,6 +75,8 @@ services:
       dockerfile: ./Dockerfile
     ports:
       - '3000:3000'
+    environment:
+      - REACT_APP_BACKEND_URL=http://backend:8080
     depends_on:
       - backend
 
