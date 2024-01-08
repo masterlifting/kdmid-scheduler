@@ -73,6 +73,11 @@ services:
       - mongodb_1
       - mongodb_2
       - mongodb_3
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.backend.rule=PathPrefix(`/api`)'
+      - 'traefik.http.routers.backend.entrypoints=websecure'
+      - 'traefik.http.routers.backend.tls=true'
 
   frontend:
     image: kdmid-scheduler-frontend
@@ -88,23 +93,34 @@ services:
       - kdmid-scheduler-network
     depends_on:
       - backend
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.frontend.rule=PathPrefix(`/`)'
+      - 'traefik.http.routers.frontend.entrypoints=websecure'
+      - 'traefik.http.routers.frontend.tls=true'
 
-    # traefik:
-    #   image: traefik:v2.2
-    #   container_name: traefik
-    #   command:
-    #     - '--api.insecure=true'
-    #     - '--providers.docker=true'
-    #     - '--providers.docker.exposedbydefault=false'
-    #     - '--entrypoints.web.address=:80'
-    #   ports:
-    #     - '80:80'
-    #     - '8080:8080'
-    #   volumes:
-    #     - /var/run/docker.sock:/var/run/docker.sock
-    #   networks:
-    #     - kdmid-scheduler-network
-    #   restart: always
+    traefik:
+      image: traefik:v2.2
+      container_name: traefik
+      command:
+        - '--api.insecure=true'
+        - '--providers.docker=true'
+        - '--providers.docker.exposedByDefault=false'
+        - '--entrypoints.web.address=:80'
+        - '--entrypoints.websecure.address=:443'
+        - '--certificatesresolvers.selfsignedresolver.acme.tlschallenge=true'
+        - '--certificatesresolvers.selfsignedresolver.acme.email=youremail@example.com'
+        - '--certificatesresolvers.selfsignedresolver.acme.storage=/letsencrypt/acme.json'
+        - '--certificatesresolvers.selfsignedresolver.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory'
+      ports:
+        - '80:80'
+        - '443:443'
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+        - ./backend/hosts/vps/infrastructure/traefik/letsencrypt:/letsencrypt
+      networks:
+        - kdmid-scheduler-network
+      restart: always
 
 networks:
   kdmid-scheduler-network: {}
