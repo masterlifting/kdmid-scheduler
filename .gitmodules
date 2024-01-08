@@ -1,24 +1,24 @@
 [submodule "src/backend/core/submodules/shared"]
 	path = src/backend/core/submodules/shared
 	url = https://github.com/masterlifting/net-shared
-	branch = feature-improve_architecture
+	branch = main
 [submodule "src/backend/core/submodules/shared-background"]
 	path = src/backend/core/submodules/shared-background
 	url = https://github.com/masterlifting/net-shared-background
-	branch = feature-improve_architecture
+	branch = main
 [submodule "src/backend/core/submodules/shared-bots"]
 	path = src/backend/core/submodules/shared-bots
 	url = https://github.com/masterlifting/net-shared-bots
-	branch = feature-improve_architecture
+	branch = main
 [submodule "src/backend/core/submodules/shared-persistence"]
 	path = src/backend/core/submodules/shared-persistence
 	url = https://github.com/masterlifting/net-shared-persistence
-	branch = feature-improve_architecture
+	branch = main
 [submodule "src/backend/core/submodules/shared-queues"]
 	path = src/backend/core/submodules/shared-queues
 	url = https://github.com/masterlifting/net-shared-queues
-	branch = feature-improve_architecture
+	branch = main
 [submodule "src/backend/core/submodules/shared-web"]
 	path = src/backend/core/submodules/shared-web
 	url = https://github.com/masterlifting/net-shared-web
-	branch = feature-improve_architecture
+	branch = main
