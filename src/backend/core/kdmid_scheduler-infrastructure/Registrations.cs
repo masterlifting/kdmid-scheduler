@@ -82,9 +82,10 @@ public static class Registrations
             options.AddPolicy(Constants.TelegramWebAppCorsPolicy, builder =>
             {
                 builder
-                    .WithOrigins(kdmidSettings.WebAppUrl)
+                    .WithOrigins(kdmidSettings.WebAppUrl, "http://localhost:3000")
                     .AllowAnyHeader()
-                    .AllowAnyMethod();
+                    .AllowAnyMethod()
+                    .AllowCredentials();
             });
         });
 }

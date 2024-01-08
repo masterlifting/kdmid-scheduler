@@ -6,17 +6,18 @@ services:
   mongodb_1:
     image: mongo:latest
     container_name: mongodb_1
-    hostname: mongodb
     volumes:
       - mongodb_1-data:/data/db
       - mongodb_1-config:/data/configdb
       - ./backend/hosts/vps/infrastructure/mongodb/mongodb-keyfile:/opt/keyfiles/mongodb-keyfile
       - ./backend/hosts/vps/infrastructure/mongodb/mongodb-init.sh:/data/configdb/mongodb-init.sh
-      - ./backend/hosts/vps/infrastructure/mongodb/mongodb-init_replicas.sh:/data/configdb/mongodb-init_replicas.sh
-      - ./backend/hosts/vps/infrastructure/mongodb/mongodb-init_user.sh:/data/configdb/mongodb-init_user.sh
     ports:
       - 27017:27017
-    command: /bin/bash -c "./data/configdb/mongodb-init.sh && ./data/configdb/mongodb-init_replicas.sh && ./data/configdb/mongodb-init_user.sh"
+    command: /bin/bash -c "./data/configdb/mongodb-init.sh"
+    networks:
+      - kdmid-scheduler-network
+    restart: always
+
   mongodb_2:
     image: mongo:latest
     container_name: mongodb_2
@@ -28,8 +29,10 @@ services:
     ports:
       - 27018:27017
     command: /bin/bash -c "./data/configdb/mongodb-init.sh"
-    depends_on:
-      - mongodb_1
+    networks:
+      - kdmid-scheduler-network
+    restart: always
+
   mongodb_3:
     image: mongo:latest
     container_name: mongodb_3
@@ -41,12 +44,13 @@ services:
     ports:
       - 27019:27017
     command: /bin/bash -c "./data/configdb/mongodb-init.sh"
-    depends_on:
-      - mongodb_1
+    networks:
+      - kdmid-scheduler-network
+    restart: always
+
   backend:
     image: kdmid-scheduler-backend
     container_name: backend
-    hostname: backend
     build:
       context: ./backend
       dockerfile: ./hosts/vps/kdmid_scheduler-api/Dockerfile
@@ -56,17 +60,20 @@ services:
       - .env
     environment:
       - ASPNETCORE_URLS=http://+:8080
-      - MongoDbConnection__Host=mongodb
+      - MongoDbConnection__Host=mongodb_1
       - MongoDbConnection__User=${MONGODBCONNECTION_USERNAME}
       - MongoDbConnection__Password=${MONGODBCONNECTION_PASSWORD}
       - AntiCaptchaConnection__ApiKey=${ANTICAPTCHACONNECTION_APIKEY}
       - TelegramBotConnection__Token=${TELEGRAMBOTCONNECTION_TOKEN}
       - TelegramBotConnection__AdminChatId=${TELEGRAMBOTCONNECTION_ADMINCHATID}
       - Kdmid__WebAppUrl=${KDMID_WEBAPPURL}
+    networks:
+      - kdmid-scheduler-network
     depends_on:
       - mongodb_1
       - mongodb_2
       - mongodb_3
+
   frontend:
     image: kdmid-scheduler-frontend
     container_name: frontend
@@ -76,9 +83,31 @@ services:
     ports:
       - '3000:3000'
     environment:
-      - REACT_APP_BACKEND_URL=http://backend:8080
+      - REACT_APP_BACKEND_URL=http://localhost:8080
+    networks:
+      - kdmid-scheduler-network
     depends_on:
       - backend
+
+    # traefik:
+    #   image: traefik:v2.2
+    #   container_name: traefik
+    #   command:
+    #     - '--api.insecure=true'
+    #     - '--providers.docker=true'
+    #     - '--providers.docker.exposedbydefault=false'
+    #     - '--entrypoints.web.address=:80'
+    #   ports:
+    #     - '80:80'
+    #     - '8080:8080'
+    #   volumes:
+    #     - /var/run/docker.sock:/var/run/docker.sock
+    #   networks:
+    #     - kdmid-scheduler-network
+    #   restart: always
+
+networks:
+  kdmid-scheduler-network: {}
 
 volumes:
   mongodb_1-data:

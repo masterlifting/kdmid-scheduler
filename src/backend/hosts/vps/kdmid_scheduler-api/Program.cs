@@ -31,7 +31,7 @@ app.MapGet("/listen", (IBotClient client, HttpRequest request, CancellationToken
 app.MapPost("/receive", async (IBotClient client, HttpRequest request, CancellationToken cToken) =>
 {
     using var reader = new StreamReader(request.Body);
-    
+
     var data = await reader.ReadToEndAsync(cToken);
 
     ArgumentNullException.ThrowIfNull(data, "Received data is empty.");
@@ -55,7 +55,7 @@ app.MapPost($"/chats/{{chatId}}", async (IBotCommandsStore commandStore, IBotRes
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     });
 
-    if(command is null || command.Id == Guid.Empty)
+    if (command is null || command.Id == Guid.Empty)
         throw new ArgumentNullException(nameof(command), "Received command is empty.");
 
     await commandStore.Update(chatId, command.Id, command, cToken);
