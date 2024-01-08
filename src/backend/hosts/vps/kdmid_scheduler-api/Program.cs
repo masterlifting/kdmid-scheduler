@@ -1,7 +1,6 @@
 ﻿using System.Text.Json;
 
 using KdmidScheduler.Infrastructure;
-using KdmidScheduler.Infrastructure.Options;
 
 using Net.Shared.Bots.Abstractions.Interfaces;
 using Net.Shared.Bots.Abstractions.Models;
@@ -17,7 +16,7 @@ builder.Services
 
 var app = builder.Build();
 
-app.UseCors(ConfigureCorsOptions.PolicyName);
+app.UseCors(Constants.TelegramWebAppCorsPolicy);
 
 app.MapGet("/start", (IBotClient client, CancellationToken cToken) =>
 {

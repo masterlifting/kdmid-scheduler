@@ -15,16 +15,16 @@ public sealed class KdmidHttpClient(
     private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
 
     private static string GetBaseUrl(City city) => $"https://{city.Code}.kdmid.ru/queue/";
-    private static Uri GetRequestUri(City city, Identifier identifier) => new(GetBaseUrl(city) + "OrderInfo.aspx?" + identifier);
+    private static Uri GetRequestUri(City city, KdmidId kdmidId) => new(GetBaseUrl(city) + "OrderInfo.aspx?" + kdmidId);
 
     private const string SessionIdKey = "ASP.NET_SessionId";
     private const string FormDataMediaType = "application/x-www-form-urlencoded";
 
-    public async Task<string> GetStartPage(City city, Identifier identifier, CancellationToken cToken)
+    public async Task<string> GetStartPage(City city, KdmidId kdmidId, CancellationToken cToken)
     {
         var httpClient = _httpClientFactory.CreateClient(Constants.Kdmid);
 
-        var uri = GetRequestUri(city, identifier);
+        var uri = GetRequestUri(city, kdmidId);
 
         var response = await httpClient.GetAsync(uri, cToken);
 
@@ -63,11 +63,11 @@ public sealed class KdmidHttpClient(
 
         return captchaImage;
     }
-    public async Task<string> PostApplication(City city, Identifier identifier, string content, CancellationToken cToken)
+    public async Task<string> PostApplication(City city, KdmidId kdmidId, string content, CancellationToken cToken)
     {
         var httpClient = _httpClientFactory.CreateClient(Constants.Kdmid);
 
-        var uri = GetRequestUri(city, identifier);
+        var uri = GetRequestUri(city, kdmidId);
 
         var stringContent = new StringContent(content, Encoding.ASCII, new MediaTypeHeaderValue(FormDataMediaType));
 
@@ -91,11 +91,11 @@ public sealed class KdmidHttpClient(
             ? throw new InvalidOperationException($"The response from {uri} is empty.")
             : postResponseResult;
     }
-    public async Task<string> PostCalendar(City city, Identifier identifier, string content, CancellationToken cToken)
+    public async Task<string> PostCalendar(City city, KdmidId kdmidId, string content, CancellationToken cToken)
     {
         var httpClient = _httpClientFactory.CreateClient(Constants.Kdmid);
 
-        var uri = GetRequestUri(city, identifier);
+        var uri = GetRequestUri(city, kdmidId);
 
         var stringContent = new StringContent(content, Encoding.UTF8, FormDataMediaType);
 
@@ -110,11 +110,11 @@ public sealed class KdmidHttpClient(
             ? throw new InvalidOperationException($"The response from {uri} is empty.")
             : postResponseResult;
     }
-    public async Task<string> PostConfirmation(City city, Identifier identifier, string content, CancellationToken cToken)
+    public async Task<string> PostConfirmation(City city, KdmidId kdmidId, string content, CancellationToken cToken)
     {
         var httpClient = _httpClientFactory.CreateClient(Constants.Kdmid);
 
-        var uri = new Uri(GetBaseUrl(city) + $"SPCalendar.aspx?bjo={identifier.Id}");
+        var uri = new Uri(GetBaseUrl(city) + $"SPCalendar.aspx?bjo={kdmidId.Id}");
 
         if (!_cache.TryGetValue(SessionIdKey, out var sessionIdValue))
             throw new InvalidOperationException("The SessionId is not found in the cache.");

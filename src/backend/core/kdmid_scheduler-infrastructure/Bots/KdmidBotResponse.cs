@@ -2,6 +2,9 @@
 using Net.Shared.Bots.Abstractions.Interfaces;
 using Net.Shared.Bots.Abstractions.Models;
 
+using static Net.Shared.Bots.Abstractions.Constants;
+using static KdmidScheduler.Abstractions.Constants;
+
 namespace KdmidScheduler.Infrastructure.Bots;
 
 public sealed class KdmidBotResponse(IKdmidResponseService responseService) : IBotResponse
@@ -10,10 +13,12 @@ public sealed class KdmidBotResponse(IKdmidResponseService responseService) : IB
 
     public Task Create(string chatId, BotCommand command, CancellationToken cToken) => command.Name switch
     {
-        IKdmidResponseService.StartCommand => _responseService.SendAvailableEmbassies(chatId, cToken),
-        IKdmidResponseService.MineCommand => _responseService.SendMyEmbassies(chatId, cToken),
-        IKdmidResponseService.SendAvailableDatesCommand => _responseService.SendAvailableDates(chatId, command, cToken),
-        IKdmidResponseService.SendConfirmResultCommand => _responseService.SendConfirmationResult(chatId, command, cToken),
-        _ => throw new NotSupportedException($"The command '{command}' is not supported.")
+        Commands.Start => _responseService.SendAvailableEmbassies(chatId, cToken),
+        Commands.Ask => _responseService.SendAskResponse(chatId, command, cToken),
+        Commands.Answer => _responseService.SendAnswerResponse(chatId, command, cToken),
+        KdmidBotCommands.Mine => _responseService.SendMyEmbassies(chatId, cToken),
+        KdmidBotCommands.SendAvailableDates => _responseService.SendAvailableDates(chatId, command, cToken),
+        KdmidBotCommands.SendConfirmResult => _responseService.SendConfirmationResult(chatId, command, cToken),
+        _ => throw new NotSupportedException($"The command '{command.Name}' is not supported.")
     };
 }

@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+
 using KdmidScheduler.Abstractions.Interfaces.Core.Services;
 using KdmidScheduler.Abstractions.Models.Core.v1;
 using KdmidScheduler.Abstractions.Models.Settings;
@@ -7,6 +8,9 @@ using Microsoft.Extensions.Options;
 
 using Net.Shared.Bots.Abstractions.Interfaces;
 using Net.Shared.Bots.Abstractions.Models;
+
+using static Net.Shared.Bots.Abstractions.Constants;
+using static KdmidScheduler.Abstractions.Constants;
 
 namespace KdmidScheduler.Services;
 
@@ -17,9 +21,9 @@ public sealed class KdmidResponseService(
     IOptions<KdmidSettings> options
     ) : IKdmidResponseService
 {
-    private static readonly string CityKey = typeof(City).FullName!;
-    private static readonly string KdmidIdKey = typeof(Identifier).FullName!;
-    private static readonly string ChosenResultKey = typeof(ChosenDateResult).FullName!;
+    public static readonly string CityKey = typeof(City).FullName!;
+    public static readonly string KdmidIdKey = typeof(KdmidId).FullName!;
+    public static readonly string ChosenResultKey = typeof(ChosenDateResult).FullName!;
 
     private readonly IBotClient _botClient = botClient;
     private readonly IBotCommandsStore _botCommandsStore = botCommandsStore;
@@ -48,7 +52,7 @@ public sealed class KdmidResponseService(
 
         foreach (var city in availableCities)
         {
-            var command = await _botCommandsStore.Create(chatId, IKdmidResponseService.SendAvailableDatesCommand, new()
+            var command = await _botCommandsStore.Create(chatId, KdmidBotCommands.SendAvailableDates, new()
             {
                 { CityKey, JsonSerializer.Serialize(city, _jsonSerializerOptions)}
             }, cToken);
@@ -110,7 +114,7 @@ public sealed class KdmidResponseService(
             ?? throw new ArgumentException("The city is not specified.");
 
         var kdmidId =
-            JsonSerializer.Deserialize<Identifier>(command.Parameters[KdmidIdKey], _jsonSerializerOptions)
+            JsonSerializer.Deserialize<KdmidId>(command.Parameters[KdmidIdKey], _jsonSerializerOptions)
             ?? throw new ArgumentException("The kdmidId is not specified.");
 
         var availableDatesResult = await _kdmidRequestService.GetAvailableDates(city, kdmidId, cToken);
@@ -119,7 +123,7 @@ public sealed class KdmidResponseService(
 
         foreach (var date in availableDatesResult.Dates)
         {
-            var nextCommand = await _botCommandsStore.Create(chatId, IKdmidResponseService.SendConfirmResultCommand, new()
+            var nextCommand = await _botCommandsStore.Create(chatId, KdmidBotCommands.SendConfirmResult, new()
             {
                 { CityKey, command.Parameters[CityKey] },
                 { KdmidIdKey, command.Parameters[KdmidIdKey] },
@@ -147,7 +151,7 @@ public sealed class KdmidResponseService(
             ?? throw new ArgumentException("The city is not specified.");
 
         var kdmidId =
-            JsonSerializer.Deserialize<Identifier>(command.Parameters[KdmidIdKey], _jsonSerializerOptions)
+            JsonSerializer.Deserialize<KdmidId>(command.Parameters[KdmidIdKey], _jsonSerializerOptions)
         ?? throw new ArgumentException("The kdmidId is not specified.");
 
         var chosenResult =
@@ -166,5 +170,27 @@ public sealed class KdmidResponseService(
             var messageArgs = new MessageEventArgs(chatId, new(confirmResult.Message));
             await _botClient.SendMessage(messageArgs, cToken);
         }
+    }
+    public Task SendAskResponse(string chatId, BotCommand command, CancellationToken cToken)
+    {
+        MessageEventArgs messageArgs = command.Parameters.Count == 0
+            ? new(chatId, new("To send your message to the developer, type the message in double quotes."))
+            : command.Parameters.TryGetValue(CommandParameters.Message, out var text)
+                ? new(chatId, new(text))
+                : throw new ArgumentException("The message for the developer is not specified.");
+
+        return _botClient.SendMessage(messageArgs, cToken);
+    }
+    public Task SendAnswerResponse(string chatId, BotCommand command, CancellationToken cToken)
+    {
+        if (!command.Parameters.TryGetValue(CommandParameters.ChatId, out var targetChatId))
+            throw new ArgumentException("The chatId for the user is not specified.");
+
+        if (!command.Parameters.TryGetValue(CommandParameters.Message, out var text))
+            throw new ArgumentException("The message for the user is not specified.");
+
+        var adminMessageArgs = new MessageEventArgs(targetChatId, new(text));
+
+        return _botClient.SendMessage(adminMessageArgs, cToken);
     }
 }

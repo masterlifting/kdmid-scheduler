@@ -30,9 +30,9 @@ public sealed class KdmidRequestService(
         new("helsinki", "Helsinki"),
         new("hague", "Hague")
     };
-    public async Task<AvailableDatesResult> GetAvailableDates(City city, Identifier identifier, CancellationToken cToken)
+    public async Task<AvailableDatesResult> GetAvailableDates(City city, KdmidId kdmidId, CancellationToken cToken)
     {
-        var startPageResponse = await _httpClient.GetStartPage(city, identifier, cToken);
+        var startPageResponse = await _httpClient.GetStartPage(city, kdmidId, cToken);
         var startPage = _htmlDocument.GetStartPage(startPageResponse);
 
         var captchaImage = await _httpClient.GetStartPageCaptchaImage(city, startPage.CaptchaCode, cToken);
@@ -42,10 +42,10 @@ public sealed class KdmidRequestService(
 
         var startPageFormData = startPage.FormData.Replace(CaptchaKey, $"{CaptchaKey}{captchaValue}");
 
-        var applicationResponse = await _httpClient.PostApplication(city, identifier, startPageFormData, cToken);
+        var applicationResponse = await _httpClient.PostApplication(city, kdmidId, startPageFormData, cToken);
         var applicationFormData = _htmlDocument.GetApplicationFormData(applicationResponse);
 
-        var calendarResponse = await _httpClient.PostCalendar(city, identifier, applicationFormData, cToken);
+        var calendarResponse = await _httpClient.PostCalendar(city, kdmidId, applicationFormData, cToken);
         var calendarPage = _htmlDocument.GetCalendarPage(calendarResponse);
 
         var availableDates = new Dictionary<DateTime, string>(calendarPage.Dates.Count);
@@ -60,18 +60,18 @@ public sealed class KdmidRequestService(
 
         return new AvailableDatesResult(applicationFormData, availableDates);
     }
-    public async Task<ConfirmationResult> ConfirmChosenDate(City city, Identifier identifier, ChosenDateResult chosenResult, CancellationToken cToken)
+    public async Task<ConfirmationResult> ConfirmChosenDate(City city, KdmidId kdmidId, ChosenDateResult chosenResult, CancellationToken cToken)
     {
         const string ButtonKey = "ctl00%24MainContent%24TextBox1=";
         var buttonValue = Uri.EscapeDataString(chosenResult.ChosenValue);
 
         var formData = chosenResult.FormData.Replace(ButtonKey, $"{ButtonKey}{buttonValue}");
 
-        var confirmationResponse = await _httpClient.PostConfirmation(city, identifier, formData, cToken);
+        var confirmationResponse = await _httpClient.PostConfirmation(city, kdmidId, formData, cToken);
 
         var confirmation = _htmlDocument.GetConfirmationPage(confirmationResponse);
 
-        if(confirmation.Result.StartsWith("/"))
+        if(confirmation.Result.StartsWith('/'))
             return new ConfirmationResult(false, confirmation.Result);
 
         return new ConfirmationResult(true, confirmation.Result);

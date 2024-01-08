@@ -1,6 +1,6 @@
 ﻿namespace KdmidScheduler.Abstractions.Models.Core.v1;
 
-public sealed record Identifier
+public sealed record KdmidId
 {
     public string Id { get; init; } = null!;
     public string Cd { get; init; } = null!;

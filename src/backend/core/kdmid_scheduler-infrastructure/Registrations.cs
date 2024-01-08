@@ -1,11 +1,9 @@
 ﻿using KdmidScheduler.Abstractions.Interfaces.Infrastructure.Services;
 using KdmidScheduler.Abstractions.Models.Settings;
 using KdmidScheduler.Infrastructure.Bots;
-using KdmidScheduler.Infrastructure.Options;
 using KdmidScheduler.Infrastructure.Persistence.Contexts;
 using KdmidScheduler.Infrastructure.Web;
 
-using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -22,14 +20,16 @@ public static class Registrations
         services.AddLogging();
         services.AddMemoryCache();
 
-        services.
-            AddOptions<AntiCaptchaConnectionSettings>()
+        services
+            .AddOptions<AntiCaptchaConnectionSettings>()
             .Configure<IConfiguration>((settings, configuration) =>
             {
                 configuration
                     .GetSection(AntiCaptchaConnectionSettings.SectionName)
                     .Bind(settings);
-            });
+            })
+            .ValidateOnStart()
+            .Validate(x => !string.IsNullOrWhiteSpace(x.ApiKey), "Api key of AntiCaptcha should not be empty.");
 
         services
             .AddOptions<KdmidSettings>()
@@ -38,7 +38,10 @@ public static class Registrations
                 configuration
                     .GetSection(KdmidSettings.SectionName)
                     .Bind(settings);
-            });
+
+            })
+            .ValidateOnStart()
+            .Validate(x => !string.IsNullOrWhiteSpace(x.WebAppUrl), "Web app url of Kdmid should not be empty.");
 
         services.AddHttpClient(Constants.Kdmid, x =>
         {
@@ -68,7 +71,20 @@ public static class Registrations
         .AddMongoDb<KdmidMongoDbContext>(ServiceLifetime.Transient)
         .AddTelegramBot<KdmidBotResponse>(x =>
         {
-            x.AddCommandsStore<Bots.Stores.MongoDb.KdmidBotCommandsStore>();
+            //x.AddCommandsStore<Bots.Stores.MongoDb.KdmidBotCommandsStore>();
         })
-        .AddTransient<IConfigureOptions<CorsOptions>, ConfigureCorsOptions>();
+        .AddCors(options =>
+        {
+            var kdmidSettings = services
+                .BuildServiceProvider()
+                .GetRequiredService<IOptions<KdmidSettings>>().Value;
+
+            options.AddPolicy(Constants.TelegramWebAppCorsPolicy, builder =>
+            {
+                builder
+                    .WithOrigins(kdmidSettings.WebAppUrl)
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
+            });
+        });
 }
