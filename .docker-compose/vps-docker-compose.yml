@@ -75,9 +75,9 @@ services:
       - mongodb_3
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.routers.backend.rule=PathPrefix(`/api`)'
+      - 'traefik.http.routers.backend.rule=Host(`api.masterlifting.guru`)'
       - 'traefik.http.routers.backend.entrypoints=websecure'
-      - 'traefik.http.routers.backend.tls=true'
+      - 'traefik.http.routers.backend.tls.certresolver=letsencryptresolver'
 
   frontend:
     image: kdmid-scheduler-frontend
@@ -95,9 +95,9 @@ services:
       - backend
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.routers.frontend.rule=PathPrefix(`/`)'
+      - 'traefik.http.routers.frontend.rule=Host(`masterlifting.guru`)'
       - 'traefik.http.routers.frontend.entrypoints=websecure'
-      - 'traefik.http.routers.frontend.tls=true'
+      - 'traefik.http.routers.frontend.tls.certresolver=letsencryptresolver'
 
   traefik:
     image: traefik:v2.2
@@ -108,10 +108,10 @@ services:
       - '--providers.docker.exposedByDefault=false'
       - '--entrypoints.web.address=:80'
       - '--entrypoints.websecure.address=:443'
-      - '--certificatesresolvers.selfsignedresolver.acme.tlschallenge=true'
-      - '--certificatesresolvers.selfsignedresolver.acme.email=youremail@example.com'
-      - '--certificatesresolvers.selfsignedresolver.acme.storage=/letsencrypt/acme.json'
-      - '--certificatesresolvers.selfsignedresolver.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory'
+      - '--certificatesresolvers.letsencryptresolver.acme.tlschallenge=true'
+      - '--certificatesresolvers.letsencryptresolver.acme.email=masterlifting@gmail.com'
+      - '--certificatesresolvers.letsencryptresolver.acme.storage=/letsencrypt/acme.json'
+      - '--certificatesresolvers.letsencryptresolver.acme.caServer=https://acme-v02.api.letsencrypt.org/directory'
     ports:
       - '80:80'
       - '443:443'
