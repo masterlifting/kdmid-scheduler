@@ -99,28 +99,28 @@ services:
       - 'traefik.http.routers.frontend.entrypoints=websecure'
       - 'traefik.http.routers.frontend.tls=true'
 
-    traefik:
-      image: traefik:v2.2
-      container_name: traefik
-      command:
-        - '--api.insecure=true'
-        - '--providers.docker=true'
-        - '--providers.docker.exposedByDefault=false'
-        - '--entrypoints.web.address=:80'
-        - '--entrypoints.websecure.address=:443'
-        - '--certificatesresolvers.selfsignedresolver.acme.tlschallenge=true'
-        - '--certificatesresolvers.selfsignedresolver.acme.email=youremail@example.com'
-        - '--certificatesresolvers.selfsignedresolver.acme.storage=/letsencrypt/acme.json'
-        - '--certificatesresolvers.selfsignedresolver.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory'
-      ports:
-        - '80:80'
-        - '443:443'
-      volumes:
-        - /var/run/docker.sock:/var/run/docker.sock
-        - ./backend/hosts/vps/infrastructure/traefik/letsencrypt:/letsencrypt
-      networks:
-        - kdmid-scheduler-network
-      restart: always
+  traefik:
+    image: traefik:v2.2
+    container_name: traefik
+    command:
+      - '--api.insecure=true'
+      - '--providers.docker=true'
+      - '--providers.docker.exposedByDefault=false'
+      - '--entrypoints.web.address=:80'
+      - '--entrypoints.websecure.address=:443'
+      - '--certificatesresolvers.selfsignedresolver.acme.tlschallenge=true'
+      - '--certificatesresolvers.selfsignedresolver.acme.email=youremail@example.com'
+      - '--certificatesresolvers.selfsignedresolver.acme.storage=/letsencrypt/acme.json'
+      - '--certificatesresolvers.selfsignedresolver.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory'
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./backend/hosts/vps/infrastructure/traefik/letsencrypt:/letsencrypt
+    networks:
+      - kdmid-scheduler-network
+    restart: always
 
 networks:
   kdmid-scheduler-network: {}
