@@ -9,8 +9,8 @@ services:
     volumes:
       - mongodb_1-data:/data/db
       - mongodb_1-config:/data/configdb
-      - ./backend/hosts/vps/infrastructure/mongodb/mongodb-keyfile:/opt/keyfiles/mongodb-keyfile
-      - ./backend/hosts/vps/infrastructure/mongodb/mongodb-init.sh:/data/configdb/mongodb-init.sh
+      - ../src/backend/hosts/vps/infrastructure/mongodb/mongodb-keyfile:/opt/keyfiles/mongodb-keyfile
+      - ../src/backend/hosts/vps/infrastructure/mongodb/mongodb-init.sh:/data/configdb/mongodb-init.sh
     ports:
       - 27017:27017
     command: /bin/bash -c "./data/configdb/mongodb-init.sh"
@@ -24,8 +24,8 @@ services:
     volumes:
       - mongodb_2-data:/data/db
       - mongodb_2-config:/data/configdb
-      - ./backend/hosts/vps/infrastructure/mongodb/mongodb-keyfile:/opt/keyfiles/mongodb-keyfile
-      - ./backend/hosts/vps/infrastructure/mongodb/mongodb-init.sh:/data/configdb/mongodb-init.sh
+      - ../src/backend/hosts/vps/infrastructure/mongodb/mongodb-keyfile:/opt/keyfiles/mongodb-keyfile
+      - ../src/backend/hosts/vps/infrastructure/mongodb/mongodb-init.sh:/data/configdb/mongodb-init.sh
     ports:
       - 27018:27017
     command: /bin/bash -c "./data/configdb/mongodb-init.sh"
@@ -39,8 +39,8 @@ services:
     volumes:
       - mongodb_3-data:/data/db
       - mongodb_3-config:/data/configdb
-      - ./backend/hosts/vps/infrastructure/mongodb/mongodb-keyfile:/opt/keyfiles/mongodb-keyfile
-      - ./backend/hosts/vps/infrastructure/mongodb/mongodb-init.sh:/data/configdb/mongodb-init.sh
+      - ../src/backend/hosts/vps/infrastructure/mongodb/mongodb-keyfile:/opt/keyfiles/mongodb-keyfile
+      - ../src/backend/hosts/vps/infrastructure/mongodb/mongodb-init.sh:/data/configdb/mongodb-init.sh
     ports:
       - 27019:27017
     command: /bin/bash -c "./data/configdb/mongodb-init.sh"
@@ -52,7 +52,7 @@ services:
     image: kdmid-scheduler-backend
     container_name: backend
     build:
-      context: ./backend
+      context: ../src/backend
       dockerfile: ./hosts/vps/kdmid_scheduler-api/Dockerfile
     ports:
       - '8080:8080'
@@ -78,7 +78,7 @@ services:
     image: kdmid-scheduler-frontend
     container_name: frontend
     build:
-      context: ./frontend/telegram-webapp
+      context: ../src/frontend/telegram-webapp
       dockerfile: ./Dockerfile
     ports:
       - '3000:3000'
