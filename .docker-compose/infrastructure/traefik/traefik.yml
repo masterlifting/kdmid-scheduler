@@ -13,7 +13,7 @@ providers:
     exposedByDefault: false
 
 certificatesResolvers:
-  myhttpchallenge:
+  lets-encrypt:
     acme:
       email: masterlifting@gmail.com
       storage: acme.json
