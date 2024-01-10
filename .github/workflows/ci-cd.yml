@@ -1,0 +1,33 @@
+# @format
+
+name: Deploy to Digital Ocean Droplet
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Deploy to Digital Ocean Droplet
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /usr/src/kdmid-scheduler &&
+            git stash &&
+            docker-compose -p kdmid -f .docker-compose/docker-compose.vps.yml down &&
+            git pull origin main &&
+            chmod 600 .docker-compose/infrastructure/mongodb/mongodb-keyfile &&
+            chmod 600 .docker-compose/infrastructure/traefik/traefik.yml &&
+            chmod 600 .docker-compose/infrastructure/traefik/letsencrypt/acme.json && chown root:root .docker-compose/infrastructure/traefik/letsencrypt/acme.json &&
+            docker-compose -p kdmid -f .docker-compose/docker-compose.vps.yml up -d --build &&
+            docker system prune -af --volumes &&
+            curl --insecure --request GET https://kdmidapi.masterlifting.guru/start
