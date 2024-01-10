@@ -1,0 +1,21 @@
+# @format
+
+# traefik.yml
+
+entryPoints:
+  web:
+    address: ':80'
+  websecure:
+    address: ':443'
+
+providers:
+  docker:
+    exposedByDefault: false
+
+certificatesResolvers:
+  myhttpchallenge:
+    acme:
+      email: masterlifting@gmail.com
+      storage: acme.json
+      httpChallenge:
+        entryPoint: web
