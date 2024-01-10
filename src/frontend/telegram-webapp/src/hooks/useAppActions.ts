@@ -1,12 +1,12 @@
 /** @format */
 
-import { bindActionCreators } from "@reduxjs/toolkit";
-import { useMemo } from "react";
-import { useDispatch } from "react-redux";
-import { identifierActions } from "../features/identifiers/identifierSlice";
+import { bindActionCreators } from '@reduxjs/toolkit';
+import { useMemo } from 'react';
+import { useDispatch } from 'react-redux';
+import { kdmidIdActions } from '../features/kdmid-id/kdmidIdSlice';
 
 const actions = {
-  ...identifierActions,
+  ...kdmidIdActions,
 };
 
 export const useAppActions = () => {

@@ -57,7 +57,7 @@ public sealed class KdmidResponseService(
                 { CityKey, JsonSerializer.Serialize(city, _jsonSerializerOptions)}
             }, cToken);
 
-            var uri = new Uri($"{_kdmidSettings.WebAppUrl}?chatId={chatId}&commandId={command.Id}");
+            var uri = new Uri($"{_kdmidSettings.WebAppUrl}/kdmidId?chatId={chatId}&commandId={command.Id}");
 
             webAppData.Add(city.Name, uri);
         }

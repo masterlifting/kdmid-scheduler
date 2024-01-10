@@ -1,0 +1,43 @@
+# @format
+
+version: '3.8'
+
+services:
+  backend:
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.backend.rule=Host(`masterlifting.guru`) && PathPrefix(`/kdmidapi`)'
+      - 'traefik.http.routers.backend.entrypoints=websecure'
+      - 'traefik.http.routers.backend.tls.certresolver=letsencryptresolver'
+
+  frontend:
+    environment:
+      - REACT_APP_BACKEND_URL=http://backend:8080
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.frontend.rule=Host(`masterlifting.guru`) && PathPrefix(`/kdmidweb`)'
+      - 'traefik.http.routers.frontend.entrypoints=websecure'
+      - 'traefik.http.routers.frontend.tls.certresolver=letsencryptresolver'
+
+  traefik:
+    image: traefik:v2.2
+    container_name: traefik
+    command:
+      - '--api.insecure=true'
+      - '--providers.docker=true'
+      - '--providers.docker.exposedByDefault=false'
+      - '--entrypoints.web.address=:80'
+      - '--entrypoints.websecure.address=:443'
+      - '--certificatesresolvers.letsencryptresolver.acme.tlschallenge=true'
+      - '--certificatesresolvers.letsencryptresolver.acme.email=masterlifting@gmail.com'
+      - '--certificatesresolvers.letsencryptresolver.acme.storage=/letsencrypt/acme.json'
+      - '--certificatesresolvers.letsencryptresolver.acme.caServer=https://acme-v02.api.letsencrypt.org/directory'
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./infrastructure/traefik/letsencrypt:/letsencrypt
+    networks:
+      - kdmid-scheduler-network
+    restart: always

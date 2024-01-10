@@ -1,17 +1,16 @@
 /** @format */
 
-import { configureStore } from "@reduxjs/toolkit";
-import { setupListeners } from "@reduxjs/toolkit/query";
-import { identifierApi } from "./features/identifiers/identifierApi";
-import { identifierReducer } from "./features/identifiers/identifierSlice";
+import { configureStore } from '@reduxjs/toolkit';
+import { setupListeners } from '@reduxjs/toolkit/query';
+import { kdmidIdApi } from './features/kdmid-id/kdmidIdApi';
+import { kdmidIdReducer } from './features/kdmid-id/kdmidIdSlice';
 
 export const store = configureStore({
   reducer: {
-    [identifierApi.reducerPath]: identifierApi.reducer,
-    identifierState: identifierReducer,
+    [kdmidIdApi.reducerPath]: kdmidIdApi.reducer,
+    identifierState: kdmidIdReducer,
   },
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(identifierApi.middleware),
+  middleware: getDefaultMiddleware => getDefaultMiddleware().concat(kdmidIdApi.middleware),
 });
 
 setupListeners(store.dispatch);

@@ -1,14 +1,14 @@
 /** @format */
 
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
-import { IChatCommand, IIdentifierState } from './identifierTypes';
+import { IChatCommand, IKdmidIdState } from './kdmidIdTypes';
 
-const initialState: IIdentifierState = {
+const initialState: IKdmidIdState = {
   chatCommands: [],
 };
 
-export const identifierSlice = createSlice({
-  name: 'identifierSlice',
+export const kdmidIdSlice = createSlice({
+  name: 'kdmidIdSlice',
   initialState,
   reducers: {
     setChatCommand: (state, action: PayloadAction<IChatCommand>) => {
@@ -23,5 +23,5 @@ export const identifierSlice = createSlice({
   },
 });
 
-export const identifierActions = identifierSlice.actions;
-export const identifierReducer = identifierSlice.reducer;
+export const kdmidIdActions = kdmidIdSlice.actions;
+export const kdmidIdReducer = kdmidIdSlice.reducer;

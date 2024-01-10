@@ -2,12 +2,12 @@
 
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { constants } from '../../_constants';
-import { ICommandGetRequest, ICommandPostRequest } from './identifierTypes';
+import { ICommandGetRequest, ICommandPostRequest } from './kdmidIdTypes';
 
 const controller = 'chats';
 
-export const identifierApi = createApi({
-  reducerPath: 'identifierApi',
+export const kdmidIdApi = createApi({
+  reducerPath: 'kdmidIdApi',
   baseQuery: fetchBaseQuery({ baseUrl: constants.config.backendBaseUrl }),
   endpoints: builder => ({
     getCommand: builder.query<any, ICommandGetRequest>({
@@ -26,4 +26,4 @@ export const identifierApi = createApi({
   }),
 });
 
-export const { useGetCommandQuery, useUpdateCommandMutation } = identifierApi;
+export const { useGetCommandQuery, useUpdateCommandMutation } = kdmidIdApi;
