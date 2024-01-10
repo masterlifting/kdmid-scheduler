@@ -32,6 +32,6 @@ export interface IChatCommand {
   command: ICommand;
 }
 
-export interface IIdentifierState {
+export interface IKdmidIdState {
   chatCommands: IChatCommand[];
 }

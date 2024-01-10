@@ -1,12 +1,12 @@
 /** @format */
 
-import { useEffect, useState } from 'react';
-import { ICity, ICommand, ICommandGetRequest, IKdmidId } from './identifierTypes';
-import { useGetCommandQuery, useUpdateCommandMutation } from './identifierApi';
+import { useState } from 'react';
+import { ICity, ICommand, ICommandGetRequest, IKdmidId } from './kdmidIdTypes';
+import { useGetCommandQuery, useUpdateCommandMutation } from './kdmidIdApi';
 
 //const telegram = window.Telegram.WebApp;
 
-export const useIdentifier = (commandParams: ICommandGetRequest) => {
+export const useKdmidId = ({ chatId, commandId }: ICommandGetRequest) => {
   const [kdmidId, setKdmidId] = useState<IKdmidId>({
     id: '',
     cd: '',
@@ -23,8 +23,8 @@ export const useIdentifier = (commandParams: ICommandGetRequest) => {
     isError: isGetCommandError,
     error: getCommandError,
   } = useGetCommandQuery({
-    chatId: commandParams.chatId,
-    commandId: commandParams.commandId,
+    chatId: chatId,
+    commandId: commandId,
   });
 
   const [
@@ -62,7 +62,7 @@ export const useIdentifier = (commandParams: ICommandGetRequest) => {
       };
 
       updateCommand({
-        chatId: commandParams.chatId,
+        chatId: chatId,
         command,
       });
 
@@ -84,7 +84,7 @@ export const useIdentifier = (commandParams: ICommandGetRequest) => {
 
   return {
     city,
-    identifier: kdmidId,
+    kdmidId,
     onSubmit,
     onChangeId,
     onChangeCd,

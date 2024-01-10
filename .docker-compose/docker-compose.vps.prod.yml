@@ -6,14 +6,16 @@ services:
   backend:
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.routers.backend.rule=Host(`telegram.api.masterlifting.guru`)'
+      - 'traefik.http.routers.backend.rule=Host(`masterlifting.guru`) && PathPrefix(`/kdmidapi`)'
       - 'traefik.http.routers.backend.entrypoints=websecure'
       - 'traefik.http.routers.backend.tls.certresolver=letsencryptresolver'
 
   frontend:
+    environment:
+      - REACT_APP_BACKEND_URL=http://backend:8080
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.routers.frontend.rule=Host(`telegram.web.masterlifting.guru`)'
+      - 'traefik.http.routers.frontend.rule=Host(`masterlifting.guru`) && PathPrefix(`/kdmidweb`)'
       - 'traefik.http.routers.frontend.entrypoints=websecure'
       - 'traefik.http.routers.frontend.tls.certresolver=letsencryptresolver'
 
