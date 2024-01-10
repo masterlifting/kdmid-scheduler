@@ -65,9 +65,9 @@ services:
       - kdmid-scheduler-network
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.routers.frontend.rule=Host(`kdmidapi.masterlifting.guru`)'
-      - 'traefik.http.routers.frontend.entrypoints=websecure'
-      - 'traefik.http.routers.frontend.tls.certresolver=lets-encrypt'
+      - 'traefik.http.routers.backend.rule=Host(`kdmidapi.masterlifting.guru`)'
+      - 'traefik.http.routers.backend.entrypoints=websecure'
+      - 'traefik.http.routers.backend.tls.certresolver=lets-encrypt'
       - 'traefik.http.services.backend.loadbalancer.server.port=80'
     depends_on:
       - mongodb_1
@@ -106,11 +106,11 @@ services:
       - ./infrastructure/traefik/letsencrypt/acme.json:/acme.json
       - ./infrastructure/traefik/traefik.yml:/traefik.yml
     command:
-      - 'traefik.enable=true'
-      - 'traefik.http.routers.traefik.entrypoints=websecure'
-      - 'traefik.http.routers.traefik.tls.certresolver=lets-encrypt'
-      - 'traefik.http.middlewares.traefik-https-redirect.redirectscheme.scheme=https'
-      - 'traefik.http.routers.traefik.middlewares=traefik-https-redirect'
+      - '--traefik.enable=true'
+      - '--traefik.http.routers.traefik.entrypoints=websecure'
+      - '--traefik.http.routers.traefik.tls.certresolver=lets-encrypt'
+      - '--traefik.http.middlewares.traefik-https-redirect.redirectscheme.scheme=https'
+      - '--traefik.http.routers.traefik.middlewares=traefik-https-redirect'
       # - "certificatesresolvers.lets-encrypt.acme.caserver=https://acme-v02.api.letsencrypt.org/directory"  # Production
 
 networks:
