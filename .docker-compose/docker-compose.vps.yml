@@ -64,10 +64,10 @@ services:
     networks:
       - kdmid-scheduler-network
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=Host(`api.masterlifting.guru`)"
-      - "traefik.http.routers.backend.entrypoints=websecure"
-      - "traefik.http.routers.backend.tls.certresolver=myhttpchallenge"
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.backend.rule=Host(`api.masterlifting.guru`)'
+      - 'traefik.http.routers.backend.entrypoints=websecure'
+      - 'traefik.http.routers.backend.tls.certresolver=myhttpchallenge'
     depends_on:
       - mongodb_1
       - mongodb_2
@@ -83,11 +83,11 @@ services:
       - REACT_APP_BACKEND_URL=http://backend:8080
     networks:
       - kdmid-scheduler-network
-     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=Host(`www.masterlifting.guru`)"
-      - "traefik.http.routers.frontend.entrypoints=websecure"
-      - "traefik.http.routers.frontend.tls.certresolver=myhttpchallenge"
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.frontend.rule=Host(`www.masterlifting.guru`)'
+      - 'traefik.http.routers.frontend.entrypoints=websecure'
+      - 'traefik.http.routers.frontend.tls.certresolver=myhttpchallenge'
     depends_on:
       - backend
 
