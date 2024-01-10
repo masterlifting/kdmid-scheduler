@@ -10,10 +10,9 @@ services:
       - mongodb_1-data:/data/db
       - mongodb_1-config:/data/configdb
       - ./infrastructure/mongodb/mongodb-keyfile:/opt/keyfiles/mongodb-keyfile
-      - ./infrastructure/mongodb/mongodb-init.sh:/data/configdb/mongodb-init.sh
     ports:
       - 27017:27017
-    command: /bin/bash -c "./data/configdb/mongodb-init.sh"
+    command: /bin/bash -c "chmod 600 /opt/keyfiles/mongodb-keyfile && mongod --logpath /var/log/mongodb.log --bind_ip_all --replSet rs0 --keyFile /opt/keyfiles/mongodb-keyfile"
     networks:
       - kdmid-scheduler-network
     restart: always
@@ -25,10 +24,9 @@ services:
       - mongodb_2-data:/data/db
       - mongodb_2-config:/data/configdb
       - ./infrastructure/mongodb/mongodb-keyfile:/opt/keyfiles/mongodb-keyfile
-      - ./infrastructure/mongodb/mongodb-init.sh:/data/configdb/mongodb-init.sh
     ports:
       - 27018:27017
-    command: /bin/bash -c "./data/configdb/mongodb-init.sh"
+    command: /bin/bash -c "chmod 600 /opt/keyfiles/mongodb-keyfile && mongod --logpath /var/log/mongodb.log --bind_ip_all --replSet rs0 --keyFile /opt/keyfiles/mongodb-keyfile"
     networks:
       - kdmid-scheduler-network
     restart: always
@@ -40,10 +38,9 @@ services:
       - mongodb_3-data:/data/db
       - mongodb_3-config:/data/configdb
       - ./infrastructure/mongodb/mongodb-keyfile:/opt/keyfiles/mongodb-keyfile
-      - ./infrastructure/mongodb/mongodb-init.sh:/data/configdb/mongodb-init.sh
     ports:
       - 27019:27017
-    command: /bin/bash -c "./data/configdb/mongodb-init.sh"
+    command: /bin/bash -c "chmod 600 /opt/keyfiles/mongodb-keyfile && mongod --logpath /var/log/mongodb.log --bind_ip_all --replSet rs0 --keyFile /opt/keyfiles/mongodb-keyfile"
     networks:
       - kdmid-scheduler-network
     restart: always
