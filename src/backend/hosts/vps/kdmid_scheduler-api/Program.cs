@@ -9,6 +9,11 @@ using static KdmidScheduler.Registrations;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(80);
+});
+
 builder.Services
     .AddKdmidInfrastructure()
     .AddKdmidVpsInfrastructure()

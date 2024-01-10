@@ -51,12 +51,9 @@ services:
     build:
       context: ../src/backend
       dockerfile: ./hosts/vps/kdmid_scheduler-api/Dockerfile
-    ports:
-      - '8080:8080'
     env_file:
       - .env
     environment:
-      - ASPNETCORE_URLS=http://+:8080
       - MongoDbConnection__Host=mongodb_1
       - MongoDbConnection__User=${MONGODBCONNECTION_USERNAME}
       - MongoDbConnection__Password=${MONGODBCONNECTION_PASSWORD}
@@ -67,10 +64,10 @@ services:
     networks:
       - kdmid-scheduler-network
     labels:
-      - 'traefik.enable=true'
-      - 'traefik.http.routers.backend.entrypoints=websecure'
-      - 'traefik.http.routers.backend.tls.certresolver=letsencryptresolver'
-      - 'traefik.http.routers.backend.rule=Host(`masterlifting.guru`) && PathPrefix(`/api`)'
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`api.masterlifting.guru`)"
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.tls.certresolver=myhttpchallenge"
     depends_on:
       - mongodb_1
       - mongodb_2
@@ -82,39 +79,41 @@ services:
     build:
       context: ../src/frontend/telegram-webapp
       dockerfile: ./Dockerfile
-    ports:
-      - '3000:3000'
     environment:
       - REACT_APP_BACKEND_URL=http://backend:8080
     networks:
       - kdmid-scheduler-network
-    labels:
-      - 'traefik.enable=true'
-      - 'traefik.http.routers.frontend.entrypoints=websecure'
-      - 'traefik.http.routers.frontend.tls.certresolver=letsencryptresolver'
-      - 'traefik.http.routers.frontend.rule=Host(`masterlifting.guru`)'
+     labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`www.masterlifting.guru`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls.certresolver=myhttpchallenge"
     depends_on:
       - backend
 
   traefik:
-    image: traefik:v2.2
+    image: traefik:v2.3
     container_name: traefik
     command:
-      - '--api.insecure=true'
-      - '--providers.docker=true'
-      - '--providers.docker.exposedByDefault=false'
-      - '--entrypoints.web.address=:80'
-      - '--entrypoints.websecure.address=:443'
-      - '--certificatesresolvers.letsencryptresolver.acme.tlschallenge=true'
-      - '--certificatesresolvers.letsencryptresolver.acme.email=masterlifting@gmail.com'
-      - '--certificatesresolvers.letsencryptresolver.acme.storage=/letsencrypt/acme.json'
-      - '--certificatesresolvers.letsencryptresolver.acme.caServer=https://acme-v02.api.letsencrypt.org/directory'
+      - --api.insecure=true
+      - --providers.docker
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.myhttpchallenge.acme.tlschallenge=true
+      - --certificatesresolvers.myhttpchallenge.acme.email==masterlifting@gmail.com
+      - --certificatesresolvers.myhttpchallenge.acme.storage=/letsencrypt/acme.json
+      - --certificatesresolvers.myhttpchallenge.acme.httpchallenge.entrypoint=web
     ports:
       - '80:80'
       - '443:443'
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./infrastructure/traefik/letsencrypt:/letsencrypt
+      - letsencrypt:/letsencrypt
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.api.rule=Host(`traefik.masterlifting.guru`)'
+      - 'traefik.http.routers.api.entrypoints=websecure'
+      - 'traefik.http.routers.api.tls.certresolver=myhttpchallenge'
     networks:
       - kdmid-scheduler-network
     restart: always
@@ -129,3 +128,4 @@ volumes:
   mongodb_1-config:
   mongodb_2-config:
   mongodb_3-config:
+  letsencrypt:
