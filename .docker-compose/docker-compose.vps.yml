@@ -70,7 +70,7 @@ services:
       - 'traefik.enable=true'
       - 'traefik.http.routers.backend.entrypoints=websecure'
       - 'traefik.http.routers.backend.tls.certresolver=letsencryptresolver'
-      - 'traefik.http.routers.backend.rule=Host(`masterlifting.guru`) && PathPrefix(`/kdmidapi`)'
+      - 'traefik.http.routers.backend.rule=Host(`masterlifting.guru`) && PathPrefix(`/api`)'
     depends_on:
       - mongodb_1
       - mongodb_2
@@ -92,7 +92,7 @@ services:
       - 'traefik.enable=true'
       - 'traefik.http.routers.frontend.entrypoints=websecure'
       - 'traefik.http.routers.frontend.tls.certresolver=letsencryptresolver'
-      - 'traefik.http.routers.frontend.rule=Host(`masterlifting.guru`) && PathPrefix(`/kdmidweb`)'
+      - 'traefik.http.routers.frontend.rule=Host(`masterlifting.guru`)'
     depends_on:
       - backend
 

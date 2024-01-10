@@ -1,7 +1,7 @@
 {
   "name": "kdmid-scheduler",
   "version": "1.0.0",
-  "homepage": "https://masterlifting.guru/kdmidweb",
+  "homepage": "/",
   "private": true,
   "eslintConfig": {
     "extends": [
