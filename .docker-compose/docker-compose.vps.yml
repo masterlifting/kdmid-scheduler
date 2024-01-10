@@ -96,7 +96,7 @@ services:
     depends_on:
       - backend
 
-   traefik:
+  traefik:
     image: traefik:v2.2
     container_name: traefik
     command:
