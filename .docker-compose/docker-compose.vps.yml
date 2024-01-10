@@ -60,14 +60,14 @@ services:
       - AntiCaptchaConnection__ApiKey=${ANTICAPTCHACONNECTION_APIKEY}
       - TelegramBotConnection__Token=${TELEGRAMBOTCONNECTION_TOKEN}
       - TelegramBotConnection__AdminChatId=${TELEGRAMBOTCONNECTION_ADMINCHATID}
-      - Kdmid__WebAppUrl=${KDMID_WEBAPPURL}
+      - Kdmid__WebAppUrl=https://kdmidweb.masterlifting.guru
     networks:
       - kdmid-scheduler-network
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.routers.backend.rule=Host(`api.masterlifting.guru`)'
-      - 'traefik.http.routers.backend.entrypoints=websecure'
-      - 'traefik.http.routers.backend.tls.certresolver=myhttpchallenge'
+      - 'traefik.http.routers.frontend.rule=Host(`kdmidapi.masterlifting.guru`)'
+      - 'traefik.http.routers.frontend.entrypoints=websecure'
+      - 'traefik.http.routers.frontend.tls.certresolver=myhttpchallenge'
       - 'traefik.http.services.backend.loadbalancer.server.port=80'
     depends_on:
       - mongodb_1
@@ -81,12 +81,12 @@ services:
       context: ../src/frontend/telegram-webapp
       dockerfile: ./Dockerfile
     environment:
-      - REACT_APP_BACKEND_URL=http://backend:8080
+      - REACT_APP_BACKEND_URL=https://kdmidapi.masterlifting.guru
     networks:
       - kdmid-scheduler-network
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.routers.frontend.rule=Host(`www.masterlifting.guru`)'
+      - 'traefik.http.routers.frontend.rule=Host(`kdmidweb.masterlifting.guru`)'
       - 'traefik.http.routers.frontend.entrypoints=websecure'
       - 'traefik.http.routers.frontend.tls.certresolver=myhttpchallenge'
     depends_on:
@@ -101,23 +101,18 @@ services:
       - --entrypoints.web.address=:80
       - --entrypoints.websecure.address=:443
       - --certificatesresolvers.myhttpchallenge.acme.tlschallenge=true
-      - --certificatesresolvers.myhttpchallenge.acme.email==masterlifting@gmail.com
+      - --certificatesresolvers.myhttpchallenge.acme.email=masterlifting@gmail.com
       - --certificatesresolvers.myhttpchallenge.acme.storage=/letsencrypt/acme.json
       - --certificatesresolvers.myhttpchallenge.acme.httpchallenge.entrypoint=web
+      - --certificatesresolvers.myhttpchallenge.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
     ports:
       - '80:80'
       - '443:443'
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./infrastructure/traefik/letsencrypt:/letsencrypt
-    labels:
-      - 'traefik.enable=true'
-      - 'traefik.http.routers.api.rule=Host(`traefik.masterlifting.guru`)'
-      - 'traefik.http.routers.api.entrypoints=websecure'
-      - 'traefik.http.routers.api.tls.certresolver=myhttpchallenge'
     networks:
       - kdmid-scheduler-network
-    restart: always
 
 networks:
   kdmid-scheduler-network: {}
