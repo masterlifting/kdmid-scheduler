@@ -1,0 +1,27 @@
+# @format
+
+name: Fast deploy
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - v*-fast
+
+jobs:
+  deploy:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Fast deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.DO_KDMID_HOST }}
+          username: ${{ secrets.DO_KDMID_USERNAME }}
+          key: ${{ secrets.DO_KDMID_SSH }}
+          script: |
+            chmod +x /usr/src/kdmid-scheduler/.github/workflows/deploy-fast.sh
+            /usr/src/kdmid-scheduler/.github/workflows/deploy-fast.sh
