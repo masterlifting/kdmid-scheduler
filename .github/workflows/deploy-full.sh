@@ -2,7 +2,7 @@
 
 set -e
 
-cd ../../
+cd /usr/src/kdmid-scheduler
 
 git stash
 git pull origin main
