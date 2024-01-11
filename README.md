@@ -4,7 +4,7 @@
 
 ## Overview
 
-kdmid-scheduler showcases my full-stack development skills and expertise in crafting high-quality code. This application is designed to facilitate appointments with Russian embassies worldwide, demonstrating a well-structured, patterned codebase integrated with my own infrastructure libraries...
+kdmid-scheduler showcases my full-stack development skills and expertise in crafting high-quality code. This application is designed to facilitate appointments with Russian embassies worldwide, demonstrating a well-structured, patterned codebase integrated with my own infrastructure libraries.
 
 ## Technologies
 
