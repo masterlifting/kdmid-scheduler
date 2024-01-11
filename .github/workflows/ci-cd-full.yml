@@ -5,7 +5,7 @@ name: Full deploy
 on:
   push:
     tags:
-      - v.1.0
+      - v1.0
 
 jobs:
   deploy:
