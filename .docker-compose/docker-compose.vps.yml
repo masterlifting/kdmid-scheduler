@@ -111,7 +111,7 @@ services:
       - '--traefik.http.routers.traefik.tls.certresolver=lets-encrypt'
       - '--traefik.http.middlewares.traefik-https-redirect.redirectscheme.scheme=https'
       - '--traefik.http.routers.traefik.middlewares=traefik-https-redirect'
-      # - "certificatesresolvers.lets-encrypt.acme.caserver=https://acme-v02.api.letsencrypt.org/directory"  # Production
+      - '--certificatesresolvers.lets-encrypt.acme.caserver=https://acme-v02.api.letsencrypt.org/directory'
 
 networks:
   kdmid-scheduler-network: {}
