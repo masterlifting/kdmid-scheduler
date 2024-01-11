@@ -7,7 +7,7 @@ on:
     branches:
       - main
     tags:
-      - v*-full
+      - v1.1
 
 jobs:
   deploy:
