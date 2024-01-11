@@ -22,6 +22,7 @@ jobs:
           host: ${{ secrets.DO_KDMID_HOST }}
           username: ${{ secrets.DO_KDMID_USERNAME }}
           key: ${{ secrets.DO_KDMID_SSH }}
+          passphrase: ${{ secrets.DO_KDMID_PASSPHRASE }}
           script: |
             chmod +x /usr/src/kdmid-scheduler/.github/workflows/deploy-fast.sh
             /usr/src/kdmid-scheduler/.github/workflows/deploy-fast.sh
