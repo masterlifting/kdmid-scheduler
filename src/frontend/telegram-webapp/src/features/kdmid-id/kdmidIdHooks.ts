@@ -3,19 +3,15 @@
 import { useState } from 'react';
 import { ICity, ICommand, ICommandGetRequest, IKdmidId } from './kdmidIdTypes';
 import { useGetCommandQuery, useUpdateCommandMutation } from './kdmidIdApi';
-
-//const telegram = window.Telegram.WebApp;
+import { useTelegramWebApp } from '../../hooks/useTelegramWebApp';
 
 export const useKdmidId = ({ chatId, commandId }: ICommandGetRequest) => {
+  const { close: closeTelegramWebApp } = useTelegramWebApp();
   const [kdmidId, setKdmidId] = useState<IKdmidId>({
     id: '',
     cd: '',
     ems: '',
   });
-
-  // useEffect(() => {
-  //   telegram.ready();
-  // }, []);
 
   const {
     data: getCommandResponse,
@@ -66,7 +62,7 @@ export const useKdmidId = ({ chatId, commandId }: ICommandGetRequest) => {
         command,
       });
 
-      //telegram.close();
+      closeTelegramWebApp();
     }
   };
 

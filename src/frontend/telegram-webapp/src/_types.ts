@@ -19,3 +19,8 @@ export interface IWebApiErrorResponse {
 }
 
 export type WebApiResponseType<T> = IWebApiSuccessResponse<T> | IWebApiErrorResponse;
+
+export interface ITelegramWebApp {
+  ready: () => void;
+  close: () => void;
+}
