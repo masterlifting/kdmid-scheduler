@@ -9,7 +9,7 @@ services:
     volumes:
       - mongodb_1-data:/data/db
       - mongodb_1-config:/data/configdb
-      - ./infrastructure/mongodb/mongodb-keyfile:/opt/keyfiles/mongodb-keyfile # sudo chmod 600 mongodb-keyfile
+      - ../../kdmid-scheduler-secrets/infrastructure/mongodb/mongodb-keyfile:/opt/keyfiles/mongodb-keyfile # sudo chmod 600 mongodb-keyfile
     ports:
       - 27017:27017
     command: /bin/bash -c "chmod 600 /opt/keyfiles/mongodb-keyfile && mongod --logpath /var/log/mongodb.log --bind_ip_all --replSet rs0 --keyFile /opt/keyfiles/mongodb-keyfile"
@@ -23,7 +23,7 @@ services:
     volumes:
       - mongodb_2-data:/data/db
       - mongodb_2-config:/data/configdb
-      - ./infrastructure/mongodb/mongodb-keyfile:/opt/keyfiles/mongodb-keyfile # sudo chmod 600 mongodb-keyfile
+      - ../../kdmid-scheduler-secrets/infrastructure/mongodb/mongodb-keyfile:/opt/keyfiles/mongodb-keyfile # chmod 600
     ports:
       - 27018:27017
     command: /bin/bash -c "chmod 600 /opt/keyfiles/mongodb-keyfile && mongod --logpath /var/log/mongodb.log --bind_ip_all --replSet rs0 --keyFile /opt/keyfiles/mongodb-keyfile"
@@ -37,7 +37,7 @@ services:
     volumes:
       - mongodb_3-data:/data/db
       - mongodb_3-config:/data/configdb
-      - ./infrastructure/mongodb/mongodb-keyfile:/opt/keyfiles/mongodb-keyfile # sudo chmod 600 mongodb-keyfile
+      - ../../kdmid-scheduler-secrets/infrastructure/mongodb/mongodb-keyfile:/opt/keyfiles/mongodb-keyfile # chmod 600
     ports:
       - 27019:27017
     command: /bin/bash -c "chmod 600 /opt/keyfiles/mongodb-keyfile && mongod --logpath /var/log/mongodb.log --bind_ip_all --replSet rs0 --keyFile /opt/keyfiles/mongodb-keyfile"
@@ -105,8 +105,8 @@ services:
       - kdmid-scheduler-network
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./infrastructure/traefik/letsencrypt/acme.json:/acme.json # sudo chmod 600 acme.json && sudo chown root:root acme.json
-      - ./infrastructure/traefik/traefik.yml:/traefik.yml # sudo chmod 600 traefik.yml
+      - ./infrastructure/traefik/traefik.yml:/traefik.yml # chmod 600
+      - ../../kdmid-scheduler-secrets/infrastructure/traefik/letsencrypt/acme.json:/acme.json # chmod 600 && chown root:root
     command:
       - '--traefik.enable=true'
       - '--traefik.http.routers.traefik.entrypoints=websecure'
