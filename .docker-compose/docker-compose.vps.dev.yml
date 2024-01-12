@@ -9,7 +9,7 @@ services:
     volumes:
       - mongodb_1-data:/data/db
       - mongodb_1-config:/data/configdb
-      - ./infrastructure/mongodb/mongodb-keyfile:/opt/keyfiles/mongodb-keyfile
+      - ../../kdmid-scheduler-secrets/infrastructure/mongodb/mongodb-keyfile:/opt/keyfiles/mongodb-keyfile # chmod 600
     ports:
       - 27017:27017
     command: /bin/bash -c "chmod 600 /opt/keyfiles/mongodb-keyfile && mongod --logpath /var/log/mongodb.log --bind_ip_all --replSet rs0 --keyFile /opt/keyfiles/mongodb-keyfile"
@@ -23,7 +23,7 @@ services:
     volumes:
       - mongodb_2-data:/data/db
       - mongodb_2-config:/data/configdb
-      - ./infrastructure/mongodb/mongodb-keyfile:/opt/keyfiles/mongodb-keyfile
+      - ../../kdmid-scheduler-secrets/infrastructure/mongodb/mongodb-keyfile:/opt/keyfiles/mongodb-keyfile # chmod 600
     ports:
       - 27018:27017
     command: /bin/bash -c "chmod 600 /opt/keyfiles/mongodb-keyfile && mongod --logpath /var/log/mongodb.log --bind_ip_all --replSet rs0 --keyFile /opt/keyfiles/mongodb-keyfile"
@@ -37,28 +37,13 @@ services:
     volumes:
       - mongodb_3-data:/data/db
       - mongodb_3-config:/data/configdb
-      - ./infrastructure/mongodb/mongodb-keyfile:/opt/keyfiles/mongodb-keyfile
+      - ../../kdmid-scheduler-secrets/infrastructure/mongodb/mongodb-keyfile:/opt/keyfiles/mongodb-keyfile # chmod 600
     ports:
       - 27019:27017
     command: /bin/bash -c "chmod 600 /opt/keyfiles/mongodb-keyfile && mongod --logpath /var/log/mongodb.log --bind_ip_all --replSet rs0 --keyFile /opt/keyfiles/mongodb-keyfile"
     networks:
       - kdmid-scheduler-network
     restart: always
-
-  frontend:
-    image: kdmid-scheduler-frontend
-    container_name: frontend
-    build:
-      context: ../src/frontend/telegram-webapp
-      dockerfile: ./Dockerfile
-    ports:
-      - '3000:3000'
-    environment:
-      - REACT_APP_BACKEND_URL=http://localhost
-    networks:
-      - kdmid-scheduler-network
-    depends_on:
-      - backend
 
 networks:
   kdmid-scheduler-network: {}

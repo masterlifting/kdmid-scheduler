@@ -9,7 +9,7 @@ services:
     volumes:
       - mongodb_1-data:/data/db
       - mongodb_1-config:/data/configdb
-      - ../../kdmid-scheduler-secrets/infrastructure/mongodb/mongodb-keyfile:/opt/keyfiles/mongodb-keyfile # sudo chmod 600 mongodb-keyfile
+      - ../../kdmid-scheduler-secrets/infrastructure/mongodb/mongodb-keyfile:/opt/keyfiles/mongodb-keyfile # chmod 600
     ports:
       - 27017:27017
     command: /bin/bash -c "chmod 600 /opt/keyfiles/mongodb-keyfile && mongod --logpath /var/log/mongodb.log --bind_ip_all --replSet rs0 --keyFile /opt/keyfiles/mongodb-keyfile"
