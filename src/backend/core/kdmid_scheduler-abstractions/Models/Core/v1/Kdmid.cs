@@ -14,7 +14,6 @@ public sealed record City(string Code, string Name);
 
 public sealed record AvailableDatesResult(string FormData, Dictionary<DateTime, string> Dates);
 public sealed record ChosenDateResult(string FormData, DateTime Date, string ChosenValue);
-public sealed record ConfirmationResult(bool IsSuccess, string Message);
 
 public sealed record StartPage(string FormData, string CaptchaCode);
 public sealed record CalendarPage(string FormData, IDictionary<string, string> Dates);

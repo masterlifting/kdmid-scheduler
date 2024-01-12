@@ -4,15 +4,15 @@ using KdmidScheduler.Abstractions.Interfaces.Core.Services;
 using KdmidScheduler.Abstractions.Models.Core.v1;
 using KdmidScheduler.Abstractions.Models.Settings;
 
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-using Net.Shared.Extensions.Logging;
 using Net.Shared.Bots.Abstractions.Interfaces;
 using Net.Shared.Bots.Abstractions.Models;
+using Net.Shared.Extensions.Logging;
 
-using static Net.Shared.Bots.Abstractions.Constants;
 using static KdmidScheduler.Abstractions.Constants;
-using Microsoft.Extensions.Logging;
+using static Net.Shared.Bots.Abstractions.Constants;
 
 namespace KdmidScheduler.Services;
 
@@ -27,7 +27,7 @@ public sealed class KdmidResponseService(
     public static readonly string CityKey = typeof(City).FullName!;
     public static readonly string KdmidIdKey = typeof(KdmidId).FullName!;
     public static readonly string ChosenResultKey = typeof(ChosenDateResult).FullName!;
-    
+
     private readonly ILogger<KdmidResponseService> _logger = logger;
     private readonly IBotClient _botClient = botClient;
     private readonly IBotCommandsStore _botCommandsStore = botCommandsStore;
@@ -163,18 +163,10 @@ public sealed class KdmidResponseService(
             JsonSerializer.Deserialize<ChosenDateResult>(command.Parameters[ChosenResultKey], _jsonSerializerOptions)
             ?? throw new ArgumentException("The chosenResult is not specified.");
 
-        var confirmResult = await _kdmidRequestService.ConfirmChosenDate(city, kdmidId, chosenResult, cToken);
-
-        if (confirmResult.IsSuccess)
-        {
-            var messageArgs = new MessageEventArgs(chatId, new("The date is confirmed."));
-            await _botClient.SendMessage(messageArgs, cToken);
-        }
-        else
-        {
-            var messageArgs = new MessageEventArgs(chatId, new(confirmResult.Message));
-            await _botClient.SendMessage(messageArgs, cToken);
-        }
+        await _kdmidRequestService.ConfirmChosenDate(city, kdmidId, chosenResult, cToken);
+       
+        var messageArgs = new MessageEventArgs(chatId, new("The date is confirmed."));
+        await _botClient.SendMessage(messageArgs, cToken);
     }
     public Task SendAskResponse(string chatId, BotCommand command, CancellationToken cToken)
     {
@@ -195,7 +187,6 @@ public sealed class KdmidResponseService(
             throw new ArgumentException("The message for the user is not specified.");
 
         var adminMessageArgs = new MessageEventArgs(targetChatId, new(text));
-
         return _botClient.SendMessage(adminMessageArgs, cToken);
     }
 }

@@ -4,6 +4,8 @@ using HtmlAgilityPack;
 using KdmidScheduler.Abstractions.Interfaces.Infrastructure.Services;
 using KdmidScheduler.Abstractions.Models.Core.v1;
 
+using Net.Shared.Abstractions.Models.Exceptions;
+
 namespace KdmidScheduler.Infrastructure.Web;
 
 public sealed class KdmidHtmlDocument : IKdmidHtmlDocument
@@ -13,6 +15,11 @@ public sealed class KdmidHtmlDocument : IKdmidHtmlDocument
     public StartPage GetStartPage(string page)
     {
         _htmlDocument.LoadHtml(page);
+
+        var error = _htmlDocument.DocumentNode.SelectSingleNode("//div[@class='error_msg']");
+
+        if (error is not null)
+            throw new UserInvalidOperationException(error.InnerText);
 
         var pageNodes = _htmlDocument.DocumentNode.SelectNodes("//input | //img");
 
@@ -54,6 +61,11 @@ public sealed class KdmidHtmlDocument : IKdmidHtmlDocument
     {
         _htmlDocument.LoadHtml(page);
 
+        var error = _htmlDocument.DocumentNode.SelectSingleNode("//div[@class='error_msg']");
+
+        if (error is not null)
+            throw new UserInvalidOperationException(error.InnerText);
+
         var pageNodes = _htmlDocument.DocumentNode.SelectNodes("//input");
 
         if (pageNodes is null || pageNodes.Count == 0)
@@ -87,6 +99,11 @@ public sealed class KdmidHtmlDocument : IKdmidHtmlDocument
     public CalendarPage GetCalendarPage(string page)
     {
         _htmlDocument.LoadHtml(page);
+
+        var error = _htmlDocument.DocumentNode.SelectSingleNode("//div[@class='error_msg']");
+
+        if (error is not null)
+            throw new UserInvalidOperationException(error.InnerText);
 
         var resultTable = _htmlDocument
             .DocumentNode
@@ -134,6 +151,11 @@ public sealed class KdmidHtmlDocument : IKdmidHtmlDocument
     public ConfirmationPage GetConfirmationPage(string page)
     {
         _htmlDocument.LoadHtml(page);
+
+        var error = _htmlDocument.DocumentNode.SelectSingleNode("//div[@class='error_msg']");
+
+        if (error is not null)
+            throw new UserInvalidOperationException(error.InnerText);
 
         var resultTable = _htmlDocument
             .DocumentNode

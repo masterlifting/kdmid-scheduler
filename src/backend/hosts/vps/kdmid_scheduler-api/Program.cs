@@ -1,4 +1,5 @@
-﻿using KdmidScheduler.Infrastructure;
+﻿using KdmidScheduler.Api;
+using KdmidScheduler.Infrastructure;
 
 using static KdmidScheduler.Registrations;
 
@@ -8,7 +9,7 @@ builder.Services
     .AddKdmidInfrastructure()
     .AddKdmidVpsInfrastructure()
     .AddKdmidCore()
-    .AddControllers();
+    .AddControllers(options => options.Filters.Add<BotExceptionFilter>());
 
 var app = builder.Build();
 

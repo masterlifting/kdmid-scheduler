@@ -60,7 +60,7 @@ public sealed class KdmidRequestService(
 
         return new AvailableDatesResult(applicationFormData, availableDates);
     }
-    public async Task<ConfirmationResult> ConfirmChosenDate(City city, KdmidId kdmidId, ChosenDateResult chosenResult, CancellationToken cToken)
+    public async Task ConfirmChosenDate(City city, KdmidId kdmidId, ChosenDateResult chosenResult, CancellationToken cToken)
     {
         const string ButtonKey = "ctl00%24MainContent%24TextBox1=";
         var buttonValue = Uri.EscapeDataString(chosenResult.ChosenValue);
@@ -69,11 +69,6 @@ public sealed class KdmidRequestService(
 
         var confirmationResponse = await _httpClient.PostConfirmation(city, kdmidId, formData, cToken);
 
-        var confirmation = _htmlDocument.GetConfirmationPage(confirmationResponse);
-
-        if(confirmation.Result.StartsWith('/'))
-            return new ConfirmationResult(false, confirmation.Result);
-
-        return new ConfirmationResult(true, confirmation.Result);
+        _htmlDocument.GetConfirmationPage(confirmationResponse);
     }
 }
