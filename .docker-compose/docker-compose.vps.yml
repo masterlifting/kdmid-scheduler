@@ -52,7 +52,7 @@ services:
       context: ../src/backend
       dockerfile: ./hosts/vps/kdmid_scheduler-api/Dockerfile
     env_file:
-      - .env
+      - ../../kdmid-scheduler-secrets/.env
     environment:
       - MongoDbConnection__Host=mongodb_1
       - MongoDbConnection__User=${MONGODBCONNECTION_USERNAME}
