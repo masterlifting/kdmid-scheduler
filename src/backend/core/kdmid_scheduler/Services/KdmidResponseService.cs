@@ -6,15 +6,18 @@ using KdmidScheduler.Abstractions.Models.Settings;
 
 using Microsoft.Extensions.Options;
 
+using Net.Shared.Extensions.Logging;
 using Net.Shared.Bots.Abstractions.Interfaces;
 using Net.Shared.Bots.Abstractions.Models;
 
 using static Net.Shared.Bots.Abstractions.Constants;
 using static KdmidScheduler.Abstractions.Constants;
+using Microsoft.Extensions.Logging;
 
 namespace KdmidScheduler.Services;
 
 public sealed class KdmidResponseService(
+    ILogger<KdmidResponseService> logger,
     IBotClient botClient,
     IBotCommandsStore botCommandsStore,
     IKdmidRequestService kdmidRequestService,
@@ -24,7 +27,8 @@ public sealed class KdmidResponseService(
     public static readonly string CityKey = typeof(City).FullName!;
     public static readonly string KdmidIdKey = typeof(KdmidId).FullName!;
     public static readonly string ChosenResultKey = typeof(ChosenDateResult).FullName!;
-
+    
+    private readonly ILogger<KdmidResponseService> _logger = logger;
     private readonly IBotClient _botClient = botClient;
     private readonly IBotCommandsStore _botCommandsStore = botCommandsStore;
     private readonly IKdmidRequestService _kdmidRequestService = kdmidRequestService;
@@ -58,6 +62,7 @@ public sealed class KdmidResponseService(
             }, cToken);
 
             var uri = new Uri($"{_kdmidSettings.WebAppUrl}/kdmidId?chatId={chatId}&commandId={command.Id}");
+            _logger.Debug($"Created a command with id {command.Id} for chat {chatId}.");
 
             webAppData.Add(city.Name, uri);
         }

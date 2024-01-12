@@ -68,11 +68,12 @@ services:
       - 'traefik.http.routers.backend.rule=Host(`kdmidapi.masterlifting.guru`)'
       - 'traefik.http.routers.backend.entrypoints=websecure'
       - 'traefik.http.routers.backend.tls.certresolver=lets-encrypt'
-      - 'traefik.http.services.backend.loadbalancer.server.port=80'
+      - 'traefik.http.services.backend.loadbalancer.server.port=8080'
     depends_on:
       - mongodb_1
       - mongodb_2
       - mongodb_3
+    restart: always
 
   frontend:
     image: kdmid-scheduler-frontend
@@ -91,6 +92,7 @@ services:
       - 'traefik.http.routers.frontend.tls.certresolver=lets-encrypt'
     depends_on:
       - backend
+    restart: always
 
   traefik:
     image: traefik:v2.3

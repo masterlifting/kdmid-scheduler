@@ -4,7 +4,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { constants } from '../../_constants';
 import { ICommandGetRequest, ICommandPostRequest } from './kdmidIdTypes';
 
-const controller = 'chats';
+const controller = 'bot';
 
 export const kdmidIdApi = createApi({
   reducerPath: 'kdmidIdApi',
@@ -12,14 +12,14 @@ export const kdmidIdApi = createApi({
   endpoints: builder => ({
     getCommand: builder.query<any, ICommandGetRequest>({
       query: ({ chatId, commandId }) => ({
-        url: `${controller}/${chatId}/commands/${commandId}`,
+        url: `${controller}/chats/${chatId}/commands/${commandId}`,
         method: constants.http.methods.GET,
       }),
     }),
     updateCommand: builder.mutation<void, ICommandPostRequest>({
       query: ({ chatId, command }) => ({
-        url: `${controller}/${chatId}`,
-        method: constants.http.methods.POST,
+        url: `${controller}/chats/${chatId}`,
+        method: constants.http.methods.PUT,
         body: command,
       }),
     }),

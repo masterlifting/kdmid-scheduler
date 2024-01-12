@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\kdmid_scheduler-abstractions\KdmidScheduler.Abstractions.csproj" />
+    <ProjectReference Include="..\submodules\shared\src\shared\Net.Shared.csproj" />
   </ItemGroup>
 
 </Project>

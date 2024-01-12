@@ -5,7 +5,7 @@ set -e
 cd /usr/src/kdmid-scheduler
 
 git stash
-git pull origin main
+git pull origin main --recurse-submodules
 
 chmod 600 .docker-compose/infrastructure/mongodb/mongodb-keyfile
 chmod 600 .docker-compose/infrastructure/traefik/traefik.yml
