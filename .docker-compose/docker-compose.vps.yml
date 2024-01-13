@@ -54,6 +54,7 @@ services:
     env_file:
       - .env
     environment:
+      - Logging__LogLevel__Default=Debug
       - MongoDbConnection__Host=mongodb_1
       - MongoDbConnection__User=${MONGODBCONNECTION_USERNAME}
       - MongoDbConnection__Password=${MONGODBCONNECTION_PASSWORD}

@@ -52,6 +52,11 @@ public sealed class KdmidResponseService(
 
         var availableCities = supportedCities.ExceptBy(myCities, x => x.Code);
 
+        if (!availableCities.Any())
+        {
+            availableCities = supportedCities;
+        }
+
         var webAppData = new Dictionary<string, Uri>(myCities.Length);
 
         foreach (var city in availableCities)
@@ -80,8 +85,6 @@ public sealed class KdmidResponseService(
     }
     public async Task SendMyEmbassies(string chatId, CancellationToken cToken)
     {
-        await _botCommandsStore.Clear(chatId, cToken);
-
         var supportedCities = _kdmidRequestService.GetSupportedCities(cToken);
 
         var commands = await _botCommandsStore.Get(chatId, cToken);
@@ -164,7 +167,7 @@ public sealed class KdmidResponseService(
             ?? throw new ArgumentException("The chosenResult is not specified.");
 
         await _kdmidRequestService.ConfirmChosenDate(city, kdmidId, chosenResult, cToken);
-       
+
         var messageArgs = new MessageEventArgs(chatId, new("The date is confirmed."));
         await _botClient.SendMessage(messageArgs, cToken);
     }
