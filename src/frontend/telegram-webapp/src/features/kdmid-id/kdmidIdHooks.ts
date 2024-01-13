@@ -43,8 +43,13 @@ export const useKdmidId = ({ chatId, commandId }: ICommandGetRequest) => {
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (kdmidId.id === '' || kdmidId.cd === '' || kdmidId.ems === '') {
-      alert('Fill all fields');
+    if (kdmidId.id === '') {
+      alert('Id is required');
+      return;
+    }
+
+    if (kdmidId.cd === '') {
+      alert('Cd is required');
       return;
     }
 

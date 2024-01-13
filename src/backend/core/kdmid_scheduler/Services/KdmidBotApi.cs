@@ -1,22 +1,27 @@
-﻿using System.Text.Json;
+﻿using System;
+using System.Text.Json;
 
 using KdmidScheduler.Abstractions.Interfaces.Core.Services;
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 using Net.Shared.Abstractions.Models.Exceptions;
 using Net.Shared.Bots.Abstractions.Interfaces;
 using Net.Shared.Bots.Abstractions.Models;
+using Net.Shared.Bots.Abstractions.Models.Settings;
 using Net.Shared.Extensions.Logging;
 
 namespace KdmidScheduler.Services;
 
 public class KdmidBotApi(
+    IOptions<TelegramBotConnectionSettings> options,
     ILogger<KdmidBotApi> logger,
     IBotClient cotClient,
     IBotResponse botResponse,
     IBotCommandsStore botCommandsStore) : IKdmidBotApi
 {
+    private readonly TelegramBotConnectionSettings _botConnectionSettings = options.Value;
     private readonly ILogger _logger = logger;
     private readonly IBotClient _botClient = cotClient;
     private readonly IBotResponse _botResponse = botResponse;
@@ -78,6 +83,9 @@ public class KdmidBotApi(
             await _botCommandsStore.Update(chatId, command.Id, command, cToken);
 
             await _botResponse.Create(chatId, command, cToken);
+
+            var messageArgs = new MessageEventArgs(_botConnectionSettings.AdminChatId, new($"The client with id {chatId} has used the bot."));
+            await _botClient.SendMessage(messageArgs, cToken);
         }
         catch (UserInvalidOperationException exception)
         {

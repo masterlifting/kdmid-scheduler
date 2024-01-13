@@ -40,22 +40,17 @@ public sealed class KdmidResponseService(
 
     public async Task SendAvailableEmbassies(string chatId, CancellationToken cToken)
     {
-        await _botCommandsStore.Clear(chatId, cToken);
-
-        var supportedCities = _kdmidRequestService.GetSupportedCities(cToken);
         var commands = await _botCommandsStore.Get(chatId, cToken);
+        
         var myCities = commands
             .Where(x => x.Parameters.ContainsKey(KdmidIdKey))
             .Select(x => JsonSerializer.Deserialize<City>(x.Parameters[CityKey], _jsonSerializerOptions))
             .Select(x => x!.Code)
             .ToArray();
 
-        var availableCities = supportedCities.ExceptBy(myCities, x => x.Code);
+        var supportedCities = _kdmidRequestService.GetSupportedCities(cToken);
 
-        if (!availableCities.Any())
-        {
-            availableCities = supportedCities;
-        }
+        var availableCities = supportedCities.ExceptBy(myCities, x => x.Code);
 
         var webAppData = new Dictionary<string, Uri>(myCities.Length);
 
@@ -125,6 +120,8 @@ public sealed class KdmidResponseService(
             JsonSerializer.Deserialize<KdmidId>(command.Parameters[KdmidIdKey], _jsonSerializerOptions)
             ?? throw new ArgumentException("The kdmidId is not specified.");
 
+        kdmidId.Validate();
+
         var availableDatesResult = await _kdmidRequestService.GetAvailableDates(city, kdmidId, cToken);
 
         var buttonsData = new Dictionary<string, string>(availableDatesResult.Dates.Count);
@@ -170,6 +167,8 @@ public sealed class KdmidResponseService(
 
         var messageArgs = new MessageEventArgs(chatId, new("The date is confirmed."));
         await _botClient.SendMessage(messageArgs, cToken);
+
+        await _botCommandsStore.Delete(chatId, command.Id, cToken);
     }
     public Task SendAskResponse(string chatId, BotCommand command, CancellationToken cToken)
     {

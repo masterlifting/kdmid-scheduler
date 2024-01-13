@@ -1,4 +1,5 @@
 ﻿using KdmidScheduler.Abstractions.Models.Infrastructure.Persistence.MongoDb.v1;
+
 using Microsoft.Extensions.Options;
 
 using Net.Shared.Persistence.Abstractions.Models.Settings.Connections;
