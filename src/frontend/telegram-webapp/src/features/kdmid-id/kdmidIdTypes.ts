@@ -9,6 +9,7 @@ export interface IKdmidId {
 export interface ICity {
   code: string;
   name: string;
+  timeShift: string;
 }
 
 export interface ICommand {

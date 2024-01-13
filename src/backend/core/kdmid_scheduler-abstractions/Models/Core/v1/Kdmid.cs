@@ -28,7 +28,8 @@ public sealed record KdmidId
         ? $"id={Id}&cd={Cd}"
         : $"id={Id}&cd={Cd}&ems={Ems}";
 }
-public sealed record City(string Code, string Name);
+public sealed record City(string Code, string Name, int TimeShift);
+public sealed record Attempts(int Day, byte Count);
 
 public sealed record AvailableDatesResult(string FormData, Dictionary<DateTime, string> Dates);
 public sealed record ChosenDateResult(string FormData, DateTime Date, string ChosenValue);

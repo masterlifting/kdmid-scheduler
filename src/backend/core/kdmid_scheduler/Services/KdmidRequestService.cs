@@ -1,4 +1,6 @@
-﻿using KdmidScheduler.Abstractions.Interfaces.Core.Services;
+﻿using System.Runtime.ConstrainedExecution;
+
+using KdmidScheduler.Abstractions.Interfaces.Core.Services;
 using KdmidScheduler.Abstractions.Interfaces.Infrastructure.Services;
 using KdmidScheduler.Abstractions.Models.Core.v1;
 
@@ -15,20 +17,20 @@ public sealed class KdmidRequestService(
 
     public City[] GetSupportedCities(CancellationToken cToken) => new City[]
     {
-        new("belgrad", "Belgrade"),
-        new("budapest", "Budapest"),
-        new("paris", "Paris"),
-        new("bucharest", "Bucharest"),
-        new("riga", "Riga"),
-        new("sarajevo", "Sarajevo"),
-        new("tirana", "Tirana"),
-        new("ljubljana", "Ljubljana"),
-        new("berlin", "Berlin"),
-        new("bern", "Bern"),
-        new("brussels", "Brussels"),
-        new("dublin", "Dublin"),
-        new("helsinki", "Helsinki"),
-        new("hague", "Hague")
+        new("belgrad", "Belgrade", +1),
+        new("budapest", "Budapest", +1),
+        new("paris", "Paris", +1),
+        new("bucharest", "Bucharest", +2),
+        new("riga", "Riga", +2),
+        new("sarajevo", "Sarajevo", +1),
+        new("tirana", "Tirana", +1),
+        new("ljubljana", "Ljubljana", +1),
+        new("berlin", "Berlin", +1),
+        new("bern", "Bern", +1),
+        new("brussels", "Brussels", +1),
+        new("dublin", "Dublin", 0),
+        new("helsinki", "Helsinki", +2),
+        new("hague", "The Hague", +1),
     };
     public async Task<AvailableDatesResult> GetAvailableDates(City city, KdmidId kdmidId, CancellationToken cToken)
     {
