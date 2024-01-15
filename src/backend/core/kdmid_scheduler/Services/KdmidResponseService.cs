@@ -45,7 +45,7 @@ public sealed class KdmidResponseService(
         await _botCommandsStore.Clear(chatId, cToken);
 
         var commands = await _botCommandsStore.Get(chatId, cToken);
-        
+
         var myCities = commands
             .Where(x => x.Parameters.ContainsKey(KdmidIdKey))
             .Select(x => JsonSerializer.Deserialize<City>(x.Parameters[CityKey], _jsonSerializerOptions))
@@ -120,7 +120,7 @@ public sealed class KdmidResponseService(
             JsonSerializer.Deserialize<City>(command.Parameters[CityKey], _jsonSerializerOptions)
             ?? throw new ArgumentException("The city is not specified.");
 
-        if(IsReachAttemptsLimit(city, command, out var attempts))
+        if (IsReachAttemptsLimit(city, command, out var attempts))
         {
             var messageArgs = new MessageEventArgs(chatId, new("You have reached the limit of attempts for this embassy today."));
             await _botClient.SendMessage(messageArgs, cToken);
@@ -132,6 +132,9 @@ public sealed class KdmidResponseService(
             ?? throw new ArgumentException("The kdmidId is not specified.");
 
         kdmidId.Validate();
+
+
+        await _botClient.SendMessage(new(chatId, new("Please wait...")), cToken);
 
         var availableDatesResult = await _kdmidRequestService.GetAvailableDates(city, kdmidId, cToken);
 
@@ -179,7 +182,7 @@ public sealed class KdmidResponseService(
         try
         {
             await _kdmidRequestService.ConfirmChosenDate(city, kdmidId, chosenResult, cToken);
-            
+
             var messageArgs = new MessageEventArgs(chatId, new("The date is confirmed."));
             await _botClient.SendMessage(messageArgs, cToken);
         }
@@ -213,13 +216,13 @@ public sealed class KdmidResponseService(
         var adminMessageArgs = new MessageEventArgs(targetChatId, new(text));
         return _botClient.SendMessage(adminMessageArgs, cToken);
     }
-    
+
     private async Task AddAttempt(Attempts? attempts, City city, string chatId, BotCommand command, CancellationToken cToken)
     {
         if (attempts is null)
         {
             var day = DateTime.UtcNow.AddHours(city.TimeShift).DayOfYear;
-            attempts = new Attempts(day,1);
+            attempts = new Attempts(day, 1);
             command.Parameters.Add(AttemptsKey, JsonSerializer.Serialize(attempts, _jsonSerializerOptions));
         }
         else
@@ -228,11 +231,13 @@ public sealed class KdmidResponseService(
             command.Parameters[AttemptsKey] = JsonSerializer.Serialize(attempts, _jsonSerializerOptions);
         }
 
-       await  _botCommandsStore.Update(chatId, command.Id, command, cToken);
+        await _botCommandsStore.Update(chatId, command.Id, command, cToken);
     }
     private bool IsReachAttemptsLimit(City city, BotCommand command, out Attempts? attempts)
     {
-        attempts = JsonSerializer.Deserialize<Attempts>(command.Parameters[AttemptsKey], _jsonSerializerOptions);
+        attempts = command.Parameters.TryGetValue(AttemptsKey, out var value)
+            ? JsonSerializer.Deserialize<Attempts>(value, _jsonSerializerOptions)
+            : null;
 
         if (attempts is null)
             return false;
