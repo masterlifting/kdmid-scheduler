@@ -11,6 +11,6 @@ export const useTelegramWebApp = () => {
   }, [telegram]);
 
   return {
-    close: telegram.close,
+    close: () => telegram.close(),
   };
 };

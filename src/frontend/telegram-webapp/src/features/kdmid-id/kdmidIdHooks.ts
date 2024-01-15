@@ -62,12 +62,18 @@ export const useKdmidId = ({ chatId, commandId }: ICommandGetRequest) => {
         },
       };
 
+      alert('Command updated started');
+
       updateCommand({
-        chatId: chatId,
+        chatId,
         command,
       });
 
+      alert('Command updated successfull');
+
       closeTelegramWebApp();
+
+      alert('Telegram web app closed');
     }
   };
 
