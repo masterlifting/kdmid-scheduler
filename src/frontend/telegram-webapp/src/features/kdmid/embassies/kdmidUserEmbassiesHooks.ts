@@ -26,9 +26,23 @@ export const useKdmidUserEmbassies = (chatId: string) => {
     if (getCommandsResponse && !isGetCommandsLoading && !isGetCommandsError) {
       setUserEmbassies(
         getCommandsResponse.map(x => {
-          const kdmidId = JSON.parse(x.parameters['KdmidScheduler.Abstractions.Models.Core.v1.KdmidId']) as IKdmidId;
-          const city = JSON.parse(x.parameters['KdmidScheduler.Abstractions.Models.Core.v1.City']) as ICity;
-          const attempts = JSON.parse(x.parameters['KdmidScheduler.Abstractions.Models.Core.v1.Attempts']) as IAttempts;
+          const kdmidIdParams = x.parameters['KdmidScheduler.Abstractions.Models.Core.v1.KdmidId'];
+
+          if (!kdmidIdParams) {
+            throw new Error('KdmidId not found');
+          }
+
+          const cityParams = x.parameters['KdmidScheduler.Abstractions.Models.Core.v1.City'];
+
+          if (!cityParams) {
+            throw new Error('City not found');
+          }
+
+          const attemptsParams = x.parameters['KdmidScheduler.Abstractions.Models.Core.v1.Attempts'];
+
+          const kdmidId: IKdmidId = JSON.parse(kdmidIdParams);
+          const city: ICity = JSON.parse(cityParams);
+          const attempts: IAttempts | undefined = attemptsParams ? JSON.parse(attemptsParams) : undefined;
 
           return {
             commandId: x.id,

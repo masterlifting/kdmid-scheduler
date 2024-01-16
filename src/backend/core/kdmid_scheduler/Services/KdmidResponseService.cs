@@ -66,7 +66,7 @@ public sealed class KdmidResponseService(
         }
         else
         {
-            var webAppArgs = new WebAppEventArgs(chat, new("Available embassies", 2, webAppData));
+            var webAppArgs = new WebAppEventArgs(chat, new("Available embassies", 4, webAppData));
             await _botClient.SendWebApp(webAppArgs, cToken);
         }
     }
