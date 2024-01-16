@@ -5,7 +5,7 @@ using KdmidScheduler.Abstractions.Interfaces.Core.Services;
 using Microsoft.Extensions.Logging;
 
 using Net.Shared.Bots.Abstractions.Interfaces;
-using Net.Shared.Bots.Abstractions.Models;
+using Net.Shared.Bots.Abstractions.Models.Bot;
 using Net.Shared.Bots.Abstractions.Models.Exceptions;
 using Net.Shared.Extensions.Logging;
 
@@ -41,22 +41,32 @@ public class KdmidBotApi(
 
         await _botClient.Receive(data, cToken);
     }
-    public async Task<BotCommand> GetCommand(string chatId, string commandId, CancellationToken cToken)
+    public async Task<Command> GetCommand(string chatId, string commandId, CancellationToken cToken)
     {
         try
         {
-            if (Guid.TryParse(commandId, out var guid) && guid != Guid.Empty)
-                return await _botCommandsStore.Get(chatId, guid, cToken);
-
-            throw new InvalidOperationException("Command id is not valid.");
+            return Guid.TryParse(commandId, out var guid) && guid != Guid.Empty
+                ? await _botCommandsStore.Get(chatId, guid, cToken)
+                : throw new InvalidOperationException($"Command id '{commandId}' is not valid for chat '{chatId}'.");
         }
         catch
         {
-            var messageArgs = new MessageEventArgs(chatId, new(Net.Shared.Abstractions.Constants.UserErrorMessage));
-            await _botClient.SendMessage(messageArgs, cToken);
-
+            await _botClient.SendMessage(chatId, new(Net.Shared.Abstractions.Constants.UserErrorMessage), cToken);
             throw;
         }
+    }
+    public async Task<Command[]> GetCommands(string chatId, Dictionary<string, string> filter, CancellationToken cToken)
+    {
+        foreach (var (propName, commandName) in filter)
+        {
+            if(propName == "name")
+            {
+                var commands = await _botCommandsStore.Get(chatId, cToken);
+                return commands.Where(x => x.Name == commandName).ToArray();
+            }
+        }
+
+        return [];
     }
     public async Task SetCommand(string chatId, StreamReader reader, CancellationToken cToken)
     {
@@ -65,26 +75,26 @@ public class KdmidBotApi(
             var data = await reader.ReadToEndAsync(cToken);
 
             if (string.IsNullOrWhiteSpace(data))
-                throw new InvalidOperationException("Received data is empty.");
+                throw new InvalidOperationException($"Received data is empty for chat '{chatId}'.");
 
-            var command = JsonSerializer.Deserialize<BotCommand>(data, options: new JsonSerializerOptions
+            var command = JsonSerializer.Deserialize<Command>(data, options: new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             });
 
             if (command is null || command.Id == Guid.Empty)
-                throw new InvalidOperationException("Received command is empty.");
+                throw new InvalidOperationException($"Received command is empty for chat '{chatId}'.");
 
             await _botResponse.Create(chatId, command, cToken);
         }
         catch (BotUserInvalidOperationException exception)
         {
-            await _botClient.SendMessage(new(chatId, new(exception.Message)), cToken);
+            await _botClient.SendMessage(chatId, new(exception.Message), cToken);
             return;
         }
         catch
         {
-            await _botClient.SendMessage(new(chatId, new(Net.Shared.Abstractions.Constants.UserErrorMessage)), cToken);
+            await _botClient.SendMessage(chatId, new(Net.Shared.Abstractions.Constants.UserErrorMessage), cToken);
             throw;
         }
     }

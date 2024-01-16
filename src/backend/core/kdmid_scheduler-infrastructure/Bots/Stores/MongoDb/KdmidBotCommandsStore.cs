@@ -1,6 +1,7 @@
 ﻿using KdmidScheduler.Abstractions.Models.Infrastructure.Persistence.MongoDb.v1;
+
 using Net.Shared.Bots.Abstractions.Interfaces;
-using Net.Shared.Bots.Abstractions.Models;
+using Net.Shared.Bots.Abstractions.Models.Bot;
 using Net.Shared.Persistence.Abstractions.Interfaces.Entities;
 using Net.Shared.Persistence.Abstractions.Interfaces.Repositories;
 using Net.Shared.Persistence.Abstractions.Models.Contexts;
@@ -14,12 +15,12 @@ public sealed class KdmidBotCommandsStore(
     private readonly IPersistenceReaderRepository<IPersistentNoSql> _readerRepository = readerRepository;
     private readonly IPersistenceWriterRepository<IPersistentNoSql> _writerRepository = writerRepository;
 
-    public async Task<BotCommand> Create(string chatId, string Name, Dictionary<string, string> Parameters, CancellationToken cToken)
+    public async Task<Command> Create(string chatId, string Name, Dictionary<string, string> Parameters, CancellationToken cToken)
     {
         var entity = new KdmidBotCommands
         {
             ChatId = chatId,
-            Command = new BotCommand(Guid.NewGuid(), Name, Parameters)
+            Command = new Command(Guid.NewGuid(), Name, Parameters)
         };
 
         await _writerRepository.CreateOne(entity, cToken);
@@ -35,7 +36,7 @@ public sealed class KdmidBotCommandsStore(
 
         await _writerRepository.Delete(deleteOptions, cToken);
     }
-    public async Task Update(string chatId, Guid commandId, BotCommand command, CancellationToken cToken)
+    public async Task Update(string chatId, Guid commandId, Command command, CancellationToken cToken)
     {
         var updateOptions = new PersistenceUpdateOptions<KdmidBotCommands>(x => x.Command = command)
         {
@@ -57,7 +58,7 @@ public sealed class KdmidBotCommandsStore(
         await _writerRepository.Delete(deleteOptions, cToken);
     }
 
-    public async Task<BotCommand> Get(string chatId, Guid commandId, CancellationToken cToken)
+    public async Task<Command> Get(string chatId, Guid commandId, CancellationToken cToken)
     {
         var queryOptions = new PersistenceQueryOptions<KdmidBotCommands>
         {
@@ -70,7 +71,7 @@ public sealed class KdmidBotCommandsStore(
             ? queryResult.Command
             : throw new InvalidOperationException($"The command '{commandId}' was not found");
     }
-    public async Task<BotCommand[]> Get(string chatId, CancellationToken cToken)
+    public async Task<Command[]> Get(string chatId, CancellationToken cToken)
     {
         var queryOptions = new PersistenceQueryOptions<KdmidBotCommands>
         {

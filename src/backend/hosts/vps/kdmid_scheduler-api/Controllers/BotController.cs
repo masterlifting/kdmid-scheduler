@@ -2,7 +2,7 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-using Net.Shared.Bots.Abstractions.Models;
+using Net.Shared.Bots.Abstractions.Models.Bot;
 
 namespace KdmidScheduler.Api.Controllers;
 
@@ -32,10 +32,17 @@ public sealed class BotController(IKdmidBotApi api) : ControllerBase
     }
 
     [HttpGet("chats/{chatId}/commands/{commandId}")]
-    public async Task<BotCommand> GetCommand(string chatId, string commandId, CancellationToken cToken) => 
+    public async Task<Command> GetCommand(string chatId, string commandId, CancellationToken cToken) => 
         await _api.GetCommand(chatId, commandId, cToken);
 
-    [HttpPost("chats/{chatId}")]
+    [HttpGet("chats/{chatId}/commands")]
+    public async Task<IEnumerable<Command>> GetCommands(string chatId, CancellationToken cToken)
+    {
+        var filter = Request.Query.ToDictionary(x => x.Key, x => x.Value.ToString());
+        return await _api.GetCommands(chatId, filter, cToken);
+    }
+
+    [HttpPost("chats/{chatId}/command")]
     public async Task SetCommand(string chatId, CancellationToken cToken)
     {
         using var reader = new StreamReader(Request.Body);

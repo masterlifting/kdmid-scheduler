@@ -28,7 +28,7 @@ public sealed class KdmidRequestService(
         new("brussels", "Brussels", +1),
         new("dublin", "Dublin", 0),
         new("helsinki", "Helsinki", +2),
-        new("hague", "The Hague", +1),
+        new("hague", "Hague", +1),
     };
     public async Task<AvailableDatesResult> GetAvailableDates(City city, KdmidId kdmidId, CancellationToken cToken)
     {

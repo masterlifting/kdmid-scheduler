@@ -12,10 +12,24 @@ export interface ICity {
   timeShift: string;
 }
 
+export interface IAttempts {
+  day: number;
+  count: number;
+}
+
 export interface ICommand {
   id: string;
   name: string;
   parameters: { [key: string]: string };
+}
+
+export interface IChat {
+  id: string;
+  command: ICommand;
+}
+
+export interface IChatsState {
+  chats: IChat[];
 }
 
 export interface ICommandGetRequest {
@@ -23,16 +37,12 @@ export interface ICommandGetRequest {
   commandId: string;
 }
 
+export interface ICommandsGetRequest {
+  chatId: string;
+  filter?: { [key: string]: string };
+}
+
 export interface ICommandPostRequest {
   chatId: string;
   command: ICommand;
-}
-
-export interface IChatCommand {
-  chatId: string;
-  command: ICommand;
-}
-
-export interface IKdmidIdState {
-  chatCommands: IChatCommand[];
 }

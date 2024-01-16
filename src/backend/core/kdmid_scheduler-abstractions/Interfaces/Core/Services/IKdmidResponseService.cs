@@ -1,14 +1,15 @@
-﻿using Net.Shared.Bots.Abstractions.Models;
+﻿using Net.Shared.Bots.Abstractions.Models.Bot;
 
 namespace KdmidScheduler.Abstractions.Interfaces.Core.Services;
 
 public interface IKdmidResponseService
 {
-    Task SendAvailableEmbassies(string chatId, CancellationToken cToken);
-    Task SendMyEmbassies(string chatId, CancellationToken cToken);
-    Task SendAvailableDates(string chatId, BotCommand command, CancellationToken cToken);
-    Task SendConfirmationResult(string chatId, BotCommand command, CancellationToken cToken);
-    Task SendAskResponse(string chatId, BotCommand command, CancellationToken cToken);
-    Task SendAnswerResponse(string chatId, BotCommand command, CancellationToken cToken);
-    Task AddAvailableEmbassy(string chatId, BotCommand command, CancellationToken cToken);
+    Task SendAvailableEmbassies(Chat chat, Command command, CancellationToken cToken);
+    Task SendMyEmbassies(Chat chat, Command command, CancellationToken cToken);
+    Task SendConfirmationResult(Chat chat, Command command, CancellationToken cToken);
+    Task AddAvailableEmbassy(string chatId, Command command, CancellationToken cToken);
+    
+    Task SendAvailableDates(string chatId, Command command, CancellationToken cToken);
+    Task SendAskResponse(string chatId, Command command, CancellationToken cToken);
+    Task SendAnswerResponse(string chatId, Command command, CancellationToken cToken);
 }

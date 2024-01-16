@@ -2,18 +2,13 @@
 using Net.Shared.Extensions.Logging;
 using Net.Shared.Bots.Abstractions.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
-using Net.Shared.Bots.Abstractions.Models.Settings;
-using Net.Shared.Bots.Abstractions.Models;
 
 namespace KdmidScheduler.Api;
 
 public sealed class BotExceptionFilter(
-    IOptions<BotConnectionSettings> options,
-    ILogger<BotExceptionFilter> logger, 
+    ILogger<BotExceptionFilter> logger,
     IBotClient botClient) : IAsyncActionFilter
 {
-    private readonly BotConnectionSettings _botConnectionSettings = options.Value;
     private readonly ILogger _log = logger;
     private readonly IBotClient _botClient = botClient;
 
@@ -27,8 +22,7 @@ public sealed class BotExceptionFilter(
             {
                 _log.ErrorCompact(resultContext.Exception);
 
-                var messageArgs = new MessageEventArgs(_botConnectionSettings.AdminId, new(resultContext.Exception.Message));
-                await _botClient.SendMessage(messageArgs, CancellationToken.None);
+                await _botClient.SendMessage(_botClient.AdminId, new(resultContext.Exception.Message), CancellationToken.None);
 
                 var result = new ObjectResult(new { message = "An error occurred." })
                 {
@@ -43,8 +37,7 @@ public sealed class BotExceptionFilter(
         {
             _log.ErrorCompact(exception);
 
-            var messageArgs = new MessageEventArgs(_botConnectionSettings.AdminId, new(exception.Message));
-            await _botClient.SendMessage(messageArgs, CancellationToken.None);
+            await _botClient.SendMessage(_botClient.AdminId, new(exception.Message), CancellationToken.None);
         }
     }
 }

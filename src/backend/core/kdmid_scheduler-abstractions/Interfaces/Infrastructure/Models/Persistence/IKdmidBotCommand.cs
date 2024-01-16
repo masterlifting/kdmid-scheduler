@@ -1,9 +1,9 @@
-﻿using Net.Shared.Bots.Abstractions.Models;
+﻿using Net.Shared.Bots.Abstractions.Models.Bot;
 
 namespace KdmidScheduler.Abstractions.Interfaces.Infrastructure.Models.Persistence;
 
 public interface IKdmidBotCommand
 {
     string ChatId { get; init; }
-    BotCommand Command { get; set; }
+    Command Command { get; set; }
 }

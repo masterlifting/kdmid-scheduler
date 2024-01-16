@@ -3,11 +3,15 @@
 import React from 'react';
 import { InputClass } from '../../../styles/input';
 import { ButtonClass } from '../../../styles/button';
-import { ICommandGetRequest } from '../kdmidIdTypes';
-import { useKdmidId } from '../kdmidIdHooks';
+import { useKdmidIdentifier } from './kdmidIdentifierHooks';
 
-export const KdmidId = ({ chatId, commandId }: ICommandGetRequest) => {
-  const { city, kdmidId, onSubmit, onChangeId, onChangeCd, onChangeEms } = useKdmidId({ chatId, commandId });
+interface IKdmidIdentifierProps {
+  chatId: string;
+  commandId: string;
+}
+
+export const KdmidIdentifier = ({ chatId, commandId }: IKdmidIdentifierProps) => {
+  const { city, kdmidId, onSubmit, onChangeId, onChangeCd, onChangeEms } = useKdmidIdentifier({ chatId, commandId });
 
   return (
     <form onSubmit={onSubmit} className='w-80 absolute rounded-md left-1/2 top-1/3 transform -translate-x-1/2 -translate-y-1/3'>

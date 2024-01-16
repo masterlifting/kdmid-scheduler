@@ -3,10 +3,10 @@
 import { bindActionCreators } from '@reduxjs/toolkit';
 import { useMemo } from 'react';
 import { useDispatch } from 'react-redux';
-import { kdmidIdActions } from '../features/kdmid-id/kdmidIdSlice';
+import { kdmidActions } from '../features/kdmid/kdmidSlice';
 
 const actions = {
-  ...kdmidIdActions,
+  ...kdmidActions,
 };
 
 export const useAppActions = () => {

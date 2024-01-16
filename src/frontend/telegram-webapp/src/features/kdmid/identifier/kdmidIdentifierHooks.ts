@@ -1,11 +1,11 @@
 /** @format */
 
 import { useState } from 'react';
-import { ICity, ICommand, ICommandGetRequest, IKdmidId } from './kdmidIdTypes';
-import { useGetCommandQuery, useUpdateCommandMutation } from './kdmidIdApi';
-import { useTelegramWebApp } from '../../hooks/useTelegramWebApp';
+import { useTelegramWebApp } from '../../../hooks/useTelegramWebApp';
+import { ICity, ICommand, ICommandGetRequest, IKdmidId } from '../kdmidTypes';
+import { useGetCommandQuery, useSetCommandMutation } from '../kdmidApi';
 
-export const useKdmidId = ({ chatId, commandId }: ICommandGetRequest) => {
+export const useKdmidIdentifier = ({ chatId, commandId }: ICommandGetRequest) => {
   const { close: closeTelegramWebApp } = useTelegramWebApp();
   const [kdmidId, setKdmidId] = useState<IKdmidId>({
     id: '',
@@ -24,9 +24,9 @@ export const useKdmidId = ({ chatId, commandId }: ICommandGetRequest) => {
   });
 
   const [
-    updateCommand,
-    { data: updateCommandResponse, isLoading: isUpdateCommandLoading, isError: isUpdateCommandError, error: updateCommandError },
-  ] = useUpdateCommandMutation();
+    setCommand,
+    { data: setCommandResponse, isLoading: isSetCommandLoading, isError: isSetCommandError, error: setCommandError },
+  ] = useSetCommandMutation();
 
   let city: ICity | undefined = undefined;
   let command: ICommand | undefined = undefined;
@@ -62,7 +62,7 @@ export const useKdmidId = ({ chatId, commandId }: ICommandGetRequest) => {
         },
       };
 
-      updateCommand({
+      setCommand({
         chatId,
         command,
       }).then(() => closeTelegramWebApp());
