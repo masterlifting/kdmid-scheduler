@@ -76,7 +76,7 @@ export const useKdmidUserEmbassies = (chatId: string) => {
   };
 
   return {
-    embassies: userEmbassies,
+    embassies: userEmbassies.sort((a, b) => a.city.localeCompare(b.city)),
     onSubmit,
   };
 };

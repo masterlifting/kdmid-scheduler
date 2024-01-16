@@ -44,26 +44,18 @@ public sealed class KdmidResponseService(
     {
         var supportedCities = _kdmidRequestService.GetSupportedCities(cToken);
         
-        var commands = await _botCommandsStore.Get(chat.Id, cToken);
-        
-        var availableEmbassies = commands
-            .Where(x => x.Name == KdmidBotCommands.AddAvailableEmbassy && x.Parameters.ContainsKey(CityKey))
-            .ToDictionary(k => k.Parameters[CityKey].FromJson<City>());
-
         var webAppData = new Dictionary<string, Uri>(supportedCities.Length);
 
         foreach (var city in supportedCities)
         {
-            command = availableEmbassies.TryGetValue(city, out var availableCommand) 
-                ? availableCommand 
-                : await _botCommandsStore.Create(chat.Id, KdmidBotCommands.AddAvailableEmbassy, new()
+            command = await _botCommandsStore.Create(chat.Id, KdmidBotCommands.AddAvailableEmbassy, new()
             {
                 { CityKey, city.ToJson() },
             }, cToken);
 
             var uri = new Uri($"{_kdmidSettings.WebAppUrl}/kdmidId?chatId={chat.Id}&commandId={command.Id}");
             
-            _logger.Debug($"Created a command {command.Id} for the chat {chat.Id}.");
+            _logger.Debug($"Command {command.Id} for the chat {chat.Id}.");
 
             webAppData.Add(city.Name, uri);
         }
@@ -81,18 +73,19 @@ public sealed class KdmidResponseService(
     public async Task AddAvailableEmbassy(string chatId, Command command, CancellationToken cToken)
     {
         var kdmidId = command.Parameters[KdmidIdKey].FromJson<KdmidId>();
+        var city = command.Parameters[CityKey].FromJson<City>();
 
         try
         {
             kdmidId.Validate();
+
+            var dbCommand = await _botCommandsStore.Get(chatId, command.Id, cToken);
 
             command.Name = KdmidBotCommands.SendAvailableDates;
             
             await _botCommandsStore.Update(chatId, command.Id, command, cToken);
             
             await _botClient.SendMessage(chatId, new("The embassy is added to your list."), cToken);
-            
-            var city = command.Parameters[CityKey].FromJson<City>();
             
             await _botClient.SendMessage(_botClient.AdminId, new($"The embassy '{city.Name}' is added to the chat '{chatId}'."), cToken);
         }
