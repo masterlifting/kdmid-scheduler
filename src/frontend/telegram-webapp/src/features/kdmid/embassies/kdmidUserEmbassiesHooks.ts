@@ -68,7 +68,6 @@ export const useKdmidUserEmbassies = (chatId: string) => {
       return;
     }
 
-    alert('Waiting for response from Kdmid');
     setCommand({
       chatId,
       command,
