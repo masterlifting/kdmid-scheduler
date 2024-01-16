@@ -1,27 +1,22 @@
-﻿using System;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 using KdmidScheduler.Abstractions.Interfaces.Core.Services;
 
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
-using Net.Shared.Abstractions.Models.Exceptions;
 using Net.Shared.Bots.Abstractions.Interfaces;
 using Net.Shared.Bots.Abstractions.Models;
-using Net.Shared.Bots.Abstractions.Models.Settings;
+using Net.Shared.Bots.Abstractions.Models.Exceptions;
 using Net.Shared.Extensions.Logging;
 
 namespace KdmidScheduler.Services;
 
 public class KdmidBotApi(
-    IOptions<TelegramBotConnectionSettings> options,
     ILogger<KdmidBotApi> logger,
     IBotClient cotClient,
     IBotResponse botResponse,
     IBotCommandsStore botCommandsStore) : IKdmidBotApi
 {
-    private readonly TelegramBotConnectionSettings _botConnectionSettings = options.Value;
     private readonly ILogger _logger = logger;
     private readonly IBotClient _botClient = cotClient;
     private readonly IBotResponse _botResponse = botResponse;
@@ -63,7 +58,7 @@ public class KdmidBotApi(
             throw;
         }
     }
-    public async Task UpdateCommand(string chatId, StreamReader reader, CancellationToken cToken)
+    public async Task SetCommand(string chatId, StreamReader reader, CancellationToken cToken)
     {
         try
         {
@@ -80,24 +75,16 @@ public class KdmidBotApi(
             if (command is null || command.Id == Guid.Empty)
                 throw new InvalidOperationException("Received command is empty.");
 
-            await _botCommandsStore.Update(chatId, command.Id, command, cToken);
-
             await _botResponse.Create(chatId, command, cToken);
-
-            var messageArgs = new MessageEventArgs(_botConnectionSettings.AdminChatId, new($"The client with id {chatId} has used the bot."));
-            await _botClient.SendMessage(messageArgs, cToken);
         }
-        catch (UserInvalidOperationException exception)
+        catch (BotUserInvalidOperationException exception)
         {
-            var messageArgs = new MessageEventArgs(chatId, new(exception.Message));
-            await _botClient.SendMessage(messageArgs, cToken);
+            await _botClient.SendMessage(new(chatId, new(exception.Message)), cToken);
             return;
         }
         catch
         {
-            var messageArgs = new MessageEventArgs(chatId, new(Net.Shared.Abstractions.Constants.UserErrorMessage));
-            await _botClient.SendMessage(messageArgs, cToken);
-
+            await _botClient.SendMessage(new(chatId, new(Net.Shared.Abstractions.Constants.UserErrorMessage)), cToken);
             throw;
         }
     }

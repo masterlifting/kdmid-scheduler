@@ -9,11 +9,11 @@ using Net.Shared.Bots.Abstractions.Models;
 namespace KdmidScheduler.Api;
 
 public sealed class BotExceptionFilter(
-    IOptions<TelegramBotConnectionSettings> options,
+    IOptions<BotConnectionSettings> options,
     ILogger<BotExceptionFilter> logger, 
     IBotClient botClient) : IAsyncActionFilter
 {
-    private readonly TelegramBotConnectionSettings _botConnectionSettings = options.Value;
+    private readonly BotConnectionSettings _botConnectionSettings = options.Value;
     private readonly ILogger _log = logger;
     private readonly IBotClient _botClient = botClient;
 
@@ -27,7 +27,7 @@ public sealed class BotExceptionFilter(
             {
                 _log.ErrorCompact(resultContext.Exception);
 
-                var messageArgs = new MessageEventArgs(_botConnectionSettings.AdminChatId, new(resultContext.Exception.Message));
+                var messageArgs = new MessageEventArgs(_botConnectionSettings.AdminId, new(resultContext.Exception.Message));
                 await _botClient.SendMessage(messageArgs, CancellationToken.None);
 
                 var result = new ObjectResult(new { message = "An error occurred." })
@@ -43,7 +43,7 @@ public sealed class BotExceptionFilter(
         {
             _log.ErrorCompact(exception);
 
-            var messageArgs = new MessageEventArgs(_botConnectionSettings.AdminChatId, new(exception.Message));
+            var messageArgs = new MessageEventArgs(_botConnectionSettings.AdminId, new(exception.Message));
             await _botClient.SendMessage(messageArgs, CancellationToken.None);
         }
     }

@@ -10,4 +10,5 @@ public interface IKdmidResponseService
     Task SendConfirmationResult(string chatId, BotCommand command, CancellationToken cToken);
     Task SendAskResponse(string chatId, BotCommand command, CancellationToken cToken);
     Task SendAnswerResponse(string chatId, BotCommand command, CancellationToken cToken);
+    Task AddAvailableEmbassy(string chatId, BotCommand command, CancellationToken cToken);
 }

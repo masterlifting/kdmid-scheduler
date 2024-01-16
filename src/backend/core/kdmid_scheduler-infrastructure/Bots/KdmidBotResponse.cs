@@ -17,6 +17,7 @@ public sealed class KdmidBotResponse(IKdmidResponseService responseService) : IB
         Commands.Ask => _responseService.SendAskResponse(chatId, command, cToken),
         Commands.Answer => _responseService.SendAnswerResponse(chatId, command, cToken),
         KdmidBotCommands.Mine => _responseService.SendMyEmbassies(chatId, cToken),
+        KdmidBotCommands.AddAvailableEmbassy => _responseService.AddAvailableEmbassy(chatId, command, cToken),
         KdmidBotCommands.SendAvailableDates => _responseService.SendAvailableDates(chatId, command, cToken),
         KdmidBotCommands.SendConfirmResult => _responseService.SendConfirmationResult(chatId, command, cToken),
         _ => throw new NotSupportedException($"The command '{command.Name}' is not supported.")

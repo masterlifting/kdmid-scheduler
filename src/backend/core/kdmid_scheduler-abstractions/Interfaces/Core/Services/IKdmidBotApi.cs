@@ -8,5 +8,5 @@ public interface IKdmidBotApi
     Task Listen(Uri uri, CancellationToken cToken);
     Task Receive(StreamReader reader, CancellationToken cToken);
     Task<BotCommand> GetCommand(string chatId, string commandId, CancellationToken cToken);
-    Task UpdateCommand(string chatId, StreamReader reader, CancellationToken cToken);
+    Task SetCommand(string chatId, StreamReader reader, CancellationToken cToken);
 }

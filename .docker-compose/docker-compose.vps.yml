@@ -59,8 +59,8 @@ services:
       - MongoDbConnection__User=${MONGODBCONNECTION_USERNAME}
       - MongoDbConnection__Password=${MONGODBCONNECTION_PASSWORD}
       - AntiCaptchaConnection__ApiKey=${ANTICAPTCHACONNECTION_APIKEY}
-      - TelegramBotConnection__Token=${TELEGRAMBOTCONNECTION_TOKEN}
-      - TelegramBotConnection__AdminChatId=${TELEGRAMBOTCONNECTION_ADMINCHATID}
+      - BotConnection__Token=${BOTCONNECTION_TOKEN}
+      - BotConnection__AdminId=${BOTCONNECTION_ADMINID}
       - Kdmid__WebAppUrl=https://kdmidweb.masterlifting.guru
     networks:
       - kdmid-scheduler-network

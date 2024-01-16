@@ -35,10 +35,10 @@ public sealed class BotController(IKdmidBotApi api) : ControllerBase
     public async Task<BotCommand> GetCommand(string chatId, string commandId, CancellationToken cToken) => 
         await _api.GetCommand(chatId, commandId, cToken);
 
-    [HttpPut("chats/{chatId}")]
-    public async Task UpdateCommand(string chatId, CancellationToken cToken)
+    [HttpPost("chats/{chatId}")]
+    public async Task SetCommand(string chatId, CancellationToken cToken)
     {
         using var reader = new StreamReader(Request.Body);
-        await _api.UpdateCommand(chatId, reader, cToken);
+        await _api.SetCommand(chatId, reader, cToken);
     }
 }

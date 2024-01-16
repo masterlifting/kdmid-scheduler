@@ -1,6 +1,4 @@
-﻿using System.Runtime.ConstrainedExecution;
-
-using KdmidScheduler.Abstractions.Interfaces.Core.Services;
+﻿using KdmidScheduler.Abstractions.Interfaces.Core.Services;
 using KdmidScheduler.Abstractions.Interfaces.Infrastructure.Services;
 using KdmidScheduler.Abstractions.Models.Core.v1;
 
