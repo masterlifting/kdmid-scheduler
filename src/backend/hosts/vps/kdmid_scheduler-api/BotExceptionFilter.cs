@@ -20,7 +20,7 @@ public sealed class BotExceptionFilter(
 
             if (resultContext.Exception != null)
             {
-                _log.ErrorCompact(resultContext.Exception);
+                _log.ErrorFull(resultContext.Exception);
 
                 await _botClient.SendMessage(_botClient.AdminId, new(resultContext.Exception.Message), CancellationToken.None);
 
@@ -35,7 +35,7 @@ public sealed class BotExceptionFilter(
         }
         catch (Exception exception)
         {
-            _log.ErrorCompact(exception);
+            _log.ErrorFull(exception);
 
             await _botClient.SendMessage(_botClient.AdminId, new(exception.Message), CancellationToken.None);
         }

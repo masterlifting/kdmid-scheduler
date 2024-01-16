@@ -43,12 +43,20 @@ public sealed class KdmidResponseService(
     public async Task SendAvailableEmbassies(Chat chat, Command command, CancellationToken cToken)
     {
         var supportedCities = _kdmidRequestService.GetSupportedCities(cToken);
+        
+        var commands = await _botCommandsStore.Get(chat.Id, cToken);
+        
+        var availableEmbassies = commands
+            .Where(x => x.Name == KdmidBotCommands.AddAvailableEmbassy && x.Parameters.ContainsKey(CityKey))
+            .ToDictionary(k => k.Parameters[CityKey].FromJson<City>());
 
         var webAppData = new Dictionary<string, Uri>(supportedCities.Length);
 
         foreach (var city in supportedCities)
         {
-            command = await _botCommandsStore.Create(chat.Id, KdmidBotCommands.AddAvailableEmbassy, new()
+            command = availableEmbassies.TryGetValue(city, out var availableCommand) 
+                ? availableCommand 
+                : await _botCommandsStore.Create(chat.Id, KdmidBotCommands.AddAvailableEmbassy, new()
             {
                 { CityKey, city.ToJson() },
             }, cToken);
@@ -243,7 +251,16 @@ public sealed class KdmidResponseService(
             if (attempts.Day == day && attempts.Count >= AttemptsLimit)
                 throw new BotUserInvalidOperationException($"You have reached the limit of attempts per day ({AttemptsLimit}) for the city {city.Name}.");
 
-            attempts = new Attempts(attempts.Day, (byte)(attempts.Count + 1));
+            var attemptsDay = attempts.Day;
+            var attemptsCount = (byte)(attempts.Count + 1);
+
+            if(attempts.Day != day)
+            {
+                attemptsDay = day;
+                attemptsCount = 0;
+            }
+
+            attempts = new Attempts(attemptsDay, attemptsCount);
             
             command.Parameters[AttemptsKey] = attempts.ToJson();
         }
