@@ -43,12 +43,7 @@ public static class Registrations
             .ValidateOnStart()
             .Validate(x => !string.IsNullOrWhiteSpace(x.WebAppUrl), "Web app url of Kdmid should not be empty.");
 
-        services.AddHttpClient(Constants.Kdmid, x =>
-        {
-            x.DefaultRequestHeaders.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8");
-            x.DefaultRequestHeaders.Add("Accept-Language", "en,ru;q=0.9");
-            x.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/117.0");
-        });
+        services.AddHttpClient(Constants.Kdmid);
 
         services.AddHttpClient(Constants.AntiCaptcha, x =>
         {
