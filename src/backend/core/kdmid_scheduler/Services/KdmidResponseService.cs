@@ -114,7 +114,10 @@ public sealed class KdmidResponseService(
             var city = availableCommand.Parameters[CityKey].FromJson<City>();
 
             var uri = new Uri($"{_kdmidSettings.WebAppUrl}/embassies?chatId={chat.Id}");
-
+            
+            if(webAppData.ContainsKey(city.Name))
+                continue;
+            
             webAppData.Add(city.Name, uri);
         }
 
