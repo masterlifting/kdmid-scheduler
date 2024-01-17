@@ -45,6 +45,81 @@ services:
       - kdmid-scheduler-network
     restart: always
 
+  backend:
+    image: kdmid-scheduler-backend
+    container_name: backend
+    build:
+      context: ../src/backend
+      dockerfile: ./hosts/vps/kdmid_scheduler-api/Dockerfile
+    env_file:
+      - .env
+    environment:
+      - Logging__LogLevel__Default=Debug
+      - MongoDbConnection__Host=mongodb_1
+      - MongoDbConnection__User=${MONGODBCONNECTION_USERNAME}
+      - MongoDbConnection__Password=${MONGODBCONNECTION_PASSWORD}
+      - AntiCaptchaConnection__ApiKey=${ANTICAPTCHACONNECTION_APIKEY}
+      - BotConnection__Token=${BOTCONNECTION_TOKEN}
+      - BotConnection__AdminId=${BOTCONNECTION_ADMINID}
+      - Kdmid__WebAppUrl=https://kdmidweb.masterlifting.guru
+    networks:
+      - kdmid-scheduler-network
+    ports:
+      - 8080:8080
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.backend.rule=Host(`kdmidapi.masterlifting.guru`)'
+      - 'traefik.http.routers.backend.entrypoints=websecure'
+      - 'traefik.http.routers.backend.tls.certresolver=lets-encrypt'
+      - 'traefik.http.services.backend.loadbalancer.server.port=8080'
+    depends_on:
+      - mongodb_1
+      - mongodb_2
+      - mongodb_3
+    restart: always
+
+  frontend:
+    image: kdmid-scheduler-frontend
+    container_name: frontend
+    build:
+      context: ../src/frontend/telegram-webapp
+      dockerfile: ./Dockerfile
+    environment:
+      - REACT_APP_BACKEND_URL=http://localhost:8080
+    networks:
+      - kdmid-scheduler-network
+    ports:
+      - 3000:3000
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.frontend.rule=Host(`kdmidweb.masterlifting.guru`)'
+      - 'traefik.http.routers.frontend.entrypoints=websecure'
+      - 'traefik.http.routers.frontend.tls.certresolver=lets-encrypt'
+    depends_on:
+      - backend
+    restart: always
+
+  traefik:
+    image: traefik:v2.3
+    container_name: traefik
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    networks:
+      - kdmid-scheduler-network
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./infrastructure/traefik/traefik.yml:/traefik.yml # chmod 600
+      - ../../kdmid-scheduler-secrets/infrastructure/traefik/letsencrypt/acme.json:/acme.json # chmod 600 && chown root:root
+    command:
+      - '--traefik.enable=true'
+      - '--traefik.http.routers.traefik.entrypoints=websecure'
+      - '--traefik.http.routers.traefik.tls.certresolver=lets-encrypt'
+      - '--traefik.http.middlewares.traefik-https-redirect.redirectscheme.scheme=https'
+      - '--traefik.http.routers.traefik.middlewares=traefik-https-redirect'
+      - '--certificatesresolvers.lets-encrypt.acme.caserver=https://acme-v02.api.letsencrypt.org/directory'
+
 networks:
   kdmid-scheduler-network: {}
 

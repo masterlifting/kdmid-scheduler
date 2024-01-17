@@ -6,7 +6,6 @@ using KdmidScheduler.Infrastructure.Web;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 using Net.Shared.Bots;
 using Net.Shared.Persistence;
@@ -67,20 +66,5 @@ public static class Registrations
         .AddTelegramBot<KdmidBotResponse>(x =>
         {
             x.AddCommandsStore<Bots.Stores.MongoDb.KdmidBotCommandsStore>();
-        })
-        .AddCors(options =>
-        {
-            var kdmidSettings = services
-                .BuildServiceProvider()
-                .GetRequiredService<IOptions<KdmidSettings>>().Value;
-
-            options.AddPolicy(Constants.TelegramWebAppCorsPolicy, builder =>
-            {
-                builder
-                    .WithOrigins(kdmidSettings.WebAppUrl, "http://localhost:3000")
-                    .AllowAnyHeader()
-                    .AllowAnyMethod()
-                    .AllowCredentials();
-            });
         });
 }
