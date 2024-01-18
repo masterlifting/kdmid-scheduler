@@ -205,7 +205,7 @@ public sealed class KdmidResponseService(
             await _botClient.SendButtons(chatId, new("Choose a date", 1, buttonsData), cToken);
         }
     }
-    public Task SendAskResponse(string chatId, Command command, CancellationToken cToken)
+    public Task SendAskResponse(Chat chat, Command command, CancellationToken cToken)
     {
         Net.Shared.Bots.Abstractions.Models.Response.Message message = command.Parameters.Count == 0
             ? new("To send your message to the developer, use the double quotes.")
@@ -213,9 +213,9 @@ public sealed class KdmidResponseService(
                 ? new(text)
                 : throw new ArgumentException("The message for the developer is not specified.");
 
-        return _botClient.SendMessage(chatId, message, cToken);
+        return _botClient.SendMessage(chat.Id, message, cToken);
     }
-    public Task SendAnswerResponse(string chatId, Command command, CancellationToken cToken)
+    public Task SendAnswerResponse(Chat chat, Command command, CancellationToken cToken)
     {
         if (!command.Parameters.TryGetValue(CommandParameters.ChatId, out var targetChatId))
             throw new ArgumentException("The chatId for the user is not specified.");
