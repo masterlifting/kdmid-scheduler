@@ -17,15 +17,15 @@ export const kdmidApi = createApi({
       }),
     }),
     getCommands: builder.query<ICommand[], ICommandsGetRequest>({
-      query: ({ chatId, filter }) => ({
+      query: ({ chatId, names, cityCode }) => ({
         url: `${controller}/chats/${chatId}/commands`,
         method: constants.http.methods.GET,
-        params: filter,
+        params: { names, cityCode },
       }),
     }),
     setCommand: builder.mutation<void, ICommandPostRequest>({
       query: ({ chatId, command }) => ({
-        url: `${controller}/chats/${chatId}/command`,
+        url: `${controller}/chats/${chatId}/commands`,
         method: constants.http.methods.POST,
         body: command,
       }),

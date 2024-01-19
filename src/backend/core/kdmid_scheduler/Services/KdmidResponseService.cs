@@ -53,7 +53,7 @@ public sealed class KdmidResponseService(
                 { CityKey, city.ToJson() },
             }, cToken);
 
-            var uri = new Uri($"{_kdmidSettings.WebAppUrl}/kdmidId?chatId={chat.Id}&commandId={command.Id}");
+            var uri = new Uri($"{_kdmidSettings.WebAppUrl}/kdmidid?chatId={chat.Id}&cityCode={city.Code}");
 
             _logger.Debug($"Command {command.Id} for the chat {chat.Id}.");
 

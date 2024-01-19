@@ -39,7 +39,8 @@ export interface ICommandGetRequest {
 
 export interface ICommandsGetRequest {
   chatId: string;
-  filter?: { [key: string]: string };
+  names: string;
+  cityCode: string;
 }
 
 export interface ICommandPostRequest {

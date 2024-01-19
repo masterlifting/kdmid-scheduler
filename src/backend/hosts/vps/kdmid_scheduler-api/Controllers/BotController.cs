@@ -34,8 +34,8 @@ public sealed class BotController(IKdmidBotApi api) : ControllerBase
         await _api.GetCommand(chatId, commandId, cToken);
 
     [HttpGet("chats/{chatId}/commands")]
-    public Task<Command[]> GetCommands(string chatId, string? name, CancellationToken cToken) =>
-        _api.GetCommands(chatId, name, cToken);
+    public Task<Command[]> GetCommands(string chatId, string names, string cityCode, CancellationToken cToken) =>
+        _api.GetCommands(chatId, names, cityCode, cToken);
 
     [HttpPost("chats/{chatId}/commands")]
     public Task SetCommand(string chatId, CancellationToken cToken)

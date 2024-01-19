@@ -7,7 +7,7 @@ import { KdmidIdentifier } from '../features/kdmid/identifier/KdmidIdentifierCom
 export const KdmidIdentifierPage = () => {
   const query = new URLSearchParams(useLocation().search);
   const chatId = query.get('chatId');
-  const commandId = query.get('commandId');
+  const cityCode = query.get('cityCode');
 
-  return !chatId || !commandId ? <div>Invalid URL parameters</div> : <KdmidIdentifier chatId={chatId} commandId={commandId} />;
+  return !(chatId && cityCode) ? <div>Invalid URL parameters</div> : <KdmidIdentifier chatId={chatId} cityCode={cityCode} />;
 };

@@ -1,5 +1,5 @@
 ﻿using KdmidScheduler.Abstractions.Interfaces.Core.Services;
-
+using KdmidScheduler.Abstractions.Models.Core.v1;
 using Microsoft.Extensions.Logging;
 
 using Net.Shared.Bots.Abstractions.Interfaces;
@@ -16,6 +16,8 @@ public class KdmidBotApi(
     IBotResponse botResponse,
     IBotCommandsStore botCommandsStore) : IKdmidBotApi
 {
+    public static readonly string CityKey = typeof(City).FullName!;
+
     private readonly ILogger _log = logger;
     private readonly IBotClient _botClient = cotClient;
     private readonly IBotResponse _botResponse = botResponse;
@@ -48,13 +50,18 @@ public class KdmidBotApi(
         Guid.TryParse(commandId, out var guid) && guid != Guid.Empty
             ? _botCommandsStore.Get(chatId, guid, cToken)
             : throw new InvalidOperationException($"Command id '{commandId}' is not valid for chat '{chatId}'.");
-    public async Task<Command[]> GetCommands(string chatId, string? name, CancellationToken cToken)
+    public async Task<Command[]> GetCommands(string chatId, string names, string cityCode, CancellationToken cToken)
     {
         var commands = await _botCommandsStore.Get(chatId, cToken);
 
-        return string.IsNullOrWhiteSpace(name)
-            ? commands
-            : commands.Where(x => x.Name == name).ToArray();
+        var commandNames = names.Split(',', StringSplitOptions.RemoveEmptyEntries);
+
+        return commands
+            .Where(x =>
+                commandNames.Contains(x.Name, StringComparer.InvariantCultureIgnoreCase)
+                && x.Parameters.TryGetValue(CityKey, out var cityStr)
+                && cityStr.FromJson<City>().Code == cityCode)
+            .ToArray();
     }
     public async Task SetCommand(string chatId, StreamReader reader, CancellationToken cToken)
     {

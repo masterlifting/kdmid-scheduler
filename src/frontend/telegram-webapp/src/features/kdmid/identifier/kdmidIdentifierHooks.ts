@@ -1,26 +1,21 @@
 /** @format */
 
-import { useState } from 'react';
-import { useTelegramWebApp } from '../../../hooks/useTelegramWebApp';
-import { ICity, ICommand, ICommandGetRequest, IKdmidId } from '../kdmidTypes';
-import { useGetCommandQuery, useSetCommandMutation } from '../kdmidApi';
+import { useEffect, useState } from 'react';
+import { useGetCommandsQuery, useSetCommandMutation } from '../kdmidApi';
+import { IUserKdmidId } from './kdmidIdentifierTypes';
 
-export const useKdmidIdentifier = ({ chatId, commandId }: ICommandGetRequest) => {
-  const { close: closeTelegramWebApp } = useTelegramWebApp();
-  const [kdmidId, setKdmidId] = useState<IKdmidId>({
-    id: '',
-    cd: '',
-    ems: '',
-  });
+export const useKdmidIdentifier = (chatId: string, cityCode: string) => {
+  const [kdmidIds, setKdmidIds] = useState<Map<string, IUserKdmidId>>(new Map<string, IUserKdmidId>());
 
   const {
-    data: getCommandResponse,
-    isLoading: isGetCommandLoading,
-    isError: isGetCommandError,
-    error: getCommandError,
-  } = useGetCommandQuery({
+    data: getCommandsResponse,
+    isLoading: isGetCommandsLoading,
+    isError: isGetCommandsError,
+    error: getCommandsError,
+  } = useGetCommandsQuery({
     chatId: chatId,
-    commandId: commandId,
+    names: 'sendAvailableDates,addAvailableEmbassy',
+    cityCode: cityCode,
   });
 
   const [
@@ -28,19 +23,39 @@ export const useKdmidIdentifier = ({ chatId, commandId }: ICommandGetRequest) =>
     { data: setCommandResponse, isLoading: isSetCommandLoading, isError: isSetCommandError, error: setCommandError },
   ] = useSetCommandMutation();
 
-  let city: ICity | undefined = undefined;
-  let command: ICommand | undefined = undefined;
+  useEffect(() => {
+    if (!isGetCommandsError && getCommandsResponse) {
+      setKdmidIds(
+        getCommandsResponse.map(command => {
+          const cityParam = command?.parameters['KdmidScheduler.Abstractions.Models.Core.v1.City'];
 
-  if (!isGetCommandError) {
-    command = getCommandResponse;
-    const cityParam = command?.parameters['KdmidScheduler.Abstractions.Models.Core.v1.City'];
+          const city = JSON.parse(cityParam);
 
-    if (cityParam) {
-      city = JSON.parse(cityParam);
+          const kdmidIdParam = command.parameters['KdmidScheduler.Abstractions.Models.Core.v1.KdmidId'];
+
+          const result: IUserKdmidId = kdmidIdParam
+            ? {
+                commandId: command.id,
+                city: city.name,
+                identifier: JSON.parse(kdmidIdParam),
+              }
+            : {
+                commandId: command.id,
+                city: city.name,
+                identifier: {
+                  id: '',
+                  cd: '',
+                  ems: '',
+                },
+              };
+
+          return result;
+        }),
+      );
     }
-  }
+  }, [getCommandsResponse]);
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>, commandId: string) => {
     e.preventDefault();
 
     if (kdmidId.id === '') {
@@ -52,6 +67,8 @@ export const useKdmidIdentifier = ({ chatId, commandId }: ICommandGetRequest) =>
       alert('Cd is required');
       return;
     }
+
+    var command = getCommandsResponse?.find(x => x.id === commandId);
 
     if (command) {
       command = {
@@ -65,25 +82,24 @@ export const useKdmidIdentifier = ({ chatId, commandId }: ICommandGetRequest) =>
       setCommand({
         chatId,
         command,
-      }).then(() => closeTelegramWebApp());
+      });
     }
   };
 
-  const onChangeId = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setKdmidId({ ...kdmidId, id: e.target.value });
+  const onChangeId = (e: React.ChangeEvent<HTMLInputElement>, commandId: string) => {
+    const kdmidId = { ...kdmidIds.find(x => x.commandId === commandId)?.identifier, id: e.target.value };
   };
 
-  const onChangeCd = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onChangeCd = (e: React.ChangeEvent<HTMLInputElement>, commandId: string) => {
     setKdmidId({ ...kdmidId, cd: e.target.value });
   };
 
-  const onChangeEms = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onChangeEms = (e: React.ChangeEvent<HTMLInputElement>, commandId: string) => {
     setKdmidId({ ...kdmidId, ems: e.target.value });
   };
 
   return {
-    city,
-    kdmidId,
+    kdmidIds,
     onSubmit,
     onChangeId,
     onChangeCd,

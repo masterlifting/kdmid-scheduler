@@ -17,9 +17,8 @@ export const useKdmidUserEmbassies = (chatId: string) => {
     error: getCommandsError,
   } = useGetCommandsQuery({
     chatId: chatId,
-    filter: {
-      name: 'sendAvailableDates',
-    },
+    names: 'sendAvailableDates',
+    cityCode: '',
   });
 
   useEffect(() => {
