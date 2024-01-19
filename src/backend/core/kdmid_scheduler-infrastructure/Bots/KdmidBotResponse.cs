@@ -16,14 +16,15 @@ public sealed class KdmidBotResponse(IKdmidResponseService responseService) : IB
         Commands.Start => _responseService.SendAvailableEmbassies(chat, command, cToken),
         KdmidBotCommands.Mine => _responseService.SendMyEmbassies(chat, command, cToken),
         KdmidBotCommands.SendConfirmResult => _responseService.SendConfirmationResult(chat, command, cToken),
-        Commands.Ask => _responseService.SendAskResponse(chat, command, cToken),
         Commands.Answer => _responseService.SendAnswerResponse(chat, command, cToken),
+        Commands.Ask => _responseService.SendAskResponse(chat, command, cToken),
+        KdmidBotCommands.SendAvailableDates => _responseService.SendAvailableDates(chat, command, cToken),
+        KdmidBotCommands.AddAvailableEmbassy => _responseService.AddAvailableEmbassy(chat, command, cToken),
         _ => throw new NotSupportedException($"The command '{command.Name}' is not supported.")
     };
     public Task Create(string chatId, Command command, CancellationToken cToken) => command.Name switch
     {
-        KdmidBotCommands.SendAvailableDates => _responseService.SendAvailableDates(chatId, command, cToken),
-        KdmidBotCommands.AddAvailableEmbassy => _responseService.AddAvailableEmbassy(chatId, command, cToken),
+        Commands.Ask => _responseService.SendAskResponse(chatId, command, cToken),
         _ => throw new NotSupportedException($"The command '{command.Name}' is not supported.")
     };
 }

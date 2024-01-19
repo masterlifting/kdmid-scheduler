@@ -35,7 +35,7 @@ public sealed class KdmidResponseService(
     private readonly ILogger<KdmidResponseService> _logger = logger;
 
     private readonly KdmidSettings _kdmidSettings = kdmidOptions.Value;
-    
+
     private readonly IBotClient _botClient = botClient;
     private readonly IBotCommandsStore _botCommandsStore = botCommandsStore;
     private readonly IKdmidRequestService _kdmidRequestService = kdmidRequestService;
@@ -43,7 +43,7 @@ public sealed class KdmidResponseService(
     public async Task SendAvailableEmbassies(Chat chat, Command command, CancellationToken cToken)
     {
         var supportedCities = _kdmidRequestService.GetSupportedCities(cToken);
-        
+
         var webAppData = new Dictionary<string, Uri>(supportedCities.Length);
 
         foreach (var city in supportedCities)
@@ -54,7 +54,7 @@ public sealed class KdmidResponseService(
             }, cToken);
 
             var uri = new Uri($"{_kdmidSettings.WebAppUrl}/kdmidId?chatId={chat.Id}&commandId={command.Id}");
-            
+
             _logger.Debug($"Command {command.Id} for the chat {chat.Id}.");
 
             webAppData.Add(city.Name, uri);
@@ -70,7 +70,7 @@ public sealed class KdmidResponseService(
             await _botClient.SendWebApp(webAppArgs, cToken);
         }
     }
-    public async Task AddAvailableEmbassy(string chatId, Command command, CancellationToken cToken)
+    public async Task AddAvailableEmbassy(Chat chat, Command command, CancellationToken cToken)
     {
         var kdmidId = command.Parameters[KdmidIdKey].FromJson<KdmidId>();
         var city = command.Parameters[CityKey].FromJson<City>();
@@ -79,15 +79,15 @@ public sealed class KdmidResponseService(
         {
             kdmidId.Validate();
 
-            var dbCommand = await _botCommandsStore.Get(chatId, command.Id, cToken);
+            var dbCommand = await _botCommandsStore.Get(chat.Id, command.Id, cToken);
 
             command.Name = KdmidBotCommands.SendAvailableDates;
-            
-            await _botCommandsStore.Update(chatId, command.Id, command, cToken);
-            
-            await _botClient.SendMessage(chatId, new("The embassy is added to your list."), cToken);
-            
-            await _botClient.SendMessage(_botClient.AdminId, new($"The embassy '{city.Name}' is added to the chat '{chatId}'."), cToken);
+
+            await _botCommandsStore.Update(chat.Id, command.Id, command, cToken);
+
+            await _botClient.SendMessage(chat.Id, new("The embassy is added to your list."), cToken);
+
+            await _botClient.SendMessage(_botClient.AdminId, new($"The embassy '{city.Name}' is added to the chat '{chat.Id}'."), cToken);
         }
         catch (UserInvalidOperationException exception)
         {
@@ -115,10 +115,10 @@ public sealed class KdmidResponseService(
             var city = availableCommand.Parameters[CityKey].FromJson<City>();
 
             var uri = new Uri($"{_kdmidSettings.WebAppUrl}/embassies?chatId={chat.Id}");
-            
-            if(webAppData.ContainsKey(city.Name))
+
+            if (webAppData.ContainsKey(city.Name))
                 continue;
-            
+
             webAppData.Add(city.Name, uri);
         }
 
@@ -134,8 +134,8 @@ public sealed class KdmidResponseService(
     }
     public async Task SendConfirmationResult(Chat chat, Command command, CancellationToken cToken)
     {
-        var city =command.Parameters[CityKey].FromJson<City>();
-        var kdmidId =command.Parameters[KdmidIdKey].FromJson<KdmidId>();
+        var city = command.Parameters[CityKey].FromJson<City>();
+        var kdmidId = command.Parameters[KdmidIdKey].FromJson<KdmidId>();
         var chosenResult = command.Parameters[ChosenResultKey].FromJson<ChosenDateResult>();
 
         try
@@ -158,17 +158,16 @@ public sealed class KdmidResponseService(
             await _botCommandsStore.Delete(chat.Id, command.Id, cToken);
         }
     }
-    
-    public async Task SendAvailableDates(string chatId, Command command, CancellationToken cToken)
+    public async Task SendAvailableDates(Chat chat, Command command, CancellationToken cToken)
     {
         var city = command.Parameters[CityKey].FromJson<City>();
         var kdmidId = command.Parameters[KdmidIdKey].FromJson<KdmidId>();
 
         AvailableDatesResult availableDatesResult;
-        
+
         try
         {
-            await AddAttempt(chatId, command, city, cToken);
+            await AddAttempt(chat.Id, command, city, cToken);
 
             availableDatesResult = await _kdmidRequestService.GetAvailableDates(city, kdmidId, cToken);
         }
@@ -186,7 +185,7 @@ public sealed class KdmidResponseService(
         foreach (var date in availableDatesResult.Dates)
         {
             var chosenResult = new ChosenDateResult(availableDatesResult.FormData, date.Key, date.Value);
-            var nextCommand = await _botCommandsStore.Create(chatId, KdmidBotCommands.SendConfirmResult, new()
+            var nextCommand = await _botCommandsStore.Create(chat.Id, KdmidBotCommands.SendConfirmResult, new()
             {
                 { CityKey, command.Parameters[CityKey] },
                 { KdmidIdKey, command.Parameters[KdmidIdKey] },
@@ -198,13 +197,14 @@ public sealed class KdmidResponseService(
 
         if (buttonsData.Count == 0)
         {
-            await _botClient.SendMessage(chatId, new("There are no available dates."), cToken);
+            await _botClient.SendMessage(chat.Id, new("There are no available dates."), cToken);
         }
         else
         {
-            await _botClient.SendButtons(chatId, new("Choose a date", 1, buttonsData), cToken);
+            await _botClient.SendButtons(chat.Id, new("Choose a date", 1, buttonsData), cToken);
         }
     }
+
     public Task SendAskResponse(Chat chat, Command command, CancellationToken cToken)
     {
         Net.Shared.Bots.Abstractions.Models.Response.Message message = command.Parameters.Count == 0
@@ -214,6 +214,16 @@ public sealed class KdmidResponseService(
                 : throw new ArgumentException("The message for the developer is not specified.");
 
         return _botClient.SendMessage(chat.Id, message, cToken);
+    }
+    public Task SendAskResponse(string chatId, Command command, CancellationToken cToken)
+    {
+        Net.Shared.Bots.Abstractions.Models.Response.Message message = command.Parameters.Count == 0
+            ? new("To send your message to the developer, use the double quotes.")
+            : command.Parameters.TryGetValue(CommandParameters.Message, out var text)
+                ? new(text)
+                : throw new ArgumentException("The message for the developer is not specified.");
+
+        return _botClient.SendMessage(chatId, message, cToken);
     }
     public Task SendAnswerResponse(Chat chat, Command command, CancellationToken cToken)
     {
@@ -247,14 +257,14 @@ public sealed class KdmidResponseService(
             var attemptsDay = attempts.Day;
             var attemptsCount = (byte)(attempts.Count + 1);
 
-            if(attempts.Day != day)
+            if (attempts.Day != day)
             {
                 attemptsDay = day;
                 attemptsCount = 0;
             }
 
             attempts = new Attempts(attemptsDay, attemptsCount);
-            
+
             command.Parameters[AttemptsKey] = attempts.ToJson();
         }
 

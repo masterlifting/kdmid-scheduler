@@ -14,38 +14,33 @@ public sealed class BotController(IKdmidBotApi api) : ControllerBase
     private readonly IKdmidBotApi _api = api;
 
     [HttpGet("start")]
-    public async Task Start(CancellationToken cToken) => 
-        await _api.Listen(cToken);
+    public Task Start(CancellationToken cToken) =>
+        _api.Listen(cToken);
 
     [HttpGet("listen")]
-    public async Task Listen(CancellationToken cToken)
-    {
-        var uri = new Uri($"{Request.Scheme}://{Request.Host}/bot/receive");
-        await _api.Listen(uri, cToken);
-    }
+    public Task Listen(CancellationToken cToken) =>
+        _api.Listen(new($"{Request.Scheme}://{Request.Host}/bot/receive"), cToken);
 
     [HttpPost("receive")]
-    public async Task Receive(CancellationToken cToken)
+    public Task Receive(CancellationToken cToken)
     {
         using var reader = new StreamReader(Request.Body);
-        await _api.Receive(reader, cToken);
+        return _api.Receive(reader, cToken);
     }
 
+
     [HttpGet("chats/{chatId}/commands/{commandId}")]
-    public async Task<Command> GetCommand(string chatId, string commandId, CancellationToken cToken) => 
+    public async Task<Command> GetCommand(string chatId, string commandId, CancellationToken cToken) =>
         await _api.GetCommand(chatId, commandId, cToken);
 
     [HttpGet("chats/{chatId}/commands")]
-    public async Task<IEnumerable<Command>> GetCommands(string chatId, CancellationToken cToken)
-    {
-        var filter = Request.Query.ToDictionary(x => x.Key, x => x.Value.ToString());
-        return await _api.GetCommands(chatId, filter, cToken);
-    }
+    public Task<Command[]> GetCommands(string chatId, string? name, CancellationToken cToken) =>
+        _api.GetCommands(chatId, name, cToken);
 
-    [HttpPost("chats/{chatId}/command")]
-    public async Task SetCommand(string chatId, CancellationToken cToken)
+    [HttpPost("chats/{chatId}/commands")]
+    public Task SetCommand(string chatId, CancellationToken cToken)
     {
         using var reader = new StreamReader(Request.Body);
-        await _api.SetCommand(chatId, reader, cToken);
+        return Task.Run(() => _api.SetCommand(chatId, reader, cToken), cToken);
     }
 }
