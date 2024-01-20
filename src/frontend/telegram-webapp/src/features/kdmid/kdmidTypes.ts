@@ -1,31 +1,13 @@
 /** @format */
 
-export interface IKdmidId {
-  id: string;
-  cd: string;
-  ems?: string;
-}
-
-export interface ICommand {
-  id?: string;
+export type CityGetDto = {
+  code: string;
   name: string;
-  cityName: string;
-  identifier: IKdmidId;
-}
-
-export interface IChat {
-  id: string;
-  command: ICommand;
-}
-
-export interface IChatsState {
-  chats: IChat[];
-}
+};
 
 export type CommandGetDto = {
   id: string;
   name: string;
-  city: string;
   kdmidId: string;
   kdmidCd: string;
   kdmidEms?: string;
@@ -61,4 +43,31 @@ export interface ICommandPutRequest {
 export interface IcommandDeleteRequest {
   chatId: string;
   commandId: string;
+}
+
+export interface ICity {
+  code: string;
+  name: string;
+}
+
+export interface IKdmidId {
+  id: string;
+  cd: string;
+  ems?: string;
+}
+
+export interface ICommand {
+  id?: string;
+  name: string;
+  identifier: IKdmidId;
+}
+
+export interface IChat {
+  id: string;
+  command: ICommand;
+}
+
+export interface IKdmidState {
+  cities: ICity[];
+  chats: IChat[];
 }

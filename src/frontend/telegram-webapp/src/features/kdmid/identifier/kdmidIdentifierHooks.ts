@@ -3,47 +3,37 @@
 import { useEffect, useState } from 'react';
 import { useCreateCommandMutation, useDeleteCommandMutation, useGetCommandsQuery, useUpdateCommandMutation } from '../kdmidApi';
 import { v4 as guid } from 'uuid';
-import { IGuidCommand } from './kdmidIdentifierTypes';
-import { ICommand } from '../kdmidTypes';
+import { IIdentifier, IIdentifierCommand } from './kdmidIdentifierTypes';
+import { ICity, ICommand } from '../kdmidTypes';
+import { useAppSelector } from '../../../hooks/useAppSelector';
 
 export const useKdmidIdentifier = (chatId: string, cityCode: string) => {
-  const [commandsMap, setCommandsMap] = useState<Map<string, IGuidCommand>>(new Map<string, IGuidCommand>());
+  const { cities } = useAppSelector(x => x.kdmidState);
+  const city: ICity | undefined = cities.find(x => x.code === cityCode);
 
-  const {
-    data: getCommandsResponse,
-    isLoading: isGetCommandsLoading,
-    isError: isGetCommandsError,
-    error: getCommandsError,
-  } = useGetCommandsQuery({
+  const [identifierData, setIdentifierData] = useState<IIdentifier>({
+    city,
+    commandsMap: new Map<string, IIdentifierCommand>(),
+  });
+
+  const { data: getCommandsResponse, isError: isGetCommandsError } = useGetCommandsQuery({
     chatId: chatId,
-    names: 'sendAvailableDates,addAvailableEmbassy',
+    names: 'sendAvailableDates',
     cityCode: cityCode,
   });
 
-  const [
-    createCommand,
-    { data: createCommandResponse, isLoading: isCreateCommandLoading, isError: isCreateCommandError, error: createCommandError },
-  ] = useCreateCommandMutation();
-
-  const [
-    updateCommand,
-    { data: updateCommandResponse, isLoading: isUpdateCommandLoading, isError: isUpdateCommandError, error: updateCommandError },
-  ] = useUpdateCommandMutation();
-
-  const [
-    deleteCommand,
-    { data: deleteCommandResponse, isLoading: isDeleteCommandLoading, isError: isDeleteCommandError, error: deleteCommandError },
-  ] = useDeleteCommandMutation();
+  const [createCommand] = useCreateCommandMutation();
+  const [updateCommand] = useUpdateCommandMutation();
+  const [deleteCommand] = useDeleteCommandMutation();
 
   useEffect(() => {
     if (!isGetCommandsError && getCommandsResponse) {
-      const newCommandsMap = new Map<string, IGuidCommand>();
+      const commandsMap = new Map<string, IIdentifierCommand>();
 
       for (const item of getCommandsResponse) {
         const command: ICommand = {
           id: item.id,
           name: item.name,
-          cityName: item.city,
           identifier: {
             id: item.kdmidId,
             cd: item.kdmidCd,
@@ -52,26 +42,21 @@ export const useKdmidIdentifier = (chatId: string, cityCode: string) => {
         };
 
         const key = guid();
-
-        newCommandsMap.set(key, {
-          key: key,
-          command,
-        });
+        commandsMap.set(key, { key, command });
       }
 
-      setCommandsMap(newCommandsMap);
+      setIdentifierData({ city, commandsMap });
     }
-  }, [getCommandsResponse, isGetCommandsError]);
+  }, [city, getCommandsResponse, isGetCommandsError]);
 
   const onAddNewCommand = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.preventDefault();
 
     const key = guid();
-    commandsMap.set(key, {
+    identifierData.commandsMap.set(key, {
       key: key,
       command: {
         name: 'addAvailableEmbassy',
-        cityName: '',
         identifier: {
           id: '',
           cd: '',
@@ -80,13 +65,13 @@ export const useKdmidIdentifier = (chatId: string, cityCode: string) => {
       },
     });
 
-    setCommandsMap(prev => new Map(prev));
+    setIdentifierData(prev => ({ ...prev, commandsMap: identifierData.commandsMap }));
   };
 
   const onSetCommand = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, key: string) => {
     e.preventDefault();
 
-    const commandsMapValue = commandsMap.get(key);
+    const commandsMapValue = identifierData.commandsMap.get(key);
     const command = commandsMapValue.command;
 
     if (command.identifier.id === '') {
@@ -105,56 +90,83 @@ export const useKdmidIdentifier = (chatId: string, cityCode: string) => {
         commandId: command.id,
         command: {
           name: command.name,
-          cityCode: cityCode,
+          cityCode,
           kdmidId: command.identifier.id,
           kdmidCd: command.identifier.cd,
           kdmidEms: command.identifier.ems,
         },
-      });
+      })
+        .unwrap()
+        .catch(e => {
+          alert(JSON.stringify(e.data?.message));
+        })
+        .then(() => {
+          setIdentifierData(prev => ({ ...prev, commandsMap: identifierData.commandsMap }));
+        });
     } else {
       createCommand({
         chatId,
         command: {
           name: 'addToProcess',
-          cityCode: cityCode,
+          cityCode,
           kdmidId: command.identifier.id,
           kdmidCd: command.identifier.cd,
           kdmidEms: command.identifier.ems,
         },
-      });
+      })
+        .unwrap()
+        .catch(e => {
+          alert(JSON.stringify(e.data?.message));
+        })
+        .then(response => {
+          if (!response) {
+            return;
+          }
+          command.id = response;
+          setIdentifierData(prev => ({ ...prev, commandsMap: identifierData.commandsMap }));
+        });
     }
   };
 
   const onRemoveCommand = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, key: string) => {
     e.preventDefault();
 
-    var command = commandsMap.get(key).command;
+    var command = identifierData.commandsMap.get(key).command;
 
     if (!command.id) {
-      commandsMap.delete(key);
-      setCommandsMap(prev => new Map(prev));
+      identifierData.commandsMap.delete(key);
+      setIdentifierData(prev => ({ ...prev, commandsMap: identifierData.commandsMap }));
     } else {
-      deleteCommand({ chatId, commandId: command.id });
+      deleteCommand({ chatId, commandId: command.id })
+        .unwrap()
+        .catch(e => {
+          alert(JSON.stringify(e.data?.message));
+        })
+        .then(() => {
+          identifierData.commandsMap.delete(key);
+          setIdentifierData(prev => ({ ...prev, commandsMap: identifierData.commandsMap }));
+        });
     }
   };
 
   const onChangeKdmidId = (e: React.ChangeEvent<HTMLInputElement>, key: string) => {
-    commandsMap.get(key).command.identifier.id = e.target.value;
-    setCommandsMap(prev => new Map(prev));
+    identifierData.commandsMap.get(key).command.identifier.id = e.target.value;
+    setIdentifierData(prev => ({ ...prev, commandsMap: identifierData.commandsMap }));
   };
 
   const onChangeKdmidCd = (e: React.ChangeEvent<HTMLInputElement>, key: string) => {
-    commandsMap.get(key).command.identifier.cd = e.target.value;
-    setCommandsMap(prev => new Map(prev));
+    identifierData.commandsMap.get(key).command.identifier.cd = e.target.value;
+    setIdentifierData(prev => ({ ...prev, commandsMap: identifierData.commandsMap }));
   };
 
   const onChangeKdmidEms = (e: React.ChangeEvent<HTMLInputElement>, key: string) => {
-    commandsMap.get(key).command.identifier.ems = e.target.value;
-    setCommandsMap(prev => new Map(prev));
+    identifierData.commandsMap.get(key).command.identifier.ems = e.target.value;
+    setIdentifierData(prev => ({ ...prev, commandsMap: identifierData.commandsMap }));
   };
 
   return {
-    commands: Array.from(commandsMap.values()),
+    city: identifierData.city,
+    commands: Array.from(identifierData.commandsMap.values()),
     onAddNewCommand,
     onSetCommand,
     onRemoveCommand,

@@ -8,7 +8,7 @@ import { kdmidReducer } from './features/kdmid/kdmidSlice';
 export const store = configureStore({
   reducer: {
     [kdmidApi.reducerPath]: kdmidApi.reducer,
-    identifierState: kdmidReducer,
+    kdmidState: kdmidReducer,
   },
   middleware: getDefaultMiddleware => getDefaultMiddleware().concat(kdmidApi.middleware),
 });

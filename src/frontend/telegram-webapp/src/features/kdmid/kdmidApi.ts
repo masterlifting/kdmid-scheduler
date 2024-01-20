@@ -2,7 +2,14 @@
 
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { constants } from '../../_constants';
-import { CommandGetDto, ICommandGetRequest, ICommandPostRequest, ICommandPutRequest, ICommandsGetRequest } from './kdmidTypes';
+import {
+  CityGetDto,
+  CommandGetDto,
+  ICommandGetRequest,
+  ICommandPostRequest,
+  ICommandPutRequest,
+  ICommandsGetRequest,
+} from './kdmidTypes';
 
 const controller = 'bot';
 
@@ -10,6 +17,12 @@ export const kdmidApi = createApi({
   reducerPath: 'KdmidApi',
   baseQuery: fetchBaseQuery({ baseUrl: constants.config.backendBaseUrl }),
   endpoints: builder => ({
+    getCities: builder.query<CityGetDto[], void>({
+      query: () => ({
+        url: `${controller}/cities`,
+        method: constants.http.methods.GET,
+      }),
+    }),
     getCommand: builder.query<CommandGetDto, ICommandGetRequest>({
       query: ({ chatId, commandId }) => ({
         url: `${controller}/chats/${chatId}/commands/${commandId}`,
@@ -23,7 +36,7 @@ export const kdmidApi = createApi({
         params: { names, cityCode },
       }),
     }),
-    createCommand: builder.mutation<void, ICommandPostRequest>({
+    createCommand: builder.mutation<string, ICommandPostRequest>({
       query: ({ chatId, command }) => ({
         url: `${controller}/chats/${chatId}/commands`,
         method: constants.http.methods.POST,
@@ -47,6 +60,8 @@ export const kdmidApi = createApi({
 });
 
 export const {
+  useGetCitiesQuery,
+  useLazyGetCitiesQuery,
   useGetCommandQuery,
   useLazyGetCommandQuery,
   useGetCommandsQuery,

@@ -5,7 +5,6 @@ using KdmidScheduler.Abstractions.Models.Core.v1.BotApiDto;
 using Microsoft.Extensions.Logging;
 
 using Net.Shared.Bots.Abstractions.Interfaces;
-using Net.Shared.Bots.Abstractions.Models.Exceptions;
 using Net.Shared.Extensions.Logging;
 using Net.Shared.Extensions.Serialization.Json;
 
@@ -25,6 +24,7 @@ public class KdmidBotApi(
     private readonly IBotCommandsStore _botCommandsStore = botCommandsStore;
     private readonly IKdmidRequestService _kdmidRequestService = kdmidRequestService;
 
+    #region Bot
     public async Task Listen(CancellationToken cToken)
     {
         _log.Info("Bot client going to listen.");
@@ -48,7 +48,19 @@ public class KdmidBotApi(
         await _botClient.Receive(data, cToken);
         _log.Debug("Bot client received data.");
     }
+    #endregion
 
+    #region Queries
+    public Task<CityGetDto[]> GetCities(CancellationToken cToken)
+    {
+        var cities = _kdmidRequestService.GetSupportedCities(cToken);
+
+        var result = cities
+            .Select(x => new CityGetDto(x.Code, x.Name))
+            .ToArray();
+
+        return Task.FromResult(result);
+    }
     public async Task<CommandGetDto> GetCommand(string chatId, string commandId, CancellationToken cToken)
     {
         var commandIdGuid = Guid.Parse(commandId);
@@ -56,7 +68,7 @@ public class KdmidBotApi(
 
         var city = command.Parameters[BotCommandParametersCityKey].FromJson<City>();
         var kdmidId = command.Parameters[BotCommandParametersKdmidIdKey].FromJson<KdmidId>();
-        var attempts = command.Parameters.TryGetValue(BotCommandParametersAttemptsKey, out var attemptsStr) 
+        var attempts = command.Parameters.TryGetValue(BotCommandParametersAttemptsKey, out var attemptsStr)
             ? attemptsStr.FromJson<Attempts>().Count
             : (byte)0;
 
@@ -65,10 +77,10 @@ public class KdmidBotApi(
     public async Task<CommandGetDto[]> GetCommands(string chatId, string? names, string? cityCode, CancellationToken cToken)
     {
         var commands = await _botCommandsStore.Get(chatId, cToken);
-        
+
         var commandNames = Array.Empty<string>();
-        
-        if(!string.IsNullOrWhiteSpace(names))
+
+        if (!string.IsNullOrWhiteSpace(names))
         {
             commandNames = names!.Split(',', StringSplitOptions.RemoveEmptyEntries);
         }
@@ -89,7 +101,7 @@ public class KdmidBotApi(
             {
                 var city = x.Parameters[BotCommandParametersCityKey].FromJson<City>();
                 var kdmidId = x.Parameters[BotCommandParametersKdmidIdKey].FromJson<KdmidId>();
-                var attempts = x.Parameters.TryGetValue(BotCommandParametersAttemptsKey, out var attemptsStr) 
+                var attempts = x.Parameters.TryGetValue(BotCommandParametersAttemptsKey, out var attemptsStr)
                     ? attemptsStr.FromJson<Attempts>().Count
                     : (byte)0;
 
@@ -97,98 +109,68 @@ public class KdmidBotApi(
             })
             .ToArray();
     }
-    
-    public async Task CreateCommand(string chatId, CommandSetDto command, CancellationToken cToken)
+    #endregion
+
+    #region Commands
+    public async Task<string> CreateCommand(string chatId, CommandSetDto command, CancellationToken cToken)
     {
-        try
+        var city = _kdmidRequestService.GetSupportedCity(command.CityCode, cToken);
+
+        var kdmidId = new KdmidId()
         {
-            var city = _kdmidRequestService.GetSupportedCity(command.CityCode, cToken);
-            
-            var kdmidId = new KdmidId()
-            {
-                Id = command.KdmidId,
-                Cd = command.KdmidCd,
-                Ems = command.KdmidEms
-            };
+            Id = command.KdmidId,
+            Cd = command.KdmidCd,
+            Ems = command.KdmidEms
+        };
 
-            kdmidId.Validate();
+        kdmidId.Validate();
 
-            var parameters = new Dictionary<string, string>
+        var parameters = new Dictionary<string, string>
             {
                 { BotCommandParametersCityKey, city.ToJson() },
                 { BotCommandParametersKdmidIdKey, kdmidId.ToJson() }
             };
 
-            await _botCommandsStore.Create(chatId, command.Name, parameters, cToken);
-        }
-        catch (BotUserInvalidOperationException exception)
-        {
-            await _botClient.SendMessage(chatId, new(exception.Message), cToken);
-            return;
-        }
-        catch
-        {
-            await _botClient.SendMessage(chatId, new(Net.Shared.Abstractions.Constants.UserErrorMessage), cToken);
-            throw;
-        }
+        var result = await _botCommandsStore.Create(chatId, command.Name, parameters, cToken);
+
+        return result.Id.ToString();
     }
     public Task UpdateCommand(string chatId, string commandId, CommandSetDto command, CancellationToken cToken)
     {
-        try
+        var commandIdGuid = Guid.Parse(commandId);
+
+        var storedCommand = _botCommandsStore.Get(chatId, commandIdGuid, cToken).Result;
+
+        storedCommand.Name = command.Name;
+
+        var city = _kdmidRequestService.GetSupportedCity(command.CityCode, cToken);
+
+        var kdmidId = new KdmidId()
         {
-            var commandIdGuid = Guid.Parse(commandId);
+            Id = command.KdmidId,
+            Cd = command.KdmidCd,
+            Ems = command.KdmidEms
+        };
 
-            var storedCommand = _botCommandsStore.Get(chatId, commandIdGuid, cToken).Result;
+        kdmidId.Validate();
 
-            storedCommand.Name = command.Name;
+        if (storedCommand.Parameters.ContainsKey(BotCommandParametersKdmidIdKey))
+            storedCommand.Parameters[BotCommandParametersKdmidIdKey] = kdmidId.ToJson();
+        else
+            storedCommand.Parameters.Add(BotCommandParametersKdmidIdKey, kdmidId.ToJson());
 
-            var city = _kdmidRequestService.GetSupportedCity(command.CityCode, cToken);
-            
-            var kdmidId = new KdmidId()
-            {
-                Id = command.KdmidId,
-                Cd = command.KdmidCd,
-                Ems = command.KdmidEms
-            };
+        if (storedCommand.Parameters.ContainsKey(BotCommandParametersCityKey))
+            storedCommand.Parameters[BotCommandParametersCityKey] = city.ToJson();
+        else
+            storedCommand.Parameters.Add(BotCommandParametersCityKey, city.ToJson());
 
-            kdmidId.Validate();
-
-            if(storedCommand.Parameters.ContainsKey(BotCommandParametersKdmidIdKey))
-                storedCommand.Parameters[BotCommandParametersKdmidIdKey] = kdmidId.ToJson();
-            else
-                storedCommand.Parameters.Add(BotCommandParametersKdmidIdKey, kdmidId.ToJson());
-
-            if(storedCommand.Parameters.ContainsKey(BotCommandParametersCityKey))
-                storedCommand.Parameters[BotCommandParametersCityKey] = city.ToJson();
-            else
-                storedCommand.Parameters.Add(BotCommandParametersCityKey, city.ToJson());
-
-            return _botCommandsStore.Update(chatId, commandIdGuid, storedCommand, cToken);
-        }
-        catch (BotUserInvalidOperationException exception)
-        {
-            return _botClient.SendMessage(chatId, new(exception.Message), cToken);
-        }
-        catch
-        {
-            return _botClient.SendMessage(chatId, new(Net.Shared.Abstractions.Constants.UserErrorMessage), cToken);
-        }
+        return _botCommandsStore.Update(chatId, commandIdGuid, storedCommand, cToken);
     }
     public Task DeleteCommand(string chatId, string commandId, CancellationToken cToken)
     {
-        try
-        {
-            var commandIdGuid = Guid.Parse(commandId);
+        var commandIdGuid = Guid.Parse(commandId);
 
-            return _botCommandsStore.Delete(chatId, commandIdGuid, cToken);
-        }
-        catch (BotUserInvalidOperationException exception)
-        {
-            return _botClient.SendMessage(chatId, new(exception.Message), cToken);
-        }
-        catch
-        {
-            return _botClient.SendMessage(chatId, new(Net.Shared.Abstractions.Constants.UserErrorMessage), cToken);
-        }
+        return _botCommandsStore.Delete(chatId, commandIdGuid, cToken);
     }
+    #endregion
 }

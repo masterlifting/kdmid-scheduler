@@ -1,9 +1,10 @@
 /** @format */
 
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
-import { IChat, IChatsState } from './kdmidTypes';
+import { CityGetDto, IChat, IKdmidState } from './kdmidTypes';
 
-const initialState: IChatsState = {
+const initialState: IKdmidState = {
+  cities: [],
   chats: [],
 };
 
@@ -19,6 +20,9 @@ export const kdmidSlice = createSlice({
       } else {
         state.chats[chatIndex] = action.payload;
       }
+    },
+    setCities: (state, action: PayloadAction<CityGetDto[]>) => {
+      state.cities = action.payload.map(x => ({ code: x.code, name: x.name }));
     },
   },
 });

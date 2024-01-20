@@ -37,11 +37,15 @@ public sealed class BotController(IKdmidBotApi api) : ControllerBase
     [HttpGet("chats/{chatId}/commands")]
     public Task<CommandGetDto[]> GetCommands(string chatId, string? names, string? cityCode, CancellationToken cToken) =>
         _api.GetCommands(chatId, names, cityCode, cToken);
+
+    [HttpGet("cities")]
+    public Task<CityGetDto[]> GetCities(CancellationToken cToken) =>
+        _api.GetCities(cToken);
     #endregion
 
     #region Commands
     [HttpPost("chats/{chatId}/commands")]
-    public Task CreateCommand([FromBody] CommandSetDto command, string chatId, CancellationToken cToken) =>
+    public Task<string> CreateCommand([FromBody] CommandSetDto command, string chatId, CancellationToken cToken) =>
         _api.CreateCommand(chatId, command, cToken);
 
     [HttpPut("chats/{chatId}/commands/{commandId}")]
