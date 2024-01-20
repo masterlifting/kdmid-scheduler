@@ -81,20 +81,17 @@ public class KdmidBotApi(
     {
         var commands = await _botCommandsStore.Get(chatId, cToken);
 
-        var commandNames = Array.Empty<string>();
+        var commandNames = !string.IsNullOrWhiteSpace(names)
+            ? names.Split(',', StringSplitOptions.RemoveEmptyEntries)
+            : [];
 
-        if (!string.IsNullOrWhiteSpace(names))
-        {
-            commandNames = names!.Split(',', StringSplitOptions.RemoveEmptyEntries);
-        }
-
-        var hasCityCode = !string.IsNullOrWhiteSpace(cityCode);
-        var city = hasCityCode ? _kdmidRequestService.GetSupportedCity(cityCode!, cToken) : null;
+        var city = !string.IsNullOrWhiteSpace(cityCode)
+            ? _kdmidRequestService.GetSupportedCity(cityCode!, cToken)
+            : null;
 
         var targetCommands = commands
-            .Where(x =>
-                !commandNames.Contains(x.Name, StringComparer.InvariantCultureIgnoreCase)
-                || !hasCityCode
+            .Where(x => commandNames.Length == 0 || commandNames.Contains(x.Name, StringComparer.InvariantCultureIgnoreCase))
+            .Where(x => cityCode == null
                 || x.Parameters.TryGetValue(BotCommandParametersCityKey, out var cityStr)
                 && cityStr.FromJson<City>().Code == cityCode)
             .ToArray();
@@ -134,7 +131,7 @@ public class KdmidBotApi(
             { BotCommandParametersKdmidIdKey, kdmidId.ToJson() }
         };
 
-        var botCommand =new Command(Guid.NewGuid(), Abstractions.Constants.KdmidBotCommands.CreateCommand, parameters);
+        var botCommand = new Command(Guid.NewGuid(), Abstractions.Constants.KdmidBotCommands.CreateCommand, parameters);
 
         await _botResponse.Create(chatId, botCommand, cToken);
 
