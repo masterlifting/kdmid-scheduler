@@ -67,8 +67,11 @@ public sealed class KdmidResponseService(
         foreach (var availableCommand in availableCommands)
         {
             var city = availableCommand.Parameters[BotCommandParametersCityKey].FromJson<City>();
+            var kdmidId = availableCommand.Parameters[BotCommandParametersKdmidIdKey].FromJson<KdmidId>();
 
-            buttonsData.Add(availableCommand.Id.ToString(), city.Name);
+            var buttonName = $"{city.Name} ({kdmidId.Id})";
+
+            buttonsData.Add(availableCommand.Id.ToString(), buttonName);
         }
 
         if (buttonsData.Count == 0)
@@ -77,7 +80,7 @@ public sealed class KdmidResponseService(
         }
         else
         {
-            var buttonsArgs = new ButtonsEventArgs(chat, new("My embassies", 2, buttonsData));
+            var buttonsArgs = new ButtonsEventArgs(chat, new("My embassies", 4, buttonsData));
             await _botClient.SendButtons(buttonsArgs, cToken);
         }
     }

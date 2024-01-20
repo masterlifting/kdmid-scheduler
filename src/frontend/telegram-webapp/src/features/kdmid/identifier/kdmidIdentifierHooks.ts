@@ -18,7 +18,7 @@ export const useKdmidIdentifier = (chatId: string, cityCode: string) => {
 
   const { data: getCommandsResponse, isError: isGetCommandsError } = useGetCommandsQuery({
     chatId: chatId,
-    names: 'addToProcess',
+    names: 'commandInProcess',
     cityCode: cityCode,
   });
 
