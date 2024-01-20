@@ -15,17 +15,23 @@ public sealed class KdmidBotCommandsStore(
     private readonly IPersistenceReaderRepository<IPersistentNoSql> _readerRepository = readerRepository;
     private readonly IPersistenceWriterRepository<IPersistentNoSql> _writerRepository = writerRepository;
 
-    public async Task<Command> Create(string chatId, string Name, Dictionary<string, string> Parameters, CancellationToken cToken)
+    public Task Create(string chatId, Command command, CancellationToken cToken)
     {
         var entity = new KdmidBotCommands
         {
             ChatId = chatId,
-            Command = new Command(Guid.NewGuid(), Name, Parameters)
+            Command = command
         };
 
-        await _writerRepository.CreateOne(entity, cToken);
+        return _writerRepository.CreateOne(entity, cToken);
+    }
+    public async Task<Command> Create(string chatId, string Name, Dictionary<string, string> Parameters, CancellationToken cToken)
+    {
+        var command = new Command(Guid.NewGuid(), Name, Parameters);
 
-        return entity.Command;
+        await Create(chatId, command, cToken);
+
+        return command;
     }
     public async Task Delete(string chatId, Guid commandId, CancellationToken cToken)
     {

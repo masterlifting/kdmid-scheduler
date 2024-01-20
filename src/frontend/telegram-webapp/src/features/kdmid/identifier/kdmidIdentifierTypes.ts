@@ -1,9 +1,8 @@
 /** @format */
 
-import { ICommand, IKdmidId } from '../kdmidTypes';
+import { ICommand } from '../kdmidTypes';
 
-export interface IUserKdmidId {
-  city: string;
-  identifier: IKdmidId;
+export interface IGuidCommand {
+  key: string;
   command: ICommand;
 }

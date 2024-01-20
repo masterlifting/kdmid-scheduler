@@ -1,11 +1,13 @@
 /** @format */
 
 import { useEffect, useState } from 'react';
-import { useGetCommandsQuery, useSetCommandMutation } from '../kdmidApi';
-import { IUserKdmidId } from './kdmidIdentifierTypes';
+import { useCreateCommandMutation, useDeleteCommandMutation, useGetCommandsQuery, useUpdateCommandMutation } from '../kdmidApi';
+import { v4 as guid } from 'uuid';
+import { IGuidCommand } from './kdmidIdentifierTypes';
+import { ICommand } from '../kdmidTypes';
 
 export const useKdmidIdentifier = (chatId: string, cityCode: string) => {
-  const [kdmidIds, setKdmidIds] = useState<Map<string, IUserKdmidId>>(new Map<string, IUserKdmidId>());
+  const [commandsMap, setCommandsMap] = useState<Map<string, IGuidCommand>>(new Map<string, IGuidCommand>());
 
   const {
     data: getCommandsResponse,
@@ -19,109 +21,145 @@ export const useKdmidIdentifier = (chatId: string, cityCode: string) => {
   });
 
   const [
-    setCommand,
-    { data: setCommandResponse, isLoading: isSetCommandLoading, isError: isSetCommandError, error: setCommandError },
-  ] = useSetCommandMutation();
+    createCommand,
+    { data: createCommandResponse, isLoading: isCreateCommandLoading, isError: isCreateCommandError, error: createCommandError },
+  ] = useCreateCommandMutation();
+
+  const [
+    updateCommand,
+    { data: updateCommandResponse, isLoading: isUpdateCommandLoading, isError: isUpdateCommandError, error: updateCommandError },
+  ] = useUpdateCommandMutation();
+
+  const [
+    deleteCommand,
+    { data: deleteCommandResponse, isLoading: isDeleteCommandLoading, isError: isDeleteCommandError, error: deleteCommandError },
+  ] = useDeleteCommandMutation();
 
   useEffect(() => {
     if (!isGetCommandsError && getCommandsResponse) {
-      const kdmidIdsMap = new Map<string, IUserKdmidId>();
+      const newCommandsMap = new Map<string, IGuidCommand>();
 
-      for (const command of getCommandsResponse) {
-        const cityParam = command?.parameters['KdmidScheduler.Abstractions.Models.Core.v1.City'];
+      for (const item of getCommandsResponse) {
+        const command: ICommand = {
+          id: item.id,
+          name: item.name,
+          cityName: item.city,
+          identifier: {
+            id: item.kdmidId,
+            cd: item.kdmidCd,
+            ems: item.kdmidEms,
+          },
+        };
 
-        const city = JSON.parse(cityParam);
+        const key = guid();
 
-        const kdmidIdParam = command.parameters['KdmidScheduler.Abstractions.Models.Core.v1.KdmidId'];
-
-        const result: IUserKdmidId = kdmidIdParam
-          ? {
-              city: city.name,
-              command: command,
-              identifier: JSON.parse(kdmidIdParam),
-            }
-          : {
-              city: city.name,
-              command: command,
-              identifier: {
-                id: '',
-                cd: '',
-                ems: '',
-              },
-            };
-
-        kdmidIdsMap.set(command.id, result);
+        newCommandsMap.set(key, {
+          key: key,
+          command,
+        });
       }
 
-      setKdmidIds(kdmidIdsMap);
+      setCommandsMap(newCommandsMap);
     }
   }, [getCommandsResponse, isGetCommandsError]);
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>, commandId: string) => {
+  const onAddNewCommand = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.preventDefault();
 
-    const userKdmidId = kdmidIds.get(commandId);
-
-    if (userKdmidId.identifier.id === '') {
-      alert('Id is required');
-      return;
-    }
-
-    if (userKdmidId.identifier.cd === '') {
-      alert('Cd is required');
-      return;
-    }
-
-    userKdmidId.command.parameters['KdmidScheduler.Abstractions.Models.Core.v1.KdmidId'] = JSON.stringify(userKdmidId.identifier);
-
-    setCommand({
-      chatId,
-      command: userKdmidId.command,
-    });
-  };
-
-  const onChangeId = (e: React.ChangeEvent<HTMLInputElement>, commandId: string) => {
-    kdmidIds.get(commandId).identifier.id = e.target.value;
-    setKdmidIds(prev => new Map(prev));
-  };
-
-  const onChangeCd = (e: React.ChangeEvent<HTMLInputElement>, commandId: string) => {
-    kdmidIds.get(commandId).identifier.cd = e.target.value;
-    setKdmidIds(prev => new Map(prev));
-  };
-
-  const onChangeEms = (e: React.ChangeEvent<HTMLInputElement>, commandId: string) => {
-    kdmidIds.get(commandId).identifier.ems = e.target.value;
-    setKdmidIds(prev => new Map(prev));
-  };
-
-  console.log(kdmidIds);
-  return {
-    userKdmidIds: Array.from(kdmidIds.values()),
-    onSubmit,
-    onChangeId,
-    onChangeCd,
-    onChangeEms,
-    onRemove: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, commandId: string) => {
-      e.preventDefault();
-      kdmidIds.delete(commandId);
-      setKdmidIds(prev => new Map(prev));
-    },
-    onAdd: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, commandId: string) => {
-      e.preventDefault();
-
-      const userKdmidId = kdmidIds.get(commandId);
-
-      kdmidIds.set(commandId, {
-        city: userKdmidId.city,
-        command: userKdmidId.command,
+    const key = guid();
+    commandsMap.set(key, {
+      key: key,
+      command: {
+        name: 'addAvailableEmbassy',
+        cityName: '',
         identifier: {
           id: '',
           cd: '',
           ems: '',
         },
+      },
+    });
+
+    setCommandsMap(prev => new Map(prev));
+  };
+
+  const onSetCommand = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, key: string) => {
+    e.preventDefault();
+
+    const commandsMapValue = commandsMap.get(key);
+    const command = commandsMapValue.command;
+
+    if (command.identifier.id === '') {
+      alert('Id is required');
+      return;
+    }
+
+    if (command.identifier.cd === '') {
+      alert('Cd is required');
+      return;
+    }
+
+    if (command.id) {
+      updateCommand({
+        chatId,
+        commandId: command.id,
+        command: {
+          name: command.name,
+          cityCode: cityCode,
+          kdmidId: command.identifier.id,
+          kdmidCd: command.identifier.cd,
+          kdmidEms: command.identifier.ems,
+        },
       });
-      setKdmidIds(prev => new Map(prev));
-    },
+    } else {
+      createCommand({
+        chatId,
+        command: {
+          name: 'addToProcess',
+          cityCode: cityCode,
+          kdmidId: command.identifier.id,
+          kdmidCd: command.identifier.cd,
+          kdmidEms: command.identifier.ems,
+        },
+      });
+    }
+  };
+
+  const onRemoveCommand = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, key: string) => {
+    e.preventDefault();
+
+    var command = commandsMap.get(key).command;
+
+    if (!command.id) {
+      commandsMap.delete(key);
+      setCommandsMap(prev => new Map(prev));
+    } else {
+      deleteCommand({ chatId, commandId: command.id });
+    }
+  };
+
+  const onChangeKdmidId = (e: React.ChangeEvent<HTMLInputElement>, key: string) => {
+    commandsMap.get(key).command.identifier.id = e.target.value;
+    setCommandsMap(prev => new Map(prev));
+  };
+
+  const onChangeKdmidCd = (e: React.ChangeEvent<HTMLInputElement>, key: string) => {
+    commandsMap.get(key).command.identifier.cd = e.target.value;
+    setCommandsMap(prev => new Map(prev));
+  };
+
+  const onChangeKdmidEms = (e: React.ChangeEvent<HTMLInputElement>, key: string) => {
+    commandsMap.get(key).command.identifier.ems = e.target.value;
+    setCommandsMap(prev => new Map(prev));
+  };
+
+  return {
+    commands: Array.from(commandsMap.values()),
+    onAddNewCommand,
+    onSetCommand,
+    onRemoveCommand,
+    onChangeKdmidId,
+    onChangeKdmidCd,
+    onChangeKdmidEms,
   };
 };

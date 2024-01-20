@@ -2,7 +2,7 @@
 
 using HtmlAgilityPack;
 using KdmidScheduler.Abstractions.Interfaces.Infrastructure.Services;
-using KdmidScheduler.Abstractions.Models.Core.v1;
+using KdmidScheduler.Abstractions.Models.Core.v1.Kdmid;
 
 using Net.Shared.Abstractions.Models.Exceptions;
 

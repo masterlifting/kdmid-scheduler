@@ -9,6 +9,7 @@ public static class Constants
         public const string SendAvailableDates = "sendAvailableDates";
         public const string SendConfirmResult = "sendConfirmResult";
         public const string AddAvailableEmbassy = "addAvailableEmbassy";
+        public const string AddToProcess = "addToProcess";
     }
     public enum ProcessSteps
     {

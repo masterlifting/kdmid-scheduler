@@ -2,7 +2,7 @@
 
 using Net.Shared.Abstractions.Models.Exceptions;
 
-namespace KdmidScheduler.Abstractions.Models.Core.v1;
+namespace KdmidScheduler.Abstractions.Models.Core.v1.Kdmid;
 
 public sealed record KdmidId
 {

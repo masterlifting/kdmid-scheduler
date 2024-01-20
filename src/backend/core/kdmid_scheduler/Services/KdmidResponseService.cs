@@ -1,5 +1,5 @@
 ﻿using KdmidScheduler.Abstractions.Interfaces.Core.Services;
-using KdmidScheduler.Abstractions.Models.Core.v1;
+using KdmidScheduler.Abstractions.Models.Core.v1.Kdmid;
 using KdmidScheduler.Abstractions.Models.Settings;
 
 using Microsoft.Extensions.Logging;
@@ -13,6 +13,7 @@ using Net.Shared.Bots.Abstractions.Models.Response;
 using Net.Shared.Extensions.Logging;
 using Net.Shared.Extensions.Serialization.Json;
 
+using static KdmidScheduler.Constants;
 using static KdmidScheduler.Abstractions.Constants;
 using static Net.Shared.Bots.Abstractions.Constants;
 
@@ -26,12 +27,6 @@ public sealed class KdmidResponseService(
     IKdmidRequestService kdmidRequestService
     ) : IKdmidResponseService
 {
-    public static readonly string CityKey = typeof(City).FullName!;
-    public static readonly string KdmidIdKey = typeof(KdmidId).FullName!;
-    public static readonly string ChosenResultKey = typeof(ChosenDateResult).FullName!;
-    public static readonly string AttemptsKey = typeof(Attempts).FullName!;
-    public const byte AttemptsLimit = 23;
-
     private readonly ILogger<KdmidResponseService> _logger = logger;
 
     private readonly KdmidSettings _kdmidSettings = kdmidOptions.Value;
@@ -50,7 +45,7 @@ public sealed class KdmidResponseService(
         {
             command = await _botCommandsStore.Create(chat.Id, KdmidBotCommands.AddAvailableEmbassy, new()
             {
-                { CityKey, city.ToJson() },
+                { BotCommandParametersCityKey, city.ToJson() },
             }, cToken);
 
             var uri = new Uri($"{_kdmidSettings.WebAppUrl}/kdmidid?chatId={chat.Id}&cityCode={city.Code}");
@@ -72,8 +67,8 @@ public sealed class KdmidResponseService(
     }
     public async Task AddAvailableEmbassy(Chat chat, Command command, CancellationToken cToken)
     {
-        var kdmidId = command.Parameters[KdmidIdKey].FromJson<KdmidId>();
-        var city = command.Parameters[CityKey].FromJson<City>();
+        var kdmidId = command.Parameters[BotCommandParametersKdmidIdKey].FromJson<KdmidId>();
+        var city = command.Parameters[BotCommandParametersCityKey].FromJson<City>();
 
         try
         {
@@ -105,14 +100,14 @@ public sealed class KdmidResponseService(
         var commands = await _botCommandsStore.Get(chat.Id, cToken);
 
         var availableCommands = commands
-            .Where(x => x.Name == KdmidBotCommands.SendAvailableDates && x.Parameters.ContainsKey(KdmidIdKey))
+            .Where(x => x.Name == KdmidBotCommands.SendAvailableDates && x.Parameters.ContainsKey(BotCommandParametersKdmidIdKey))
             .ToArray();
 
         var webAppData = new Dictionary<string, Uri>(availableCommands.Length);
 
         foreach (var availableCommand in availableCommands)
         {
-            var city = availableCommand.Parameters[CityKey].FromJson<City>();
+            var city = availableCommand.Parameters[BotCommandParametersCityKey].FromJson<City>();
 
             var uri = new Uri($"{_kdmidSettings.WebAppUrl}/embassies?chatId={chat.Id}");
 
@@ -134,9 +129,9 @@ public sealed class KdmidResponseService(
     }
     public async Task SendConfirmationResult(Chat chat, Command command, CancellationToken cToken)
     {
-        var city = command.Parameters[CityKey].FromJson<City>();
-        var kdmidId = command.Parameters[KdmidIdKey].FromJson<KdmidId>();
-        var chosenResult = command.Parameters[ChosenResultKey].FromJson<ChosenDateResult>();
+        var city = command.Parameters[BotCommandParametersCityKey].FromJson<City>();
+        var kdmidId = command.Parameters[BotCommandParametersKdmidIdKey].FromJson<KdmidId>();
+        var chosenResult = command.Parameters[BotCommandParametersChosenResultKey].FromJson<ChosenDateResult>();
 
         try
         {
@@ -160,8 +155,8 @@ public sealed class KdmidResponseService(
     }
     public async Task SendAvailableDates(Chat chat, Command command, CancellationToken cToken)
     {
-        var city = command.Parameters[CityKey].FromJson<City>();
-        var kdmidId = command.Parameters[KdmidIdKey].FromJson<KdmidId>();
+        var city = command.Parameters[BotCommandParametersCityKey].FromJson<City>();
+        var kdmidId = command.Parameters[BotCommandParametersKdmidIdKey].FromJson<KdmidId>();
 
         AvailableDatesResult availableDatesResult;
 
@@ -187,9 +182,9 @@ public sealed class KdmidResponseService(
             var chosenResult = new ChosenDateResult(availableDatesResult.FormData, date.Key, date.Value);
             var nextCommand = await _botCommandsStore.Create(chat.Id, KdmidBotCommands.SendConfirmResult, new()
             {
-                { CityKey, command.Parameters[CityKey] },
-                { KdmidIdKey, command.Parameters[KdmidIdKey] },
-                { ChosenResultKey, chosenResult.ToJson() }
+                { BotCommandParametersCityKey, command.Parameters[BotCommandParametersCityKey] },
+                { BotCommandParametersKdmidIdKey, command.Parameters[BotCommandParametersKdmidIdKey] },
+                { BotCommandParametersChosenResultKey, chosenResult.ToJson() }
             }, cToken);
 
             buttonsData.Add(nextCommand.Id.ToString(), date.Value);
@@ -238,7 +233,7 @@ public sealed class KdmidResponseService(
 
     private async Task AddAttempt(string chatId, Command command, City city, CancellationToken cToken)
     {
-        var attempts = command.Parameters.TryGetValue(AttemptsKey, out var attemptsValue)
+        var attempts = command.Parameters.TryGetValue(BotCommandParametersAttemptsKey, out var attemptsValue)
             ? attemptsValue.FromJson<Attempts>()
             : null;
 
@@ -247,7 +242,7 @@ public sealed class KdmidResponseService(
         if (attempts is null)
         {
             attempts = new Attempts(day, 1);
-            command.Parameters.Add(AttemptsKey, attempts.ToJson());
+            command.Parameters.Add(BotCommandParametersAttemptsKey, attempts.ToJson());
         }
         else
         {
@@ -265,7 +260,7 @@ public sealed class KdmidResponseService(
 
             attempts = new Attempts(attemptsDay, attemptsCount);
 
-            command.Parameters[AttemptsKey] = attempts.ToJson();
+            command.Parameters[BotCommandParametersAttemptsKey] = attempts.ToJson();
         }
 
         await _botCommandsStore.Update(chatId, command.Id, command, cToken);

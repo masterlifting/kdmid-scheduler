@@ -1,6 +1,6 @@
 ﻿using KdmidScheduler.Abstractions.Interfaces.Core.Services;
 using KdmidScheduler.Abstractions.Interfaces.Infrastructure.Services;
-using KdmidScheduler.Abstractions.Models.Core.v1;
+using KdmidScheduler.Abstractions.Models.Core.v1.Kdmid;
 
 namespace KdmidScheduler.Services;
 
@@ -13,23 +13,32 @@ public sealed class KdmidRequestService(
     private readonly IKdmidCaptcha _captchaService = captchaService;
     private readonly IKdmidHtmlDocument _htmlDocument = htmlDocument;
 
-    public City[] GetSupportedCities(CancellationToken cToken) => new City[]
+    private static readonly Dictionary<string, City> _supportedCities = new(StringComparer.OrdinalIgnoreCase)
     {
-        new("belgrad", "Belgrade", +1),
-        new("budapest", "Budapest", +1),
-        new("paris", "Paris", +1),
-        new("bucharest", "Bucharest", +2),
-        new("riga", "Riga", +2),
-        new("sarajevo", "Sarajevo", +1),
-        new("tirana", "Tirana", +1),
-        new("ljubljana", "Ljubljana", +1),
-        new("berlin", "Berlin", +1),
-        new("bern", "Bern", +1),
-        new("brussels", "Brussels", +1),
-        new("dublin", "Dublin", 0),
-        new("helsinki", "Helsinki", +2),
-        new("hague", "Hague", +1),
+        { "belgrad", new("belgrad", "Belgrade", +1) },
+        { "budapest", new("budapest", "Budapest", +1) },
+        { "paris", new("paris", "Paris", +1) },
+        { "bucharest", new("bucharest", "Bucharest", +2) },
+        { "riga", new("riga", "Riga", +2) },
+        { "sarajevo", new("sarajevo", "Sarajevo", +1) },
+        { "tirana", new("tirana", "Tirana", +1) },
+        { "ljubljana", new("ljubljana", "Ljubljana", +1) },
+        { "berlin", new("berlin", "Berlin", +1) },
+        { "bern", new("bern", "Bern", +1) },
+        { "brussels", new("brussels", "Brussels", +1) },
+        { "dublin", new("dublin", "Dublin", 0) },
+        { "helsinki", new("helsinki", "Helsinki", +2) },
+        { "hague", new("hague", "Hague", +1) },
     };
+
+    public City[] GetSupportedCities(CancellationToken cToken) => _supportedCities.Values.ToArray();
+    public City GetSupportedCity(string cityCode, CancellationToken cToken)
+    {
+        if (!_supportedCities.TryGetValue(cityCode, out var city))
+            throw new InvalidOperationException($"The city '{cityCode}' is not supported.");
+
+        return city;
+    }
     public async Task<AvailableDatesResult> GetAvailableDates(City city, KdmidId kdmidId, CancellationToken cToken)
     {
         var startPageResponse = await _httpClient.GetStartPage(city, kdmidId, cToken);

@@ -1,4 +1,4 @@
-﻿using KdmidScheduler.Abstractions.Models.Core.v1;
+﻿using KdmidScheduler.Abstractions.Models.Core.v1.Kdmid;
 
 namespace KdmidScheduler.Abstractions.Interfaces.Infrastructure.Services;
 
