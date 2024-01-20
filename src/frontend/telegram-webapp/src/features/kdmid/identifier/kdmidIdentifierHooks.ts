@@ -18,7 +18,7 @@ export const useKdmidIdentifier = (chatId: string, cityCode: string) => {
 
   const { data: getCommandsResponse, isError: isGetCommandsError } = useGetCommandsQuery({
     chatId: chatId,
-    names: 'sendAvailableDates',
+    names: 'addToProcess',
     cityCode: cityCode,
   });
 
@@ -33,7 +33,6 @@ export const useKdmidIdentifier = (chatId: string, cityCode: string) => {
       for (const item of getCommandsResponse) {
         const command: ICommand = {
           id: item.id,
-          name: item.name,
           identifier: {
             id: item.kdmidId,
             cd: item.kdmidCd,
@@ -56,7 +55,6 @@ export const useKdmidIdentifier = (chatId: string, cityCode: string) => {
     identifierData.commandsMap.set(key, {
       key: key,
       command: {
-        name: 'addAvailableEmbassy',
         identifier: {
           id: '',
           cd: '',
@@ -89,7 +87,6 @@ export const useKdmidIdentifier = (chatId: string, cityCode: string) => {
         chatId,
         commandId: command.id,
         command: {
-          name: command.name,
           cityCode,
           kdmidId: command.identifier.id,
           kdmidCd: command.identifier.cd,
@@ -107,7 +104,6 @@ export const useKdmidIdentifier = (chatId: string, cityCode: string) => {
       createCommand({
         chatId,
         command: {
-          name: 'addToProcess',
           cityCode,
           kdmidId: command.identifier.id,
           kdmidCd: command.identifier.cd,

@@ -9,18 +9,21 @@ using Net.Shared.Extensions.Logging;
 using Net.Shared.Extensions.Serialization.Json;
 
 using static KdmidScheduler.Constants;
+using Net.Shared.Bots.Abstractions.Models.Bot;
 
 namespace KdmidScheduler.Services;
 
 public class KdmidBotApi(
     ILogger<KdmidBotApi> logger,
     IBotClient cotClient,
+    IBotResponse botResponse,
     IBotCommandsStore botCommandsStore,
     IKdmidRequestService kdmidRequestService
     ) : IKdmidBotApi
 {
     private readonly ILogger _log = logger;
     private readonly IBotClient _botClient = cotClient;
+    private readonly IBotResponse _botResponse = botResponse;
     private readonly IBotCommandsStore _botCommandsStore = botCommandsStore;
     private readonly IKdmidRequestService _kdmidRequestService = kdmidRequestService;
 
@@ -72,7 +75,7 @@ public class KdmidBotApi(
             ? attemptsStr.FromJson<Attempts>().Count
             : (byte)0;
 
-        return new CommandGetDto(commandId, command.Name, city.Name, kdmidId.Id, kdmidId.Cd, kdmidId.Ems, attempts);
+        return new CommandGetDto(commandId, city.Name, kdmidId.Id, kdmidId.Cd, kdmidId.Ems, attempts);
     }
     public async Task<CommandGetDto[]> GetCommands(string chatId, string? names, string? cityCode, CancellationToken cToken)
     {
@@ -105,7 +108,7 @@ public class KdmidBotApi(
                     ? attemptsStr.FromJson<Attempts>().Count
                     : (byte)0;
 
-                return new CommandGetDto(x.Id.ToString(), x.Name, city.Name, kdmidId.Id, kdmidId.Cd, kdmidId.Ems, attempts);
+                return new CommandGetDto(x.Id.ToString(), city.Name, kdmidId.Id, kdmidId.Cd, kdmidId.Ems, attempts);
             })
             .ToArray();
     }
@@ -126,22 +129,24 @@ public class KdmidBotApi(
         kdmidId.Validate();
 
         var parameters = new Dictionary<string, string>
-            {
-                { BotCommandParametersCityKey, city.ToJson() },
-                { BotCommandParametersKdmidIdKey, kdmidId.ToJson() }
-            };
+        {
+            { BotCommandParametersCityKey, city.ToJson() },
+            { BotCommandParametersKdmidIdKey, kdmidId.ToJson() }
+        };
 
-        var result = await _botCommandsStore.Create(chatId, command.Name, parameters, cToken);
+        var botCommand =new Command(Guid.NewGuid(), Abstractions.Constants.KdmidBotCommands.CreateCommand, parameters);
 
-        return result.Id.ToString();
+        await _botResponse.Create(chatId, botCommand, cToken);
+
+        return botCommand.Id.ToString();
     }
-    public Task UpdateCommand(string chatId, string commandId, CommandSetDto command, CancellationToken cToken)
+    public async Task UpdateCommand(string chatId, string commandId, CommandSetDto command, CancellationToken cToken)
     {
         var commandIdGuid = Guid.Parse(commandId);
 
-        var storedCommand = _botCommandsStore.Get(chatId, commandIdGuid, cToken).Result;
+        var botCommand = _botCommandsStore.Get(chatId, commandIdGuid, cToken).Result;
 
-        storedCommand.Name = command.Name;
+        botCommand.Name = Abstractions.Constants.KdmidBotCommands.UpdateCommand;
 
         var city = _kdmidRequestService.GetSupportedCity(command.CityCode, cToken);
 
@@ -154,23 +159,25 @@ public class KdmidBotApi(
 
         kdmidId.Validate();
 
-        if (storedCommand.Parameters.ContainsKey(BotCommandParametersKdmidIdKey))
-            storedCommand.Parameters[BotCommandParametersKdmidIdKey] = kdmidId.ToJson();
+        if (botCommand.Parameters.ContainsKey(BotCommandParametersKdmidIdKey))
+            botCommand.Parameters[BotCommandParametersKdmidIdKey] = kdmidId.ToJson();
         else
-            storedCommand.Parameters.Add(BotCommandParametersKdmidIdKey, kdmidId.ToJson());
+            botCommand.Parameters.Add(BotCommandParametersKdmidIdKey, kdmidId.ToJson());
 
-        if (storedCommand.Parameters.ContainsKey(BotCommandParametersCityKey))
-            storedCommand.Parameters[BotCommandParametersCityKey] = city.ToJson();
+        if (botCommand.Parameters.ContainsKey(BotCommandParametersCityKey))
+            botCommand.Parameters[BotCommandParametersCityKey] = city.ToJson();
         else
-            storedCommand.Parameters.Add(BotCommandParametersCityKey, city.ToJson());
+            botCommand.Parameters.Add(BotCommandParametersCityKey, city.ToJson());
 
-        return _botCommandsStore.Update(chatId, commandIdGuid, storedCommand, cToken);
+        await _botResponse.Create(chatId, botCommand, cToken);
     }
-    public Task DeleteCommand(string chatId, string commandId, CancellationToken cToken)
+    public async Task DeleteCommand(string chatId, string commandId, CancellationToken cToken)
     {
         var commandIdGuid = Guid.Parse(commandId);
 
-        return _botCommandsStore.Delete(chatId, commandIdGuid, cToken);
+        var botCommand = await _botCommandsStore.Get(chatId, commandIdGuid, cToken);
+
+        await _botResponse.Create(chatId, new Command(commandIdGuid, Abstractions.Constants.KdmidBotCommands.DeleteCommand, botCommand.Parameters), cToken);
     }
     #endregion
 }

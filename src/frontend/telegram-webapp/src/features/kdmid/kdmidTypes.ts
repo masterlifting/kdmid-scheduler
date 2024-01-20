@@ -7,7 +7,6 @@ export type CityGetDto = {
 
 export type CommandGetDto = {
   id: string;
-  name: string;
   kdmidId: string;
   kdmidCd: string;
   kdmidEms?: string;
@@ -15,7 +14,6 @@ export type CommandGetDto = {
 };
 
 export type CommandSetDto = {
-  name: string;
   cityCode: string;
   kdmidId: string;
   kdmidCd: string;
@@ -58,7 +56,6 @@ export interface IKdmidId {
 
 export interface ICommand {
   id?: string;
-  name: string;
   identifier: IKdmidId;
 }
 
