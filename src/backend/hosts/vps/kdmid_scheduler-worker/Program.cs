@@ -1,7 +1,11 @@
-using KdmidScheduler.Worker;
+﻿using KdmidScheduler.Worker.KdmidAvailableDates;
+
+using Net.Shared.Background;
 
 var builder = Host.CreateApplicationBuilder(args);
-builder.Services.AddHostedService<Worker>();
 
-var host = builder.Build();
-host.Run();
+builder.Services.AddBackgroundService<KdmidAvailableDatesBackgroundService>();
+
+builder
+    .Build()
+    .Run();
