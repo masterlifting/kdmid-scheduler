@@ -12,7 +12,7 @@ namespace KdmidScheduler.Worker.KdmidAvailableDatesBackground;
 
 public sealed class KdmidAvailableDatesStepHandler(
     ILogger logger,
-    IKdmidResponseService kdmidResponseService) : IBackgroundTaskStep<KdmidAvailableDates>
+    IKdmidResponseService kdmidResponseService) : IBackgroundTaskStepHandler<KdmidAvailableDates>
 {
     private readonly ILogger _logger = logger;
     private readonly IKdmidResponseService _kdmidResponseService = kdmidResponseService;
@@ -54,7 +54,7 @@ public sealed class KdmidAvailableDatesStepHandler(
                     return new(data);
                 }
             default:
-                throw new NotSupportedException($"The step '{step.Name}' of the task '{KdmidAvailableDatesTask.Name}' was not recognized.");
+                throw new NotSupportedException($"The step '{step.Name}' of the task '{KdmidAvailableDatesTaskRunner.TaskName}' was not recognized.");
         }
     }
 }

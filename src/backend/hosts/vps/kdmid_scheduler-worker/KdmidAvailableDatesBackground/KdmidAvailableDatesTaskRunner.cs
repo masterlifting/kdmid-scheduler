@@ -11,26 +11,29 @@ using Net.Shared.Persistence.Abstractions.Interfaces.Repositories.NoSql;
 
 namespace KdmidScheduler.Worker.KdmidAvailableDatesBackground;
 
-public sealed class KdmidAvailableDatesTask(
+public sealed class KdmidAvailableDatesTaskRunner(
     ILogger logger,
     IOptions<BackgroundTaskSettings> options,
     IPersistenceNoSqlProcessRepository processRepository,
     IKdmidResponseService kdmidResponseService
-    ) : BackgroundTask<KdmidAvailableDates>(logger)
+    ) : BackgroundTaskRunner<KdmidAvailableDates>(logger)
 {
-    public const string Name = "GetAvailableDates";
-    private readonly BackgroundTaskSettings _backgroundTaskSettings = options.Value;
+    public const string TaskName = "GetAvailableDates";
 
-    protected override async Task<IPersistentProcessStep[]> GetSteps(CancellationToken cToken) =>
-        await processRepository.GetProcessSteps<KdmidAvailableDatesSteps>(cToken);
-    protected override IBackgroundTaskStep<KdmidAvailableDates> RegisterStepHandler() => 
+    private readonly ILogger _logger = logger;
+    private readonly BackgroundTaskSettings _settings = options.Value;
+    private readonly IPersistenceNoSqlProcessRepository _processRepository = processRepository;
+
+    protected override IBackgroundTaskStepHandler<KdmidAvailableDates> RegisterStepHandler() =>
         new KdmidAvailableDatesStepHandler(
-            logger,
+            _logger,
             kdmidResponseService);
+    protected override async Task<IPersistentProcessStep[]> GetSteps(CancellationToken cToken) =>
+        await _processRepository.GetProcessSteps<KdmidAvailableDatesSteps>(cToken);
     protected override Task<KdmidAvailableDates[]> GetProcessableData(IPersistentProcessStep step, int limit, CancellationToken cToken) =>
-        processRepository.GetProcessableData<KdmidAvailableDates>(_backgroundTaskSettings.HostId, step, limit, cToken);
+        _processRepository.GetProcessableData<KdmidAvailableDates>(_settings.HostId, step, limit, cToken);
     protected override Task<KdmidAvailableDates[]> GetUnprocessedData(IPersistentProcessStep step, int limit, DateTime updateTime, int maxAttempts, CancellationToken cToken) =>
-        processRepository.GetUnprocessedData<KdmidAvailableDates>(_backgroundTaskSettings.HostId, step, limit, updateTime, maxAttempts, cToken);
+        _processRepository.GetUnprocessedData<KdmidAvailableDates>(_settings.HostId, step, limit, updateTime, maxAttempts, cToken);
     protected override Task SaveData(IPersistentProcessStep currentStep, IPersistentProcessStep? nextStep, IEnumerable<KdmidAvailableDates> data, CancellationToken cToken) =>
-        processRepository.SetProcessedData(_backgroundTaskSettings.HostId, currentStep, nextStep, data, cToken);
+        _processRepository.SetProcessedData(_settings.HostId, currentStep, nextStep, data, cToken);
 }
