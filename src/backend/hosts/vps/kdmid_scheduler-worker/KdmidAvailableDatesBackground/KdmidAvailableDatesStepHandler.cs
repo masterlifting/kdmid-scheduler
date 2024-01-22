@@ -26,9 +26,9 @@ public sealed class KdmidAvailableDatesStepHandler(
         {
             case (int)KdmidProcessSteps.CheckAvailableDates:
                 {
-                    const int MaxAvailableMinutesBetweenRequests = 20;
+                    const int MaxAvailableMinutesBetweenRequests = 20 - 3;
                     var dataCount = data.Count();
-                    
+
                     var periodMinutes = MaxAvailableMinutesBetweenRequests / dataCount;
 
                     var period = TimeSpan.FromMinutes(periodMinutes);

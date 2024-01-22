@@ -5,6 +5,7 @@ version: '3.8'
 services:
   mongodb_1:
     image: mongo:latest
+    hostname: mongodb_1
     container_name: mongodb_1
     volumes:
       - mongodb_1-data:/data/db
@@ -16,7 +17,6 @@ services:
     networks:
       - kdmid-scheduler-network
     restart: always
-
   mongodb_2:
     image: mongo:latest
     container_name: mongodb_2
@@ -30,7 +30,6 @@ services:
     networks:
       - kdmid-scheduler-network
     restart: always
-
   mongodb_3:
     image: mongo:latest
     container_name: mongodb_3
@@ -103,7 +102,7 @@ services:
       - Background__Tasks__GetAvailableDates__Schedule__WorkTime=00:20:00
       - Background__Tasks__GetAvailableDates__Schedule__WorkDays=1,2,3,4,5
       - Background__Tasks__GetAvailableDates__Schedule__TimeStart=08:00:00
-      - Background__Tasks__GetAvailableDates__Schedule__TimeStop=19:00:00
+      - Background__Tasks__GetAvailableDates__Schedule__TimeStop=21:00:00
     networks:
       - kdmid-scheduler-network
     depends_on:
