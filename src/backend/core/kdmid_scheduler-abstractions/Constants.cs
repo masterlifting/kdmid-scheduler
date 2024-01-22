@@ -13,8 +13,8 @@ public static class Constants
         public const string SendAvailableDates = "sendAvailableDates";
         public const string SendConfirmResult = "sendConfirmResult";
     }
-    public enum ProcessSteps
+    public enum KdmidProcessSteps
     {
-        Process = 1
+        CheckAvailableDates = 1
     }
 }

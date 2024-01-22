@@ -13,7 +13,7 @@ public sealed class KdmidRequestService(
     private readonly IKdmidCaptcha _captchaService = captchaService;
     private readonly IKdmidHtmlDocument _htmlDocument = htmlDocument;
 
-    private static readonly Dictionary<string, City> _supportedCities = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly Dictionary<string, City> SupportedCities = new(StringComparer.OrdinalIgnoreCase)
     {
         { "belgrad", new("belgrad", "Belgrade", +1) },
         { "budapest", new("budapest", "Budapest", +1) },
@@ -31,10 +31,10 @@ public sealed class KdmidRequestService(
         { "hague", new("hague", "Hague", +1) },
     };
 
-    public City[] GetSupportedCities(CancellationToken cToken) => _supportedCities.Values.ToArray();
+    public City[] GetSupportedCities(CancellationToken cToken) => SupportedCities.Values.OrderBy(x => x.Name).ToArray();
     public City GetSupportedCity(string cityCode, CancellationToken cToken)
     {
-        if (!_supportedCities.TryGetValue(cityCode, out var city))
+        if (!SupportedCities.TryGetValue(cityCode, out var city))
             throw new InvalidOperationException($"The city '{cityCode}' is not supported.");
 
         return city;

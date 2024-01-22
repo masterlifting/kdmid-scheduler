@@ -1,6 +1,6 @@
 ﻿using KdmidScheduler.Abstractions.Interfaces.Core.Services;
 using KdmidScheduler.Abstractions.Models.Core.v1.Kdmid;
-using KdmidScheduler.Abstractions.Models.Core.v1.BotApiDto;
+using KdmidScheduler.Abstractions.Models.Core.v1.KdmidApi;
 
 using Microsoft.Extensions.Logging;
 

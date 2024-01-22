@@ -1,4 +1,4 @@
-﻿using KdmidScheduler.Abstractions.Models.Core.v1.BotApiDto;
+﻿using KdmidScheduler.Abstractions.Models.Core.v1.KdmidApi;
 
 namespace KdmidScheduler.Abstractions.Interfaces.Core.Services;
 

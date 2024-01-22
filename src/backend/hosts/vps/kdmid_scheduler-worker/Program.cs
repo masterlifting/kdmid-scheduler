@@ -1,10 +1,16 @@
-﻿using KdmidScheduler.Worker.KdmidAvailableDates;
+﻿using KdmidScheduler;
+using KdmidScheduler.Infrastructure;
+using KdmidScheduler.Worker.KdmidAvailableDatesBackground;
 
 using Net.Shared.Background;
 
 var builder = Host.CreateApplicationBuilder(args);
 
-builder.Services.AddBackgroundService<KdmidAvailableDatesBackgroundService>();
+builder.Services
+    .AddKdmidInfrastructure()
+    .AddKdmidVpsInfrastructure()
+    .AddKdmidCore()
+    .AddBackgroundService<KdmidAvailableDatesBackgroundService>();
 
 builder
     .Build()
