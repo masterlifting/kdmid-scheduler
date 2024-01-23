@@ -176,11 +176,17 @@ public sealed class KdmidResponseService(
         var city = command.Parameters[BotCommandParametersCityKey].FromJson<City>();
         var kdmidId = command.Parameters[BotCommandParametersKdmidIdKey].FromJson<KdmidId>();
 
-        AvailableDatesResult availableDatesResult;
+        try
+        {
+            await TryAddAttempt(chat.Id, command, city, kdmidId, cToken);
+        }
+        catch (Exception exception)
+        {
+            _log.ErrorCompact(exception);
+            return;
+        }
 
-        await AddAttempt(chat.Id, command, city, cToken);
-
-        availableDatesResult = await _kdmidRequestService.GetAvailableDates(city, kdmidId, cToken);
+        var availableDatesResult = await _kdmidRequestService.GetAvailableDates(city, kdmidId, cToken);
 
         var buttonsData = new Dictionary<string, string>(availableDatesResult.Dates.Count);
 
@@ -215,9 +221,7 @@ public sealed class KdmidResponseService(
         try
         {
             await _kdmidRequestService.ConfirmChosenDate(city, kdmidId, chosenResult, cToken);
-
-            var messageArgs = new MessageEventArgs(chat, new("The date is confirmed."));
-            await _botClient.SendMessage(messageArgs, cToken);
+            await _botClient.SendMessage(new(chat, new("The date is confirmed.")), cToken);
         }
         catch
         {
@@ -260,7 +264,7 @@ public sealed class KdmidResponseService(
         return _botClient.SendMessage(targetChatId, new(text), cToken);
     }
 
-    private async Task AddAttempt(string chatId, Command command, City city, CancellationToken cToken)
+    private async Task TryAddAttempt(string chatId, Command command, City city, KdmidId kdmidId, CancellationToken cToken)
     {
         var attempts = command.Parameters.TryGetValue(BotCommandParametersAttemptsKey, out var attemptsValue)
             ? attemptsValue.FromJson<Attempts>()
@@ -276,7 +280,7 @@ public sealed class KdmidResponseService(
         else
         {
             if (attempts.Day == day && attempts.Count >= AttemptsLimit)
-                throw new UserInvalidOperationException($"You have reached the limit of attempts per day ({AttemptsLimit}) for the city {city.Name}.");
+                throw new InvalidOperationException($"Attempts limit for {city.Name} with Kdmid.Id {kdmidId.Id} was reached for {chatId}.");
 
             var attemptsDay = attempts.Day;
             var attemptsCount = (byte)(attempts.Count + 1);

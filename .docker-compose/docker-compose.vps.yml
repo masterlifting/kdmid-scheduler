@@ -5,7 +5,6 @@ version: '3.8'
 services:
   mongodb_1:
     image: mongo:latest
-    hostname: mongodb_1
     container_name: mongodb_1
     volumes:
       - mongodb_1-data:/data/db
@@ -44,67 +43,52 @@ services:
       - kdmid-scheduler-network
     restart: always
 
-  backend:
-    image: kdmid-scheduler-backend
-    container_name: backend
+  backend-api:
+    image: kdmid-scheduler-backend-api
+    container_name: backend-api
     build:
       context: ../src/backend
       dockerfile: ./hosts/vps/kdmid_scheduler-api/Dockerfile
     env_file:
       - .env
     environment:
-      - Logging__LogLevel__Default=Debug
-      - MongoDbConnection__Host=mongodb_1
       - MongoDbConnection__User=${MONGODBCONNECTION_USERNAME}
       - MongoDbConnection__Password=${MONGODBCONNECTION_PASSWORD}
       - AntiCaptchaConnection__ApiKey=${ANTICAPTCHACONNECTION_APIKEY}
       - BotConnection__Token=${BOTCONNECTION_TOKEN}
       - BotConnection__AdminId=${BOTCONNECTION_ADMINID}
-      - Kdmid__WebAppUrl=https://kdmidweb.masterlifting.guru
     networks:
       - kdmid-scheduler-network
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.routers.backend.rule=Host(`kdmidapi.masterlifting.guru`)'
-      - 'traefik.http.routers.backend.entrypoints=websecure'
-      - 'traefik.http.routers.backend.tls.certresolver=lets-encrypt'
-      - 'traefik.http.services.backend.loadbalancer.server.port=8080'
+      - 'traefik.http.routers.backend-api.rule=Host(`kdmidapi.masterlifting.guru`)'
+      - 'traefik.http.routers.backend-api.entrypoints=websecure'
+      - 'traefik.http.routers.backend-api.tls.certresolver=lets-encrypt'
+      - 'traefik.http.services.backend-api.loadbalancer.server.port=8080'
     depends_on:
       - mongodb_1
       - mongodb_2
       - mongodb_3
     restart: always
 
-  worker:
-    image: kdmid-scheduler-worker
-    container_name: worker
+  backend-worker:
+    image: kdmid-scheduler-backend-worker
+    container_name: backend-worker
     build:
       context: ../src/backend
       dockerfile: ./hosts/vps/kdmid_scheduler-worker/Dockerfile
     env_file:
       - .env
     environment:
-      - Logging__LogLevel__Default=Debug
-      - MongoDbConnection__Host=mongodb_1
       - MongoDbConnection__User=${MONGODBCONNECTION_USERNAME}
       - MongoDbConnection__Password=${MONGODBCONNECTION_PASSWORD}
       - AntiCaptchaConnection__ApiKey=${ANTICAPTCHACONNECTION_APIKEY}
       - BotConnection__Token=${BOTCONNECTION_TOKEN}
       - BotConnection__AdminId=${BOTCONNECTION_ADMINID}
-      - Kdmid__WebAppUrl=https://kdmidweb.masterlifting.guru
-      - Background__HostId=9b43dad9-1023-4a29-af39-f4844383c404
-      - Background__Tasks__GetAvailableDates__IsInfinite=true
-      - Background__Tasks__GetAvailableDates__ChunkSize=1
-      - Background__Tasks__GetAvailableDates__Steps=CheckAvailableDates
-      - Background__Tasks__GetAvailableDates__Schedule__IsEnable=true
-      - Background__Tasks__GetAvailableDates__Schedule__WorkTime=00:07:00
-      - Background__Tasks__GetAvailableDates__Schedule__WorkDays=1,2,3,4,5
-      - Background__Tasks__GetAvailableDates__Schedule__TimeStart=08:00:00
-      - Background__Tasks__GetAvailableDates__Schedule__TimeStop=16:00:00
     networks:
       - kdmid-scheduler-network
     depends_on:
-      - backend
+      - backend-api
     restart: always
 
   frontend:
@@ -123,7 +107,7 @@ services:
       - 'traefik.http.routers.frontend.entrypoints=websecure'
       - 'traefik.http.routers.frontend.tls.certresolver=lets-encrypt'
     depends_on:
-      - backend
+      - backend-api
     restart: always
 
   traefik:
