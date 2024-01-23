@@ -10,7 +10,6 @@ using Net.Shared.Abstractions.Models.Exceptions;
 using Net.Shared.Background.Abstractions.Models.Settings;
 using Net.Shared.Bots.Abstractions.Interfaces;
 using Net.Shared.Bots.Abstractions.Models.Bot;
-using Net.Shared.Bots.Abstractions.Models.Exceptions;
 using Net.Shared.Bots.Abstractions.Models.Response;
 using Net.Shared.Extensions.Logging;
 using Net.Shared.Extensions.Serialization.Json;
@@ -179,20 +178,9 @@ public sealed class KdmidResponseService(
 
         AvailableDatesResult availableDatesResult;
 
-        try
-        {
-            await AddAttempt(chat.Id, command, city, cToken);
+        await AddAttempt(chat.Id, command, city, cToken);
 
-            availableDatesResult = await _kdmidRequestService.GetAvailableDates(city, kdmidId, cToken);
-        }
-        catch (UserInvalidOperationException exception)
-        {
-            throw new BotUserInvalidOperationException(exception.Message);
-        }
-        catch
-        {
-            throw;
-        }
+        availableDatesResult = await _kdmidRequestService.GetAvailableDates(city, kdmidId, cToken);
 
         var buttonsData = new Dictionary<string, string>(availableDatesResult.Dates.Count);
 
@@ -230,10 +218,6 @@ public sealed class KdmidResponseService(
 
             var messageArgs = new MessageEventArgs(chat, new("The date is confirmed."));
             await _botClient.SendMessage(messageArgs, cToken);
-        }
-        catch (UserInvalidOperationException exception)
-        {
-            throw new BotUserInvalidOperationException(exception.Message);
         }
         catch
         {
@@ -292,7 +276,7 @@ public sealed class KdmidResponseService(
         else
         {
             if (attempts.Day == day && attempts.Count >= AttemptsLimit)
-                throw new BotUserInvalidOperationException($"You have reached the limit of attempts per day ({AttemptsLimit}) for the city {city.Name}.");
+                throw new UserInvalidOperationException($"You have reached the limit of attempts per day ({AttemptsLimit}) for the city {city.Name}.");
 
             var attemptsDay = attempts.Day;
             var attemptsCount = (byte)(attempts.Count + 1);

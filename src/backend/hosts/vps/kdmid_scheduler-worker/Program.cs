@@ -1,6 +1,7 @@
-﻿using KdmidScheduler;
+﻿using System.Reflection;
+
+using KdmidScheduler;
 using KdmidScheduler.Infrastructure;
-using KdmidScheduler.Worker.KdmidAvailableDatesBackground;
 
 using Net.Shared.Background;
 
@@ -10,7 +11,7 @@ builder.Services
     .AddKdmidInfrastructure()
     .AddKdmidVpsInfrastructure()
     .AddKdmidCore()
-    .AddBackgroundService<KdmidAvailableDatesBackgroundService>();
+    .AddBackgroundServices(Assembly.GetExecutingAssembly());
 
 builder
     .Build()

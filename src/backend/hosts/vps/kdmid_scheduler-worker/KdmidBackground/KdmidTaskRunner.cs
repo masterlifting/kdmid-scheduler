@@ -3,31 +3,28 @@ using KdmidScheduler.Abstractions.Models.Infrastructure.Persistence.MongoDb.v1;
 
 using Microsoft.Extensions.Options;
 
+using Net.Shared.Background;
 using Net.Shared.Background.Abstractions.Interfaces;
 using Net.Shared.Background.Abstractions.Models.Settings;
-using Net.Shared.Background.Core;
 using Net.Shared.Persistence.Abstractions.Interfaces.Entities.Catalogs;
 using Net.Shared.Persistence.Abstractions.Interfaces.Repositories.NoSql;
 
-namespace KdmidScheduler.Worker.KdmidAvailableDatesBackground;
+namespace KdmidScheduler.Worker.KdmidBackground;
 
-public sealed class KdmidAvailableDatesTaskRunner(
+public sealed class KdmidTaskRunner(
     ILogger logger,
     IOptions<BackgroundTaskSettings> options,
     IPersistenceNoSqlProcessRepository processRepository,
     IKdmidResponseService kdmidResponseService
     ) : BackgroundTaskRunner<KdmidAvailableDates>(logger)
 {
-    public const string TaskName = "GetAvailableDates";
+    public const string TaskName = "Kdmid";
 
-    private readonly ILogger _logger = logger;
     private readonly BackgroundTaskSettings _settings = options.Value;
     private readonly IPersistenceNoSqlProcessRepository _processRepository = processRepository;
 
-    protected override IBackgroundTaskStepHandler<KdmidAvailableDates> RegisterStepHandler() =>
-        new KdmidAvailableDatesStepHandler(
-            _logger,
-            kdmidResponseService);
+    protected override IBackgroundTaskStepHandler<KdmidAvailableDates> CreateStepHandler() =>
+        new KdmidTaskStepHandler(kdmidResponseService);
     protected override async Task<IPersistentProcessStep[]> GetSteps(CancellationToken cToken) =>
         await _processRepository.GetProcessSteps<KdmidAvailableDatesSteps>(cToken);
     protected override Task<KdmidAvailableDates[]> GetProcessableData(IPersistentProcessStep step, int limit, CancellationToken cToken) =>

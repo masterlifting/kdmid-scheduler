@@ -94,10 +94,10 @@ services:
       - Kdmid__WebAppUrl=https://kdmidweb.masterlifting.guru
       - Background__HostId=9b43dad9-1023-4a29-af39-f4844383c404
       - Background__Tasks__GetAvailableDates__IsInfinite=true
-      - Background__Tasks__GetAvailableDates__ChunkSize=6
+      - Background__Tasks__GetAvailableDates__ChunkSize=1
       - Background__Tasks__GetAvailableDates__Steps=CheckAvailableDates
       - Background__Tasks__GetAvailableDates__Schedule__IsEnable=true
-      - Background__Tasks__GetAvailableDates__Schedule__WorkTime=00:20:00
+      - Background__Tasks__GetAvailableDates__Schedule__WorkTime=00:07:00
       - Background__Tasks__GetAvailableDates__Schedule__WorkDays=1,2,3,4,5
       - Background__Tasks__GetAvailableDates__Schedule__TimeStart=08:00:00
       - Background__Tasks__GetAvailableDates__Schedule__TimeStop=19:00:00
