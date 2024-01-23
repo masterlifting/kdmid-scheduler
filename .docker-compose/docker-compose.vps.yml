@@ -100,7 +100,7 @@ services:
       - Background__Tasks__GetAvailableDates__Schedule__WorkTime=00:07:00
       - Background__Tasks__GetAvailableDates__Schedule__WorkDays=1,2,3,4,5
       - Background__Tasks__GetAvailableDates__Schedule__TimeStart=08:00:00
-      - Background__Tasks__GetAvailableDates__Schedule__TimeStop=16:30:00
+      - Background__Tasks__GetAvailableDates__Schedule__TimeStop=16:00:00
     networks:
       - kdmid-scheduler-network
     depends_on:
