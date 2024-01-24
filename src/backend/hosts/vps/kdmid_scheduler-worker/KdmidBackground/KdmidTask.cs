@@ -11,19 +11,19 @@ using Net.Shared.Persistence.Abstractions.Interfaces.Repositories.NoSql;
 
 namespace KdmidScheduler.Worker.KdmidBackground;
 
-public sealed class KdmidTaskRunner(
+public sealed class KdmidTask(
     ILogger logger,
     IOptions<BackgroundTaskSettings> options,
     IPersistenceNoSqlProcessRepository processRepository,
     IKdmidResponseService kdmidResponseService
     ) : BackgroundTaskRunner<KdmidAvailableDates>(logger)
 {
-    public const string TaskName = "Kdmid";
+    public const string Name = "Kdmid";
 
     private readonly BackgroundTaskSettings _settings = options.Value;
     private readonly IPersistenceNoSqlProcessRepository _processRepository = processRepository;
 
-    protected override IBackgroundTaskStepHandler<KdmidAvailableDates> CreateStepHandler() =>
+    protected override IBackgroundTaskStepHandler<KdmidAvailableDates> GetStepHandler() =>
         new KdmidTaskStepHandler(kdmidResponseService);
     protected override async Task<IPersistentProcessStep[]> GetSteps(CancellationToken cToken) =>
         await _processRepository.GetProcessSteps<KdmidAvailableDatesSteps>(cToken);

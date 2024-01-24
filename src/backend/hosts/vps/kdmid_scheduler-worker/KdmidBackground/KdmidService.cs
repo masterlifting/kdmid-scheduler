@@ -12,9 +12,9 @@ public sealed class KdmidService(
     ILogger<KdmidService> logger,
     IServiceScopeFactory scopeFactory,
     IBackgroundSettingsProvider settingsProvider
-    ) : Net.Shared.Background.BackgroundService(KdmidTaskRunner.TaskName, settingsProvider, logger)
+    ) : Net.Shared.Background.BackgroundService(KdmidTask.Name, settingsProvider, logger)
 {
-    protected override async Task StartTask(BackgroundTask task, CancellationToken cToken)
+    protected override async Task Start(BackgroundTask task, CancellationToken cToken)
     {
         await using var scope = scopeFactory.CreateAsyncScope();
 
@@ -22,8 +22,8 @@ public sealed class KdmidService(
         var repository = scope.ServiceProvider.GetRequiredService<IPersistenceNoSqlProcessRepository>();
         var kdmidResponseService = scope.ServiceProvider.GetRequiredService<IKdmidResponseService>();
 
-        var runner = new KdmidTaskRunner(logger, options, repository, kdmidResponseService);
+        var kdmidTask = new KdmidTask(logger, options, repository, kdmidResponseService);
 
-        await runner.Run(task, cToken);
+        await kdmidTask.Run(task, cToken);
     }
 }

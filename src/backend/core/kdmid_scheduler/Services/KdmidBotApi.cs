@@ -8,7 +8,7 @@ using Net.Shared.Bots.Abstractions.Interfaces;
 using Net.Shared.Extensions.Logging;
 using Net.Shared.Extensions.Serialization.Json;
 
-using static KdmidScheduler.Constants;
+using static KdmidScheduler.Abstractions.Constants;
 using Net.Shared.Bots.Abstractions.Models.Bot;
 
 namespace KdmidScheduler.Services;

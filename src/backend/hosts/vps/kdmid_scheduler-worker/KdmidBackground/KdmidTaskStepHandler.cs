@@ -13,7 +13,7 @@ public sealed class KdmidTaskStepHandler(IKdmidResponseService kdmidResponseServ
 {
     private readonly IKdmidResponseService _kdmidResponseService = kdmidResponseService;
 
-    public async Task<Result<KdmidAvailableDates>> Handle(IPersistentProcessStep step, IEnumerable<KdmidAvailableDates> data, CancellationToken cToken)
+    public async Task<Result<KdmidAvailableDates>> Handle(string taskName, IPersistentProcessStep step, IEnumerable<KdmidAvailableDates> data, CancellationToken cToken)
     {
         switch (step.Id)
         {
@@ -27,7 +27,7 @@ public sealed class KdmidTaskStepHandler(IKdmidResponseService kdmidResponseServ
                     return new(data);
                 }
             default:
-                throw new NotSupportedException($"Step '{step.Name}' of the task '{KdmidTaskRunner.TaskName}' was not recognized.");
+                throw new NotSupportedException($"Step '{step.Name}' of the task '{taskName}' is not supported.");
         }
     }
 }
