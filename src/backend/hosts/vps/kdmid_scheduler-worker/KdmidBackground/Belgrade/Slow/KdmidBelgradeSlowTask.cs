@@ -1,7 +1,6 @@
 ﻿using KdmidScheduler.Abstractions.Interfaces.Core.Services;
 using KdmidScheduler.Abstractions.Models.Core.v1.Kdmid;
 using KdmidScheduler.Abstractions.Models.Infrastructure.Persistence.MongoDb.v1;
-
 using Microsoft.Extensions.Options;
 
 using Net.Shared.Background;
@@ -11,16 +10,16 @@ using Net.Shared.Extensions.Serialization.Json;
 using Net.Shared.Persistence.Abstractions.Interfaces.Entities.Catalogs;
 using Net.Shared.Persistence.Abstractions.Interfaces.Repositories.NoSql;
 
-namespace KdmidScheduler.Worker.KdmidBackground;
+namespace KdmidScheduler.Worker.KdmidBackground.Belgrade.Slow;
 
-public sealed class KdmidBelgradeFastTask(
+public sealed class KdmidBelgradeSlowTask(
     ILogger logger,
     IOptions<BackgroundTaskSettings> options,
     IPersistenceNoSqlProcessRepository processRepository,
     IKdmidResponseService kdmidResponseService
     ) : BackgroundTaskRunner<KdmidAvailableDates>(logger)
 {
-    public const string TaskName = "KdmidBelgradeFast";
+    public const string Name = "KdmidBelgradeSlow";
 
     private readonly BackgroundTaskSettings _settings = options.Value;
     private readonly IPersistenceNoSqlProcessRepository _processRepository = processRepository;

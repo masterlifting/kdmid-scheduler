@@ -1,7 +1,6 @@
 ﻿using KdmidScheduler.Abstractions.Interfaces.Core.Services;
 using KdmidScheduler.Abstractions.Models.Core.v1.Kdmid;
 using KdmidScheduler.Abstractions.Models.Infrastructure.Persistence.MongoDb.v1;
-
 using Microsoft.Extensions.Options;
 
 using Net.Shared.Background;
@@ -11,16 +10,16 @@ using Net.Shared.Extensions.Serialization.Json;
 using Net.Shared.Persistence.Abstractions.Interfaces.Entities.Catalogs;
 using Net.Shared.Persistence.Abstractions.Interfaces.Repositories.NoSql;
 
-namespace KdmidScheduler.Worker.KdmidBackground;
+namespace KdmidScheduler.Worker.KdmidBackground.Belgrade.Fast;
 
-public sealed class KdmidBelgradeSlowTask(
+public sealed class KdmidBelgradeFastTask(
     ILogger logger,
     IOptions<BackgroundTaskSettings> options,
     IPersistenceNoSqlProcessRepository processRepository,
     IKdmidResponseService kdmidResponseService
     ) : BackgroundTaskRunner<KdmidAvailableDates>(logger)
 {
-    public const string TaskName = "KdmidBelgradeSlow";
+    public const string Name = "KdmidBelgradeFast";
 
     private readonly BackgroundTaskSettings _settings = options.Value;
     private readonly IPersistenceNoSqlProcessRepository _processRepository = processRepository;
@@ -35,7 +34,7 @@ public sealed class KdmidBelgradeSlowTask(
 
         return data.Where(x =>
         {
-            if(x.Command.Parameters.TryGetValue(Abstractions.Constants.BotCommandParametersCityKey, out var cityStr))
+            if (x.Command.Parameters.TryGetValue(Abstractions.Constants.BotCommandParametersCityKey, out var cityStr))
             {
                 var city = cityStr.FromJson<City>();
 
@@ -47,11 +46,11 @@ public sealed class KdmidBelgradeSlowTask(
     }
     protected override async Task<KdmidAvailableDates[]> GetUnprocessedData(IPersistentProcessStep step, int limit, DateTime updateTime, int maxAttempts, CancellationToken cToken)
     {
-        var data =  await _processRepository.GetUnprocessedData<KdmidAvailableDates>(_settings.HostId, step, limit, updateTime, maxAttempts, cToken);
+        var data = await _processRepository.GetUnprocessedData<KdmidAvailableDates>(_settings.HostId, step, limit, updateTime, maxAttempts, cToken);
 
         return data.Where(x =>
         {
-            if(x.Command.Parameters.TryGetValue(Abstractions.Constants.BotCommandParametersCityKey, out var cityStr))
+            if (x.Command.Parameters.TryGetValue(Abstractions.Constants.BotCommandParametersCityKey, out var cityStr))
             {
                 var city = cityStr.FromJson<City>();
 
