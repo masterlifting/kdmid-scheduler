@@ -11,7 +11,7 @@ builder.Services
     .AddKdmidInfrastructure()
     .AddKdmidVpsInfrastructure()
     .AddKdmidCore()
-    .AddBackgroundServices(Assembly.GetExecutingAssembly());
+    .AddBackgroundTasks(Assembly.GetExecutingAssembly());
 
 builder
     .Build()
