@@ -17,7 +17,7 @@ public sealed class KdmidAvailableDates : IPersistentNoSql, IPersistentProcess
     public int StepId { get; set; }
     public int Attempt { get; set; }
 
-    public DateTime Created { get; set; }
+    public DateTime Created { get; set; } = DateTime.UtcNow;
     public DateTime Updated { get; set; }
 
     public string? Error { get; set; }
