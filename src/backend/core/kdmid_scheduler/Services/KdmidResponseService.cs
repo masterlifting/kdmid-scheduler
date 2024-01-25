@@ -6,8 +6,7 @@ using KdmidScheduler.Abstractions.Models.Settings;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-using Net.Shared.Abstractions.Models.Exceptions;
-using Net.Shared.Background.Abstractions.Models.Settings;
+using Net.Shared.Abstractions.Models.Settings;
 using Net.Shared.Bots.Abstractions.Interfaces;
 using Net.Shared.Bots.Abstractions.Models.Bot;
 using Net.Shared.Bots.Abstractions.Models.Response;
@@ -17,7 +16,6 @@ using Net.Shared.Persistence.Abstractions.Interfaces.Repositories.NoSql;
 using Net.Shared.Persistence.Abstractions.Models.Contexts;
 
 using static KdmidScheduler.Abstractions.Constants;
-using static KdmidScheduler.Constants;
 using static Net.Shared.Bots.Abstractions.Constants;
 using static Net.Shared.Persistence.Abstractions.Constants.Enums;
 
@@ -25,7 +23,7 @@ namespace KdmidScheduler.Services;
 
 public sealed class KdmidResponseService(
     ILogger<KdmidResponseService> logger,
-    IOptions<BackgroundTaskSettings> backgroundOptions,
+    IOptions<HostSettings> hostOptions,
     IOptions<KdmidSettings> kdmidOptions,
     IBotClient botClient,
     IBotCommandsStore botCommandsStore,
@@ -35,7 +33,7 @@ public sealed class KdmidResponseService(
 {
     private readonly ILogger<KdmidResponseService> _log = logger;
 
-    private readonly BackgroundTaskSettings _backgroundTaskSettings = backgroundOptions.Value;
+    private readonly HostSettings _hostSettings = hostOptions.Value;
     private readonly KdmidSettings _kdmidSettings = kdmidOptions.Value;
 
     private readonly IBotClient _botClient = botClient;
@@ -116,7 +114,7 @@ public sealed class KdmidResponseService(
             Command = command,
             StepId = (int)KdmidProcessSteps.CheckAvailableDates,
             StatusId = (int)ProcessStatuses.Ready,
-            HostId = _backgroundTaskSettings.HostId
+            HostId = _hostSettings.Id
 
         }, cToken);
 

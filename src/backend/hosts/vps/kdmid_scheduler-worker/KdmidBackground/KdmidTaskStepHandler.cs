@@ -1,8 +1,10 @@
 ﻿using KdmidScheduler.Abstractions.Interfaces.Core.Services;
+using KdmidScheduler.Abstractions.Models.Core.v1.Kdmid;
 using KdmidScheduler.Abstractions.Models.Infrastructure.Persistence.MongoDb.v1;
 
 using Net.Shared.Abstractions.Models.Data;
 using Net.Shared.Background.Abstractions.Interfaces;
+using Net.Shared.Extensions.Serialization.Json;
 using Net.Shared.Persistence.Abstractions.Interfaces.Entities.Catalogs;
 
 using static KdmidScheduler.Abstractions.Constants;
@@ -30,4 +32,17 @@ public sealed class KdmidTaskStepHandler(IKdmidResponseService kdmidResponseServ
                 throw new NotSupportedException($"Step '{step.Name}' of the task '{taskName}' is not supported.");
         }
     }
+
+    public static KdmidAvailableDates[] Filter(IEnumerable<KdmidAvailableDates> data, string cityCode) => 
+        data.Where(x =>
+        {
+            if (x.Command.Parameters.TryGetValue(BotCommandParametersCityKey, out var cityStr))
+            {
+                var city = cityStr.FromJson<City>();
+
+                return city.Code == cityCode;
+            }
+            else
+                return false;
+        }).ToArray();
 }

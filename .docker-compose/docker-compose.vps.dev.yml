@@ -43,29 +43,29 @@ services:
       - kdmid-scheduler-network
     restart: always
 
-  # backend-api:
-  #   image: kdmid-scheduler-backend-api
-  #   container_name: backend-api
-  #   build:
-  #     context: ../src/backend
-  #     dockerfile: ./hosts/vps/kdmid_scheduler-api/Dockerfile
-  #   env_file:
-  #     - .env
-  #   environment:
-  #     - MongoDbConnection__User=${MONGODBCONNECTION_USERNAME}
-  #     - MongoDbConnection__Password=${MONGODBCONNECTION_PASSWORD}
-  #     - AntiCaptchaConnection__ApiKey=${ANTICAPTCHACONNECTION_APIKEY}
-  #     - BotConnection__Token=${BOTCONNECTION_TOKEN}
-  #     - BotConnection__AdminId=${BOTCONNECTION_ADMINID}
-  #   networks:
-  #     - kdmid-scheduler-network
-  #   ports:
-  #     - 8080:8080
-  #   depends_on:
-  #     - mongodb_1
-  #     - mongodb_2
-  #     - mongodb_3
-  #   restart: always
+  backend-api:
+    image: kdmid-scheduler-backend-api
+    container_name: backend-api
+    build:
+      context: ../src/backend
+      dockerfile: ./hosts/vps/kdmid_scheduler-api/Dockerfile
+    env_file:
+      - .env
+    environment:
+      - MongoDbConnection__User=${MONGODBCONNECTION_USERNAME}
+      - MongoDbConnection__Password=${MONGODBCONNECTION_PASSWORD}
+      - AntiCaptchaConnection__ApiKey=${ANTICAPTCHACONNECTION_APIKEY}
+      - BotConnection__Token=${BOTCONNECTION_TOKEN}
+      - BotConnection__AdminId=${BOTCONNECTION_ADMINID}
+    networks:
+      - kdmid-scheduler-network
+    ports:
+      - 8080:8080
+    depends_on:
+      - mongodb_1
+      - mongodb_2
+      - mongodb_3
+    restart: always
 
   # backend-worker:
   #   image: kdmid-scheduler-backend-worker
@@ -87,21 +87,21 @@ services:
   #     - backend-api
   #   restart: always
 
-  # frontend:
-  #   image: kdmid-scheduler-frontend
-  #   container_name: frontend
-  #   build:
-  #     context: ../src/frontend/telegram-webapp
-  #     dockerfile: ./Dockerfile
-  #   environment:
-  #     - REACT_APP_BACKEND_URL=http://localhost:8080
-  #   networks:
-  #     - kdmid-scheduler-network
-  #   ports:
-  #     - 3000:3000
-  #   depends_on:
-  #     - backend-api
-  #   restart: always
+  frontend:
+    image: kdmid-scheduler-frontend
+    container_name: frontend
+    build:
+      context: ../src/frontend/telegram-webapp
+      dockerfile: ./Dockerfile
+    environment:
+      - REACT_APP_BACKEND_URL=http://localhost:5000
+    networks:
+      - kdmid-scheduler-network
+    ports:
+      - 3000:3000
+    # depends_on:
+    #   - backend-api
+    restart: always
 
 networks:
   kdmid-scheduler-network: {}

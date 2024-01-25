@@ -1,23 +1,26 @@
 ﻿using KdmidScheduler.Abstractions.Interfaces.Core.Services;
-using KdmidScheduler.Abstractions.Models.Core.v1.Kdmid;
 using KdmidScheduler.Abstractions.Models.Infrastructure.Persistence.MongoDb.v1;
 
+using Microsoft.Extensions.Options;
+
+using Net.Shared.Abstractions.Models.Settings;
 using Net.Shared.Background;
 using Net.Shared.Background.Abstractions.Interfaces;
-using Net.Shared.Extensions.Serialization.Json;
 using Net.Shared.Persistence.Abstractions.Interfaces.Entities.Catalogs;
 using Net.Shared.Persistence.Abstractions.Interfaces.Repositories.NoSql;
 
-namespace KdmidScheduler.Worker.KdmidBackground;
+namespace KdmidScheduler.Worker.KdmidBackground.Tasks;
 
-public sealed class KdmidBelgradeTask(
-    ILogger<KdmidBelgradeTask> logger,
+public sealed class KdmidParisTask(
+    ILogger<KdmidParisTask> logger,
+    IOptions<HostSettings> hostOptions,
     IBackgroundSettingsProvider settingsProvider,
     IServiceScopeFactory serviceScopeFactory
-    ) : BackgroundTask<KdmidAvailableDates>("KdmidBelgrade", settingsProvider, logger)
+    ) : BackgroundTask<KdmidAvailableDates>("Paris", settingsProvider, logger)
 {
     private readonly IServiceScopeFactory _serviceScopeFactory = serviceScopeFactory;
-    
+    private readonly Guid _hostId = hostOptions.Value.Id;
+
     protected override IBackgroundTaskStepHandler<KdmidAvailableDates> GetStepHandler()
     {
         using var scope = _serviceScopeFactory.CreateScope();
@@ -34,45 +37,25 @@ public sealed class KdmidBelgradeTask(
     {
         await using var scope = _serviceScopeFactory.CreateAsyncScope();
         var processRepository = scope.ServiceProvider.GetRequiredService<IPersistenceNoSqlProcessRepository>();
-        
-        var data = await processRepository.GetProcessableData<KdmidAvailableDates>(TaskSettings.HostId, step, limit, cToken);
 
-        return data.Where(x =>
-        {
-            if (x.Command.Parameters.TryGetValue(Abstractions.Constants.BotCommandParametersCityKey, out var cityStr))
-            {
-                var city = cityStr.FromJson<City>();
+        var data = await processRepository.GetProcessableData<KdmidAvailableDates>(_hostId, step, limit, cToken);
 
-                return city.Code == "belgrad";
-            }
-            else
-                return false;
-        }).ToArray();
+        return KdmidTaskStepHandler.Filter(data, "paris");
     }
     protected override async Task<KdmidAvailableDates[]> GetUnprocessedData(IPersistentProcessStep step, int limit, DateTime updateTime, int maxAttempts, CancellationToken cToken)
     {
         await using var scope = _serviceScopeFactory.CreateAsyncScope();
         var processRepository = scope.ServiceProvider.GetRequiredService<IPersistenceNoSqlProcessRepository>();
 
-        var data = await processRepository.GetUnprocessedData<KdmidAvailableDates>(TaskSettings.HostId, step, limit, updateTime, maxAttempts, cToken);
+        var data = await processRepository.GetUnprocessedData<KdmidAvailableDates>(_hostId, step, limit, updateTime, maxAttempts, cToken);
 
-        return data.Where(x =>
-        {
-            if (x.Command.Parameters.TryGetValue(Abstractions.Constants.BotCommandParametersCityKey, out var cityStr))
-            {
-                var city = cityStr.FromJson<City>();
-
-                return city.Code == "belgrad";
-            }
-            else
-                return false;
-        }).ToArray();
+        return KdmidTaskStepHandler.Filter(data, "paris");
     }
     protected override async Task SaveData(IPersistentProcessStep currentStep, IPersistentProcessStep? nextStep, IEnumerable<KdmidAvailableDates> data, CancellationToken cToken)
     {
         await using var scope = _serviceScopeFactory.CreateAsyncScope();
         var processRepository = scope.ServiceProvider.GetRequiredService<IPersistenceNoSqlProcessRepository>();
 
-        await processRepository.SetProcessedData(TaskSettings.HostId, currentStep, nextStep, data, cToken);
+        await processRepository.SetProcessedData(_hostId, currentStep, nextStep, data, cToken);
     }
 }
