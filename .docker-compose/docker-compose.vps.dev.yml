@@ -53,6 +53,7 @@ services:
       - .env
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - MongoDbConnection__Host=mongodb_1
       - MongoDbConnection__User=${MONGODBCONNECTION_USERNAME}
       - MongoDbConnection__Password=${MONGODBCONNECTION_PASSWORD}
       - AntiCaptchaConnection__ApiKey=${ANTICAPTCHACONNECTION_APIKEY}
