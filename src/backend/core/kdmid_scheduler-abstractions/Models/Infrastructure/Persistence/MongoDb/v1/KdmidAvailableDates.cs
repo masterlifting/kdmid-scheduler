@@ -7,7 +7,7 @@ namespace KdmidScheduler.Abstractions.Models.Infrastructure.Persistence.MongoDb.
 public sealed class KdmidAvailableDates : IPersistentNoSql, IPersistentProcess
 {
     public ObjectId Id { get; set; } = ObjectId.Empty;
-    public Guid? HostId { get; set; }
+    public Guid? CorrelationId { get; set; }
     public string DocumentVersion { get; set; } = "1.0.0";
 
     public Chat Chat { get; set; } = null!;

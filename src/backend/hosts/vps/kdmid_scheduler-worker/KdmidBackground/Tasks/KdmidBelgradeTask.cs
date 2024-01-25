@@ -13,13 +13,13 @@ namespace KdmidScheduler.Worker.KdmidBackground.Tasks;
 
 public sealed class KdmidBelgradeTask(
     ILogger<KdmidBelgradeTask> logger,
-    IOptions<HostSettings> hostOptions,
+    IOptions<CorrelationSettings> correlationOptions,
     IBackgroundSettingsProvider settingsProvider,
     IServiceScopeFactory serviceScopeFactory
     ) : BackgroundTask<KdmidAvailableDates>("Belgrade", settingsProvider, logger)
 {
     private readonly IServiceScopeFactory _serviceScopeFactory = serviceScopeFactory;
-    private readonly Guid _hostId = hostOptions.Value.Id;
+    private readonly Guid _correlationId = correlationOptions.Value.Id;
 
     protected override IBackgroundTaskStepHandler<KdmidAvailableDates> GetStepHandler()
     {
@@ -38,7 +38,7 @@ public sealed class KdmidBelgradeTask(
         await using var scope = _serviceScopeFactory.CreateAsyncScope();
         var processRepository = scope.ServiceProvider.GetRequiredService<IPersistenceNoSqlProcessRepository>();
 
-        var data = await processRepository.GetProcessableData<KdmidAvailableDates>(_hostId, step, limit, cToken);
+        var data = await processRepository.GetProcessableData<KdmidAvailableDates>(_correlationId, step, limit, cToken);
 
         return KdmidTaskStepHandler.Filter(data, "belgrad");
     }
@@ -47,7 +47,7 @@ public sealed class KdmidBelgradeTask(
         await using var scope = _serviceScopeFactory.CreateAsyncScope();
         var processRepository = scope.ServiceProvider.GetRequiredService<IPersistenceNoSqlProcessRepository>();
 
-        var data = await processRepository.GetUnprocessedData<KdmidAvailableDates>(_hostId, step, limit, updateTime, maxAttempts, cToken);
+        var data = await processRepository.GetUnprocessedData<KdmidAvailableDates>(_correlationId, step, limit, updateTime, maxAttempts, cToken);
 
         return KdmidTaskStepHandler.Filter(data, "belgrad");
     }
@@ -56,6 +56,6 @@ public sealed class KdmidBelgradeTask(
         await using var scope = _serviceScopeFactory.CreateAsyncScope();
         var processRepository = scope.ServiceProvider.GetRequiredService<IPersistenceNoSqlProcessRepository>();
 
-        await processRepository.SetProcessedData(_hostId, currentStep, nextStep, data, cToken);
+        await processRepository.SetProcessedData(_correlationId, currentStep, nextStep, data, cToken);
     }
 }

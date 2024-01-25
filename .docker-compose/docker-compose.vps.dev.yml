@@ -52,6 +52,7 @@ services:
     env_file:
       - .env
     environment:
+      - ASPNETCORE_ENVIRONMENT=Development
       - MongoDbConnection__User=${MONGODBCONNECTION_USERNAME}
       - MongoDbConnection__Password=${MONGODBCONNECTION_PASSWORD}
       - AntiCaptchaConnection__ApiKey=${ANTICAPTCHACONNECTION_APIKEY}
@@ -76,6 +77,7 @@ services:
   #   env_file:
   #     - .env
   #   environment:
+  #     - DOTNET_ENVIRONMENT=Development
   #     - MongoDbConnection__User=${MONGODBCONNECTION_USERNAME}
   #     - MongoDbConnection__Password=${MONGODBCONNECTION_PASSWORD}
   #     - AntiCaptchaConnection__ApiKey=${ANTICAPTCHACONNECTION_APIKEY}
@@ -94,13 +96,13 @@ services:
       context: ../src/frontend/telegram-webapp
       dockerfile: ./Dockerfile
     environment:
-      - REACT_APP_BACKEND_URL=http://localhost:5000
+      - REACT_APP_BACKEND_URL=http://localhost:8080
     networks:
       - kdmid-scheduler-network
     ports:
       - 3000:3000
-    # depends_on:
-    #   - backend-api
+    depends_on:
+      - backend-api
     restart: always
 
 networks:

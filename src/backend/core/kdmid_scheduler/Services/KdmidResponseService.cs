@@ -23,7 +23,7 @@ namespace KdmidScheduler.Services;
 
 public sealed class KdmidResponseService(
     ILogger<KdmidResponseService> logger,
-    IOptions<HostSettings> hostOptions,
+    IOptions<CorrelationSettings> correlationOptions,
     IOptions<KdmidSettings> kdmidOptions,
     IBotClient botClient,
     IBotCommandsStore botCommandsStore,
@@ -31,9 +31,10 @@ public sealed class KdmidResponseService(
     IPersistenceNoSqlWriterRepository writerRepository
     ) : IKdmidResponseService
 {
+    private readonly Guid _correlationId = correlationOptions.Value.Id;
+
     private readonly ILogger<KdmidResponseService> _log = logger;
 
-    private readonly HostSettings _hostSettings = hostOptions.Value;
     private readonly KdmidSettings _kdmidSettings = kdmidOptions.Value;
 
     private readonly IBotClient _botClient = botClient;
@@ -114,7 +115,7 @@ public sealed class KdmidResponseService(
             Command = command,
             StepId = (int)KdmidProcessSteps.CheckAvailableDates,
             StatusId = (int)ProcessStatuses.Ready,
-            HostId = _hostSettings.Id
+            CorrelationId = _correlationId
 
         }, cToken);
 

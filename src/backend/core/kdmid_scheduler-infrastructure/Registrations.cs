@@ -7,7 +7,7 @@ using KdmidScheduler.Infrastructure.Web;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-using Net.Shared.Abstractions.Models.Settings;
+using Net.Shared;
 using Net.Shared.Bots;
 using Net.Shared.Persistence;
 
@@ -17,19 +17,10 @@ public static class Registrations
 {
     public static IServiceCollection AddKdmidInfrastructure(this IServiceCollection services)
     {
-        services.AddLogging();
-        services.AddMemoryCache();
-
         services
-            .AddOptions<HostSettings>()
-            .Configure<IConfiguration>((settings, configuration) =>
-            {
-                configuration
-                    .GetSection(HostSettings.SectionName)
-                    .Bind(settings);
-            })
-            .ValidateOnStart()
-            .Validate(x => x.Id != Guid.Empty, "Id of host should not be empty.");
+            .AddLogging()
+            .AddMemoryCache()
+            .AddCorrelationSettings();
 
         services
             .AddOptions<AntiCaptchaConnectionSettings>()
