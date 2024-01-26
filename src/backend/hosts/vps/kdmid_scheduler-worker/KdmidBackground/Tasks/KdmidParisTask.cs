@@ -25,7 +25,7 @@ public sealed class KdmidParisTask(
     {
         using var scope = _serviceScopeFactory.CreateScope();
         var kdmidResponseService = scope.ServiceProvider.GetRequiredService<IKdmidResponseService>();
-        return new KdmidTaskStepHandler(logger, kdmidResponseService);
+        return new KdmidTaskStepHandler(kdmidResponseService);
     }
     protected override async Task<IPersistentProcessStep[]> GetSteps(CancellationToken cToken)
     {

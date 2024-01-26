@@ -4,17 +4,16 @@ using KdmidScheduler.Abstractions.Models.Infrastructure.Persistence.MongoDb.v1;
 
 using Net.Shared.Abstractions.Models.Data;
 using Net.Shared.Background.Abstractions.Interfaces;
-using Net.Shared.Extensions.Logging;
 using Net.Shared.Extensions.Serialization.Json;
 using Net.Shared.Persistence.Abstractions.Interfaces.Entities.Catalogs;
 
 using static KdmidScheduler.Abstractions.Constants;
+using static Net.Shared.Persistence.Abstractions.Constants.Enums;
 
 namespace KdmidScheduler.Worker.KdmidBackground;
 
-public sealed class KdmidTaskStepHandler(ILogger logger, IKdmidResponseService kdmidResponseService) : IBackgroundTaskStepHandler<KdmidAvailableDates>
+public sealed class KdmidTaskStepHandler(IKdmidResponseService kdmidResponseService) : IBackgroundTaskStepHandler<KdmidAvailableDates>
 {
-    private readonly ILogger _log = logger;
     private readonly IKdmidResponseService _kdmidResponseService = kdmidResponseService;
 
     public async Task<Result<KdmidAvailableDates>> Handle(string taskName, IPersistentProcessStep step, IEnumerable<KdmidAvailableDates> data, CancellationToken cToken)
@@ -31,7 +30,8 @@ public sealed class KdmidTaskStepHandler(ILogger logger, IKdmidResponseService k
                         }
                         catch (Exception exception)
                         {
-                            _log.ErrorShort(exception);
+                            item.StatusId = (int)ProcessStatuses.Error;
+                            item.Error = exception.Message;
                         }
                     }
 
@@ -42,7 +42,7 @@ public sealed class KdmidTaskStepHandler(ILogger logger, IKdmidResponseService k
         }
     }
 
-    public static KdmidAvailableDates[] Filter(IEnumerable<KdmidAvailableDates> data, string cityCode) => 
+    public static KdmidAvailableDates[] Filter(IEnumerable<KdmidAvailableDates> data, string cityCode) =>
         data.Where(x =>
         {
             if (x.Command.Parameters.TryGetValue(BotCommandParametersCityKey, out var cityStr))
