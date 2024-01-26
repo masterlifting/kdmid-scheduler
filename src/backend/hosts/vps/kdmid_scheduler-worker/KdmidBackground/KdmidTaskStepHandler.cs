@@ -4,6 +4,7 @@ using KdmidScheduler.Abstractions.Models.Infrastructure.Persistence.MongoDb.v1;
 
 using Net.Shared.Abstractions.Models.Data;
 using Net.Shared.Background.Abstractions.Interfaces;
+using Net.Shared.Extensions.Logging;
 using Net.Shared.Extensions.Serialization.Json;
 using Net.Shared.Persistence.Abstractions.Interfaces.Entities.Catalogs;
 
@@ -11,8 +12,9 @@ using static KdmidScheduler.Abstractions.Constants;
 
 namespace KdmidScheduler.Worker.KdmidBackground;
 
-public sealed class KdmidTaskStepHandler(IKdmidResponseService kdmidResponseService) : IBackgroundTaskStepHandler<KdmidAvailableDates>
+public sealed class KdmidTaskStepHandler(ILogger logger, IKdmidResponseService kdmidResponseService) : IBackgroundTaskStepHandler<KdmidAvailableDates>
 {
+    private readonly ILogger _log = logger;
     private readonly IKdmidResponseService _kdmidResponseService = kdmidResponseService;
 
     public async Task<Result<KdmidAvailableDates>> Handle(string taskName, IPersistentProcessStep step, IEnumerable<KdmidAvailableDates> data, CancellationToken cToken)
@@ -23,7 +25,14 @@ public sealed class KdmidTaskStepHandler(IKdmidResponseService kdmidResponseServ
                 {
                     foreach (var item in data)
                     {
-                        await _kdmidResponseService.SendAvailableDates(item.Chat, item.Command, cToken);
+                        try
+                        {
+                            await _kdmidResponseService.SendAvailableDates(item.Chat, item.Command, cToken);
+                        }
+                        catch (Exception exception)
+                        {
+                            _log.ErrorShort(exception);
+                        }
                     }
 
                     return new(data);

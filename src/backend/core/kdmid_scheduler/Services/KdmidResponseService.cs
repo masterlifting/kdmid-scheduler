@@ -119,8 +119,8 @@ public sealed class KdmidResponseService(
 
         }, cToken);
 
-        await _botClient.SendMessage(chatId, new($"The embassy of {city.Name} with Kdmid.Id {kdmidId.Id} is added to processing."), cToken);
-        await _botClient.SendMessage(_botClient.AdminId, new($"The embassy of {city.Name} with Kdmid.Id {kdmidId.Id} is added to the list of {chatId}."), cToken);
+        await _botClient.SendMessage(chatId, new($"The embassy of {city.Name} with Kdmid.Id {kdmidId.Id} has been added to processing."), cToken);
+        await _botClient.SendMessage(_botClient.AdminId, new($"The embassy of {city.Name} with Kdmid.Id {kdmidId.Id} has been added to the list of {chatId}."), cToken);
     }
     public async Task SendUpdateCommandResult(string chatId, Command command, CancellationToken cToken)
     {
@@ -146,7 +146,7 @@ public sealed class KdmidResponseService(
 
         await _writerRepository.Update(updateOptions, cToken);
 
-        await _botClient.SendMessage(chatId, new($"The embassy of {city.Name} with Kdmid.Id {kdmidId.Id} is updated."), cToken);
+        await _botClient.SendMessage(chatId, new($"The embassy of {city.Name} with Kdmid.Id {kdmidId.Id} has been updated."), cToken);
     }
     public async Task SendDeleteCommandResult(string chatId, Command command, CancellationToken cToken)
     {
@@ -175,15 +175,7 @@ public sealed class KdmidResponseService(
         var city = command.Parameters[BotCommandParametersCityKey].FromJson<City>();
         var kdmidId = command.Parameters[BotCommandParametersKdmidIdKey].FromJson<KdmidId>();
 
-        try
-        {
-            await TryAddAttempt(chat.Id, command, city, kdmidId, cToken);
-        }
-        catch (Exception exception)
-        {
-            _log.ErrorCompact(exception);
-            return;
-        }
+        await TryAddAttempt(chat.Id, command, city, kdmidId, cToken);
 
         var availableDatesResult = await _kdmidRequestService.GetAvailableDates(city, kdmidId, cToken);
 

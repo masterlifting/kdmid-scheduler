@@ -19,7 +19,7 @@ public sealed class KdmidMongoDbContext(IOptions<MongoDbConnectionSettings> opti
         {
             new()
             {
-                Id = (int)Abstractions.Constants.KdmidProcessSteps.CheckAvailableDates,
+                Id = (int)KdmidProcessSteps.CheckAvailableDates,
                 Name = nameof(KdmidProcessSteps.CheckAvailableDates)
             }
         });
