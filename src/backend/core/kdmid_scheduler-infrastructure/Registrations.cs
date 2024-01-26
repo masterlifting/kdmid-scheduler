@@ -65,7 +65,7 @@ public static class Registrations
             x.AddCommandsStore<Bots.Stores.AzureTable.KdmidBotCommandsStore>();
         });
     public static IServiceCollection AddKdmidVpsInfrastructure(this IServiceCollection services) => services
-        .AddMongoDb<KdmidMongoDbContext>(ServiceLifetime.Transient)
+        .AddMongoDb<KdmidMongoDbContext>(ServiceLifetime.Scoped)
         .AddTelegramBot<KdmidBotResponse>(x =>
         {
             x.AddCommandsStore<Bots.Stores.MongoDb.KdmidBotCommandsStore>();

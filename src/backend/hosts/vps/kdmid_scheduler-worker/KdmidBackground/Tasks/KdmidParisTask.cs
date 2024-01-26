@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using Net.Shared.Abstractions.Models.Settings;
 using Net.Shared.Background;
 using Net.Shared.Background.Abstractions.Interfaces;
+using Net.Shared.Extensions.Logging;
 using Net.Shared.Persistence.Abstractions.Interfaces.Entities.Catalogs;
 using Net.Shared.Persistence.Abstractions.Interfaces.Repositories.NoSql;
 
@@ -16,8 +17,10 @@ public sealed class KdmidParisTask(
     IOptions<CorrelationSettings> correlationOptions,
     IBackgroundSettingsProvider settingsProvider,
     IServiceScopeFactory serviceScopeFactory
-    ) : BackgroundTask<KdmidAvailableDates>("Paris", settingsProvider, logger)
+    ) : BackgroundTask<KdmidAvailableDates>(Name, settingsProvider, logger)
 {
+    public const string Name = "Paris";
+    private readonly ILogger<KdmidParisTask> _logger = logger;
     private readonly IServiceScopeFactory _serviceScopeFactory = serviceScopeFactory;
     private readonly Guid _correlationId = correlationOptions.Value.Id;
 
@@ -38,6 +41,9 @@ public sealed class KdmidParisTask(
         await using var scope = _serviceScopeFactory.CreateAsyncScope();
         var processRepository = scope.ServiceProvider.GetRequiredService<IPersistenceNoSqlProcessRepository>();
 
+        _logger.Warn(nameof(GetProcessableData));
+        return [];
+
         var data = await processRepository.GetProcessableData<KdmidAvailableDates>(_correlationId, step, limit, cToken);
 
         return KdmidTaskStepHandler.Filter(data, "paris");
@@ -46,6 +52,9 @@ public sealed class KdmidParisTask(
     {
         await using var scope = _serviceScopeFactory.CreateAsyncScope();
         var processRepository = scope.ServiceProvider.GetRequiredService<IPersistenceNoSqlProcessRepository>();
+
+        _logger.Warn(nameof(GetUnprocessedData));
+        return [];
 
         var data = await processRepository.GetUnprocessedData<KdmidAvailableDates>(_correlationId, step, limit, updateTime, maxAttempts, cToken);
 

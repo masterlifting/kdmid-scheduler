@@ -1,5 +1,6 @@
 ﻿using KdmidScheduler.Abstractions.Models.Infrastructure.Persistence.MongoDb.v1;
 
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 using Net.Shared.Persistence.Abstractions.Models.Settings.Connections;
@@ -9,7 +10,7 @@ using static KdmidScheduler.Abstractions.Constants;
 
 namespace KdmidScheduler.Infrastructure.Persistence.Contexts;
 
-public sealed class KdmidMongoDbContext(IOptions<MongoDbConnectionSettings> options) : MongoDbContext(options.Value)
+public sealed class KdmidMongoDbContext(ILogger<KdmidMongoDbContext> logger, IOptions<MongoDbConnectionSettings> options) : MongoDbContext(logger, options.Value)
 {
     public override void OnModelCreating(MongoDbBuilder builder)
     {

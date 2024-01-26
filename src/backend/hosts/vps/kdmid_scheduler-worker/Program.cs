@@ -9,9 +9,9 @@ builder.Services
     .AddKdmidInfrastructure()
     .AddKdmidVpsInfrastructure()
     .AddKdmidCore()
-    .AddBackgroundTask<KdmidBelgradeTask>("Belgrade")
-    .AddBackgroundTask<KdmidParisTask>("Paris")
-    .AddBackgroundTask<KdmidBudapestTask>("Budapest");
+    .AddBackgroundTask<KdmidBelgradeTask>(KdmidBelgradeTask.Name)
+    .AddBackgroundTask<KdmidParisTask>(KdmidParisTask.Name)
+    .AddBackgroundTask<KdmidBudapestTask>(KdmidBudapestTask.Name);
 
 builder
     .Build()
