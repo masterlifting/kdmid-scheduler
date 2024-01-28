@@ -1,6 +1,4 @@
-﻿using Azure.Data.Tables;
-
-using KdmidScheduler.Abstractions.Models.Infrastructure.Persistence.AzureTable.v1;
+﻿using KdmidScheduler.Abstractions.Models.Infrastructure.Persistence.AzureTable.v1;
 
 using Net.Shared.Bots.Abstractions.Interfaces;
 using Net.Shared.Bots.Abstractions.Models.Bot;
@@ -10,12 +8,12 @@ using Net.Shared.Persistence.Abstractions.Models.Contexts;
 namespace KdmidScheduler.Infrastructure.Bots.Stores.AzureTable;
 
 public sealed class KdmidBotCommandsStore(
-    IPersistenceReaderRepository<ITableEntity> readerRepository,
-    IPersistenceWriterRepository<ITableEntity> writerRepository
+    IPersistenceReaderRepository<KdmidBotCommand> readerRepository,
+    IPersistenceWriterRepository<KdmidBotCommand> writerRepository
     ) : IBotCommandsStore
 {
-    private readonly IPersistenceReaderRepository<ITableEntity> _readerRepository = readerRepository;
-    private readonly IPersistenceWriterRepository<ITableEntity> _writerRepository = writerRepository;
+    private readonly IPersistenceReaderRepository<KdmidBotCommand> _readerRepository = readerRepository;
+    private readonly IPersistenceWriterRepository<KdmidBotCommand> _writerRepository = writerRepository;
 
     public Task Create(string chatId, Command command, CancellationToken cToken)
     {

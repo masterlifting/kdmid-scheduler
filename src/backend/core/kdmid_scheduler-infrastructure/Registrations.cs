@@ -1,4 +1,6 @@
 ﻿using KdmidScheduler.Abstractions.Interfaces.Infrastructure.Services;
+using KdmidScheduler.Abstractions.Models.Infrastructure.Persistence.AzureTable.v1;
+using KdmidScheduler.Abstractions.Models.Infrastructure.Persistence.MongoDb.v1;
 using KdmidScheduler.Abstractions.Models.Settings;
 using KdmidScheduler.Infrastructure.Bots;
 using KdmidScheduler.Infrastructure.Persistence.Contexts;
@@ -10,6 +12,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Net.Shared;
 using Net.Shared.Bots;
 using Net.Shared.Persistence;
+using Net.Shared.Persistence.Abstractions.Interfaces.Repositories;
+using Net.Shared.Persistence.Repositories.AzureTable;
+using Net.Shared.Persistence.Repositories.MongoDb;
 
 namespace KdmidScheduler.Infrastructure;
 
@@ -62,12 +67,16 @@ public static class Registrations
         .AddAzureTable<KdmidAzureTableContext>(ServiceLifetime.Transient)
         .AddTelegramBot<KdmidBotResponse>(x =>
         {
+            x.Services.AddTransient<IPersistenceReaderRepository<KdmidBotCommand>, AzureTableReaderRepository<KdmidBotCommand>>();
+            x.Services.AddTransient<IPersistenceWriterRepository<KdmidBotCommand>, AzureTableWriterRepository<KdmidBotCommand>>();
             x.AddCommandsStore<Bots.Stores.AzureTable.KdmidBotCommandsStore>();
         });
     public static IServiceCollection AddKdmidVpsInfrastructure(this IServiceCollection services) => services
         .AddMongoDb<KdmidMongoDbContext>(ServiceLifetime.Scoped)
         .AddTelegramBot<KdmidBotResponse>(x =>
         {
+            x.Services.AddTransient<IPersistenceReaderRepository<KdmidBotCommands>, MongoDbReaderRepository<KdmidBotCommands>>();
+            x.Services.AddTransient<IPersistenceWriterRepository<KdmidBotCommands>, MongoDbWriterRepository<KdmidBotCommands>>();
             x.AddCommandsStore<Bots.Stores.MongoDb.KdmidBotCommandsStore>();
         });
 }

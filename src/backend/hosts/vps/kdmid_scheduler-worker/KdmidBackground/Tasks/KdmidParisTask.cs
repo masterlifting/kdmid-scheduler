@@ -1,7 +1,6 @@
 ﻿using System.Linq.Expressions;
 
 using KdmidScheduler.Abstractions.Models.Infrastructure.Persistence.MongoDb.v1;
-using KdmidScheduler.Infrastructure.Persistence.Contexts;
 
 using Microsoft.Extensions.Options;
 
@@ -17,13 +16,12 @@ public sealed class KdmidParisTask(
     IServiceScopeFactory serviceScopeFactory,
     IBackgroundSettingsProvider settingsProvider
     ) : BackgroundTask<
-            KdmidTaskStepHandler,
             KdmidAvailableDates,
             KdmidAvailableDatesSteps,
-            KdmidMongoDbContext>
+            KdmidBackgroundStepHandler>
     (Name, correlationOptions.Value.Id, logger, serviceScopeFactory, settingsProvider)
 {
     public const string Name = "Paris";
 
-    protected override Expression<Func<KdmidAvailableDates, bool>> DataFilter => x => KdmidTaskStepHandler.Filter(x, "paris");
+    protected override Expression<Func<KdmidAvailableDates, bool>> DataFilter => x => KdmidBackgroundStepHandler.Filter(x, "paris");
 }

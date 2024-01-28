@@ -2,18 +2,17 @@
 
 using Net.Shared.Bots.Abstractions.Interfaces;
 using Net.Shared.Bots.Abstractions.Models.Bot;
-using Net.Shared.Persistence.Abstractions.Interfaces.Entities;
 using Net.Shared.Persistence.Abstractions.Interfaces.Repositories;
 using Net.Shared.Persistence.Abstractions.Models.Contexts;
 
 namespace KdmidScheduler.Infrastructure.Bots.Stores.MongoDb;
 
 public sealed class KdmidBotCommandsStore(
-    IPersistenceReaderRepository<IPersistentNoSql> readerRepository,
-    IPersistenceWriterRepository<IPersistentNoSql> writerRepository) : IBotCommandsStore
+    IPersistenceReaderRepository<KdmidBotCommands> readerRepository,
+    IPersistenceWriterRepository<KdmidBotCommands> writerRepository) : IBotCommandsStore
 {
-    private readonly IPersistenceReaderRepository<IPersistentNoSql> _readerRepository = readerRepository;
-    private readonly IPersistenceWriterRepository<IPersistentNoSql> _writerRepository = writerRepository;
+    private readonly IPersistenceReaderRepository<KdmidBotCommands> _readerRepository = readerRepository;
+    private readonly IPersistenceWriterRepository<KdmidBotCommands> _writerRepository = writerRepository;
 
     public Task Create(string chatId, Command command, CancellationToken cToken)
     {

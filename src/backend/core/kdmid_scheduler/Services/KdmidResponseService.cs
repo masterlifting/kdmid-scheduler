@@ -12,7 +12,7 @@ using Net.Shared.Bots.Abstractions.Models.Bot;
 using Net.Shared.Bots.Abstractions.Models.Response;
 using Net.Shared.Extensions.Logging;
 using Net.Shared.Extensions.Serialization.Json;
-using Net.Shared.Persistence.Abstractions.Interfaces.Repositories.NoSql;
+using Net.Shared.Persistence.Abstractions.Interfaces.Repositories;
 using Net.Shared.Persistence.Abstractions.Models.Contexts;
 
 using static KdmidScheduler.Abstractions.Constants;
@@ -28,7 +28,7 @@ public sealed class KdmidResponseService(
     IBotClient botClient,
     IBotCommandsStore botCommandsStore,
     IKdmidRequestService kdmidRequestService,
-    IPersistenceNoSqlWriterRepository writerRepository
+    IPersistenceWriterRepository<KdmidAvailableDates> writerRepository
     ) : IKdmidResponseService
 {
     private readonly Guid _correlationId = correlationOptions.Value.Id;
@@ -40,7 +40,7 @@ public sealed class KdmidResponseService(
     private readonly IBotClient _botClient = botClient;
     private readonly IBotCommandsStore _botCommandsStore = botCommandsStore;
     private readonly IKdmidRequestService _kdmidRequestService = kdmidRequestService;
-    private readonly IPersistenceNoSqlWriterRepository _writerRepository = writerRepository;
+    private readonly IPersistenceWriterRepository<KdmidAvailableDates> _writerRepository = writerRepository;
 
     public async Task SendAvailableEmbassies(Chat chat, CancellationToken cToken)
     {
@@ -174,6 +174,10 @@ public sealed class KdmidResponseService(
     {
         var city = command.Parameters[BotCommandParametersCityKey].FromJson<City>();
         var kdmidId = command.Parameters[BotCommandParametersKdmidIdKey].FromJson<KdmidId>();
+
+        _log.Warn($"Available dates for {city.Name} with Kdmid.Id {kdmidId.Id} were requested for {chat.Id}.");
+
+        return;
 
         await TryAddAttempt(chat.Id, command, city, kdmidId, cToken);
 

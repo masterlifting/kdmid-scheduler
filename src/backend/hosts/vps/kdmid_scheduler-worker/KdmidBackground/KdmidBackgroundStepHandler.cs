@@ -11,7 +11,7 @@ using static Net.Shared.Persistence.Abstractions.Constants.Enums;
 
 namespace KdmidScheduler.Worker.KdmidBackground;
 
-public sealed class KdmidTaskStepHandler : IBackgroundTaskStepHandler<KdmidAvailableDates>
+public sealed class KdmidBackgroundStepHandler : IBackgroundTaskStepHandler<KdmidAvailableDates>
 {
     public async Task Handle(string taskName, IServiceProvider serviceProvider, IPersistentProcessStep step, IEnumerable<KdmidAvailableDates> data, CancellationToken cToken)
     {
