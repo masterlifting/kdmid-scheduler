@@ -5,8 +5,8 @@ using KdmidScheduler.Abstractions.Models.Core.v1.Kdmid;
 namespace KdmidScheduler.Services;
 
 public sealed class KdmidRequestService(
-    IKdmidHttpClient httpClient, 
-    IKdmidHtmlDocument htmlDocument, 
+    IKdmidHttpClient httpClient,
+    IKdmidHtmlDocument htmlDocument,
     IKdmidCaptcha captchaService) : IKdmidRequestService
 {
     private readonly IKdmidHttpClient _httpClient = httpClient;
@@ -29,6 +29,7 @@ public sealed class KdmidRequestService(
         { "dublin", new("dublin", "Dublin", 0) },
         { "helsinki", new("helsinki", "Helsinki", +2) },
         { "hague", new("hague", "Hague", +1) },
+        { "podgorica", new("podgorica", "Podgorica", +1) }
     };
 
     public City[] GetSupportedCities(CancellationToken cToken) => SupportedCities.Values.OrderBy(x => x.Name).ToArray();
@@ -58,7 +59,7 @@ public sealed class KdmidRequestService(
         var calendarPage = _htmlDocument.GetCalendarPage(calendarResponse);
 
         var availableDates = new Dictionary<DateTime, string>(calendarPage.Dates.Count);
-        
+
         foreach (var dateString in calendarPage.Dates)
         {
             if (!DateTime.TryParse(dateString.Value.Split('|')[1], out var parsedDate))

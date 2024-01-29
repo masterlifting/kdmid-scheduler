@@ -61,7 +61,7 @@ public sealed class KdmidResponseService(
         }
         else
         {
-            var webAppArgs = new WebAppEventArgs(chat, new("Available embassies", 4, webAppData));
+            var webAppArgs = new WebAppEventArgs(chat, new("Available embassies", 3, webAppData));
             await _botClient.SendWebApp(webAppArgs, cToken);
         }
     }
@@ -93,7 +93,7 @@ public sealed class KdmidResponseService(
         }
         else
         {
-            var buttonsArgs = new ButtonsEventArgs(chat, new("My embassies", 1, buttonsData));
+            var buttonsArgs = new ButtonsEventArgs(chat, new("My embassies", 2, buttonsData));
             await _botClient.SendButtons(buttonsArgs, cToken);
         }
     }

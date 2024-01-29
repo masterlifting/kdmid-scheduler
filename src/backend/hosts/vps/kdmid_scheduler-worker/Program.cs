@@ -13,20 +13,26 @@ builder.Services
     .AddKdmidInfrastructure()
     .AddKdmidVpsInfrastructure()
     .AddKdmidCore()
-    .AddBackgroundTask<KdmidBelgradeTask>(KdmidBelgradeTask.Name, x =>
+    .AddBackgroundTasks(x =>
     {
         x.AddStepsReaderRepository<KdmidAvailableDatesSteps, MongoDbReaderRepository<KdmidMongoDbContext, KdmidAvailableDatesSteps>>();
         x.AddProcessRepository<KdmidAvailableDates, MongoDbProcessRepository<KdmidMongoDbContext, KdmidAvailableDates>>();
-    })
-    .AddBackgroundTask<KdmidParisTask>(KdmidParisTask.Name, x =>
-    {
-        x.AddStepsReaderRepository<KdmidAvailableDatesSteps, MongoDbReaderRepository<KdmidMongoDbContext, KdmidAvailableDatesSteps>>();
-        x.AddProcessRepository<KdmidAvailableDates, MongoDbProcessRepository<KdmidMongoDbContext, KdmidAvailableDates>>();
-    })
-    .AddBackgroundTask<KdmidBudapestTask>(KdmidBudapestTask.Name, x =>
-    {
-        x.AddStepsReaderRepository<KdmidAvailableDatesSteps, MongoDbReaderRepository<KdmidMongoDbContext, KdmidAvailableDatesSteps>>();
-        x.AddProcessRepository<KdmidAvailableDates, MongoDbProcessRepository<KdmidMongoDbContext, KdmidAvailableDates>>();
+
+        x.AddTask<KdmidBelgradeTask>(KdmidParisTask.Name);
+        x.AddTask<KdmidBerlinTask>(KdmidBerlinTask.Name);
+        x.AddTask<KdmidBernTask>(KdmidBernTask.Name);
+        x.AddTask<KdmidBrusselsTask>(KdmidBrusselsTask.Name);
+        x.AddTask<KdmidBudapestTask>(KdmidBudapestTask.Name);
+        x.AddTask<KdmidHagueTask>(KdmidHagueTask.Name);
+        x.AddTask<KdmidDublinTask>(KdmidDublinTask.Name);
+        x.AddTask<KdmidHelsinkiTask>(KdmidHelsinkiTask.Name);
+        x.AddTask<KdmidLjubljanaTask>(KdmidLjubljanaTask.Name);
+        x.AddTask<KdmidParisTask>(KdmidParisTask.Name);
+        x.AddTask<KdmidPodgoricaTask>(KdmidPodgoricaTask.Name);
+        x.AddTask<KdmidRigaTask>(KdmidRigaTask.Name);
+        x.AddTask<KdmidSarajevoTask>(KdmidSarajevoTask.Name);
+        x.AddTask<KdmidTiranaTask>(KdmidTiranaTask.Name);
+
     });
 
 builder
