@@ -23,5 +23,5 @@ public sealed class KdmidBudapestTask(
 {
     public const string Name = "Budapest";
 
-    protected override Expression<Func<KdmidAvailableDates, bool>> DataFilter => x => KdmidBackgroundStepHandler.Filter(x, "budapest");
+    protected override Expression<Func<KdmidAvailableDates, bool>> DataFilter => x => x.City.Code == "budapest";
 }

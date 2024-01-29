@@ -1,6 +1,7 @@
 ﻿using Net.Shared.Persistence.Abstractions.Interfaces.Entities;
 using Net.Shared.Bots.Abstractions.Models.Bot;
 using MongoDB.Bson;
+using KdmidScheduler.Abstractions.Models.Core.v1.Kdmid;
 
 namespace KdmidScheduler.Abstractions.Models.Infrastructure.Persistence.MongoDb.v1;
 
@@ -10,6 +11,7 @@ public sealed class KdmidAvailableDates : IPersistentNoSql, IPersistentProcess
     public Guid? CorrelationId { get; set; }
     public string DocumentVersion { get; set; } = "1.0.0";
 
+    public City City { get; set; } = null!;
     public Chat Chat { get; set; } = null!;
     public Command Command { get; set; } = null!;
 

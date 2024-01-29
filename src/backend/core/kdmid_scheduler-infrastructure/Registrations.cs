@@ -57,11 +57,11 @@ public static class Registrations
             x.BaseAddress = new Uri("https://api.anti-captcha.com/");
         });
 
-        services.AddTransient< IPersistenceWriterRepository<KdmidAvailableDates>, MongoDbWriterRepository<KdmidMongoDbContext, KdmidAvailableDates>>();
+        services.AddScoped< IPersistenceWriterRepository<KdmidAvailableDates>, MongoDbWriterRepository<KdmidMongoDbContext, KdmidAvailableDates>>();
 
-        services.AddTransient<IKdmidHttpClient, KdmidHttpClient>();
-        services.AddTransient<IKdmidCaptcha, KdmidCaptchaService>();
-        services.AddTransient<IKdmidHtmlDocument, KdmidHtmlDocument>();
+        services.AddScoped<IKdmidHttpClient, KdmidHttpClient>();
+        services.AddScoped<IKdmidCaptcha, KdmidCaptchaService>();
+        services.AddScoped<IKdmidHtmlDocument, KdmidHtmlDocument>();
 
         return services;
     }
@@ -69,16 +69,16 @@ public static class Registrations
         .AddAzureTable<KdmidAzureTableContext>(ServiceLifetime.Transient)
         .AddTelegramBot<KdmidBotResponse>(x =>
         {
-            x.Services.AddTransient<IPersistenceReaderRepository<KdmidBotCommand>, AzureTableReaderRepository<KdmidAzureTableContext, KdmidBotCommand>>();
-            x.Services.AddTransient<IPersistenceWriterRepository<KdmidBotCommand>, AzureTableWriterRepository<KdmidAzureTableContext, KdmidBotCommand>>();
+            x.Services.AddScoped<IPersistenceReaderRepository<KdmidBotCommand>, AzureTableReaderRepository<KdmidAzureTableContext, KdmidBotCommand>>();
+            x.Services.AddScoped<IPersistenceWriterRepository<KdmidBotCommand>, AzureTableWriterRepository<KdmidAzureTableContext, KdmidBotCommand>>();
             x.AddCommandsStore<Bots.Stores.AzureTable.KdmidBotCommandsStore>();
         });
     public static IServiceCollection AddKdmidVpsInfrastructure(this IServiceCollection services) => services
         .AddMongoDb<KdmidMongoDbContext>(ServiceLifetime.Scoped)
         .AddTelegramBot<KdmidBotResponse>(x =>
         {
-            x.Services.AddTransient<IPersistenceReaderRepository<KdmidBotCommands>, MongoDbReaderRepository<KdmidMongoDbContext, KdmidBotCommands>>();
-            x.Services.AddTransient<IPersistenceWriterRepository<KdmidBotCommands>, MongoDbWriterRepository<KdmidMongoDbContext, KdmidBotCommands>>();
+            x.Services.AddScoped<IPersistenceReaderRepository<KdmidBotCommands>, MongoDbReaderRepository<KdmidMongoDbContext, KdmidBotCommands>>();
+            x.Services.AddScoped<IPersistenceWriterRepository<KdmidBotCommands>, MongoDbWriterRepository<KdmidMongoDbContext, KdmidBotCommands>>();
             x.AddCommandsStore<Bots.Stores.MongoDb.KdmidBotCommandsStore>();
         });
 }

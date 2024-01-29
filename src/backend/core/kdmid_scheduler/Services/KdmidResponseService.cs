@@ -112,6 +112,7 @@ public sealed class KdmidResponseService(
         await _writerRepository.CreateOne(new KdmidAvailableDates()
         {
             Chat = new(chatId, new(string.Empty)),
+            City = city,
             Command = command,
             StepId = (int)KdmidProcessSteps.CheckAvailableDates,
             StatusId = (int)ProcessStatuses.Ready,
@@ -133,6 +134,7 @@ public sealed class KdmidResponseService(
 
         var updateOptions = new PersistenceUpdateOptions<KdmidAvailableDates>(x =>
         {
+            x.City = city;
             x.Command = command;
             x.StepId = (int)KdmidProcessSteps.CheckAvailableDates;
             x.StatusId = (int)ProcessStatuses.Ready;
@@ -174,10 +176,6 @@ public sealed class KdmidResponseService(
     {
         var city = command.Parameters[BotCommandParametersCityKey].FromJson<City>();
         var kdmidId = command.Parameters[BotCommandParametersKdmidIdKey].FromJson<KdmidId>();
-
-        _log.Warn($"Available dates for {city.Name} with Kdmid.Id {kdmidId.Id} were requested for {chat.Id}.");
-
-        return;
 
         await TryAddAttempt(chat.Id, command, city, kdmidId, cToken);
 
