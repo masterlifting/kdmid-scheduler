@@ -37,7 +37,7 @@ public sealed class KdmidBackgroundStepHandler : IBackgroundTaskStepHandler<Kdmi
                             item.Error = exception.Message;
 
                             var logger = serviceProvider.GetRequiredService<ILogger<KdmidBackgroundStepHandler>>();
-                            logger.Error($"Handling step '{step.Name}' for the '{taskName}' has failed. Reason: {exception.Message}.");
+                            logger.Error($"Handling step '{step.Name}' for the '{taskName}' has failed. Reason: {exception.Message}");
                         }
                     }
                 }

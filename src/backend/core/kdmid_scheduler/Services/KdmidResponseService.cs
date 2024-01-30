@@ -120,8 +120,8 @@ public sealed class KdmidResponseService(
 
         }, cToken);
 
-        await _botClient.SendMessage(chatId, new($"The embassy of {city.Name} with Kdmid.Id {kdmidId.Id} has been added to processing."), cToken);
-        await _botClient.SendMessage(_botClient.AdminId, new($"The embassy of {city.Name} with Kdmid.Id {kdmidId.Id} has been added to the list of {chatId}."), cToken);
+        await _botClient.SendMessage(chatId, new($"The embassy of '{city.Name}' with Id '{kdmidId.Id}' has been added to processing."), cToken);
+        await _botClient.SendMessage(_botClient.AdminId, new($"The embassy of '{city.Name}' with Id '{kdmidId.Id}' has been added to the chat '{chatId}'."), cToken);
     }
     public async Task SendUpdateCommandResult(string chatId, Command command, CancellationToken cToken)
     {
@@ -148,7 +148,7 @@ public sealed class KdmidResponseService(
 
         await _writerRepository.Update(updateOptions, cToken);
 
-        await _botClient.SendMessage(chatId, new($"The embassy of {city.Name} with Kdmid.Id {kdmidId.Id} has been updated."), cToken);
+        await _botClient.SendMessage(chatId, new($"The embassy of '{city.Name}' with Id '{kdmidId.Id}' has been updated."), cToken);
     }
     public async Task SendDeleteCommandResult(string chatId, Command command, CancellationToken cToken)
     {
@@ -164,7 +164,7 @@ public sealed class KdmidResponseService(
 
         await _writerRepository.Delete(deleteOptions, cToken);
 
-        await _botClient.SendMessage(chatId, new($"The embassy of {city.Name} with Kdmid.Id {kdmidId.Id} is deleted."), cToken);
+        await _botClient.SendMessage(chatId, new($"The embassy of '{city.Name}' with Id '{kdmidId.Id}' is deleted."), cToken);
     }
 
     public Task SendCommandInProcessInfo(Chat chat, Command command, CancellationToken cToken)
@@ -198,7 +198,7 @@ public sealed class KdmidResponseService(
 
         if (buttonsData.Count == 0)
         {
-            _log.Warn($"Available dates for {city.Name} with Kdmid.Id {kdmidId.Id} were not found for {chat.Id}.");
+            _log.Warn($"Available dates for '{city.Name}' with Id '{kdmidId.Id}' were not found for the chat '{chat.Id}'.");
         }
         else
         {
@@ -273,7 +273,7 @@ public sealed class KdmidResponseService(
         else
         {
             if (attempts.Day == day && attempts.Count >= AttemptsLimit)
-                throw new InvalidOperationException($"Attempts limit for {city.Name} with Kdmid.Id {kdmidId.Id} was reached for {chatId}.");
+                throw new InvalidOperationException($"Attempts limit for '{city.Name}' with Id '{kdmidId.Id}' was reached for the chat '{chatId}'.");
 
             var attemptsDay = attempts.Day;
             var attemptsCount = (byte)(attempts.Count + 1);
