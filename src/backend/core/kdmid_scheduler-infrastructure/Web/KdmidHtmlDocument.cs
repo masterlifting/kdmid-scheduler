@@ -107,9 +107,7 @@ public sealed class KdmidHtmlDocument : IKdmidHtmlDocument
 
         var resultTable = _htmlDocument
             .DocumentNode
-            .SelectSingleNode("//td[@id='center-panel']")
-            .ChildNodes
-            .FirstOrDefault(x => x.Name == "table");
+            .SelectSingleNode("//td[@id='center-panel']");
 
         if (resultTable is null)
             return new(string.Empty, new Dictionary<string, string>(0));

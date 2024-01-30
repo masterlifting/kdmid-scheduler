@@ -202,7 +202,7 @@ public sealed class KdmidResponseService(
         }
         else
         {
-            await _botClient.SendButtons(chat.Id, new("Choose a date", 1, buttonsData), cToken);
+            await _botClient.SendButtons(new(chat, new($"Available dates for '{city.Name}' with Id '{kdmidId.Id}':", 1, buttonsData)), cToken);
         }
     }
     public async Task SendConfirmationResult(Chat chat, Command command, CancellationToken cToken)
@@ -214,7 +214,7 @@ public sealed class KdmidResponseService(
         try
         {
             await _kdmidRequestService.ConfirmChosenDate(city, kdmidId, chosenResult, cToken);
-            await _botClient.SendMessage(new(chat, new("The date is confirmed.")), cToken);
+            await _botClient.SendMessage(new(chat, new($"'{chosenResult.ChosenValue}' for '{city.Name}' with Id '{kdmidId.Id}' has been confirmed.")), cToken);
         }
         catch
         {

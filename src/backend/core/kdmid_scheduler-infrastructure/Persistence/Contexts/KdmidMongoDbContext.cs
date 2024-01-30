@@ -14,6 +14,7 @@ public sealed class KdmidMongoDbContext(ILogger<KdmidMongoDbContext> logger, IOp
 {
     public override void OnModelCreating(MongoDbBuilder builder)
     {
+        builder.SetCollection<Abstractions.Models.Infrastructure.Persistence.MongoDb.v1.KdmidRequestCache>();
         builder.SetCollection<Abstractions.Models.Infrastructure.Persistence.MongoDb.v1.KdmidBotCommands>();
         builder.SetCollection<KdmidAvailableDates>();
         builder.SetCollection(new KdmidAvailableDatesSteps[]

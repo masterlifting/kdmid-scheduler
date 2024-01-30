@@ -12,6 +12,7 @@ public sealed class KdmidAzureTableContext(ILogger<KdmidAzureTableContext> logge
 {
     public override void OnModelCreating(AzureTableBuilder builder)
     {
+        builder.SetTable<KdmidRequestCache>();
         builder.SetTable<KdmidBotCommand>();
     }
 }

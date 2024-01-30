@@ -1,18 +1,23 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
+
 using KdmidScheduler.Abstractions.Interfaces.Infrastructure.Services;
 using KdmidScheduler.Abstractions.Models.Core.v1.Kdmid;
-using Microsoft.Extensions.Caching.Memory;
+using KdmidScheduler.Abstractions.Models.Infrastructure.Persistence.MongoDb.v1;
+
+using Net.Shared.Persistence.Abstractions.Interfaces.Repositories;
 
 namespace KdmidScheduler.Infrastructure.Web;
 
 public sealed class KdmidHttpClient(
-    IHttpClientFactory httpClientFactory, 
-    IMemoryCache cache) : IKdmidHttpClient
+    IHttpClientFactory httpClientFactory,
+    IPersistenceReaderRepository<KdmidRequestCache> readerCache,
+    IPersistenceWriterRepository<KdmidRequestCache> writerCache) : IKdmidHttpClient
 {
-    private readonly IMemoryCache _cache = cache;
     private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
+    private readonly IPersistenceReaderRepository<KdmidRequestCache> _readerCache = readerCache;
+    private readonly IPersistenceWriterRepository<KdmidRequestCache> _writerCache = writerCache;
 
     private static string GetBaseUrl(City city) => $"https://{city.Code}.kdmid.ru/queue/";
     private static Uri GetRequestUri(City city, KdmidId kdmidId) => new(GetBaseUrl(city) + "OrderInfo.aspx?" + kdmidId);
@@ -37,7 +42,7 @@ public sealed class KdmidHttpClient(
             ? throw new InvalidOperationException($"The response from {uri} is empty.")
             : page;
     }
-    public async Task<byte[]> GetStartPageCaptchaImage(City city, string captchaCode, CancellationToken cToken)
+    public async Task<byte[]> GetStartPageCaptchaImage(City city, KdmidId kdmidId, string captchaCode, CancellationToken cToken)
     {
         var httpClient = _httpClientFactory.CreateClient(Constants.Kdmid);
 
@@ -57,9 +62,30 @@ public sealed class KdmidHttpClient(
 
         var sessionIdValue = sessionIdData[1];
 
-        _cache.Set(SessionIdKey, sessionIdValue);
+        var isCacheExist = await _readerCache.IsExists<KdmidRequestCache>(new()
+        {
+            Filter = x => x.City.Code == city.Code && x.KdmidId.Id == kdmidId.Id
+        }, cToken);
 
-        httpClient.DefaultRequestHeaders.Add("Cookie", $"{SessionIdKey}={sessionIdValue}");
+        if (isCacheExist)
+        {
+            await _writerCache.Update<KdmidRequestCache>(new(x => x.Headers = new Dictionary<string, string> { { SessionIdKey, sessionIdValue } })
+            {
+                QueryOptions = new()
+                {
+                    Filter = x => x.City.Code == city.Code && x.KdmidId.Id == kdmidId.Id
+                }
+            }, cToken);
+        }
+        else
+        {
+            await _writerCache.CreateOne<KdmidRequestCache>(new()
+            {
+                City = city,
+                KdmidId = kdmidId,
+                Headers = new Dictionary<string, string> { { SessionIdKey, sessionIdValue } }
+            }, cToken);
+        };
 
         return captchaImage;
     }
@@ -71,14 +97,37 @@ public sealed class KdmidHttpClient(
 
         var stringContent = new StringContent(content, Encoding.ASCII, new MediaTypeHeaderValue(FormDataMediaType));
 
-        httpClient.DefaultRequestHeaders.Add("Host", uri.Host);
-        httpClient.DefaultRequestHeaders.Add("Origin", uri.GetLeftPart(UriPartial.Authority));
-        httpClient.DefaultRequestHeaders.Add("Referer", uri.AbsoluteUri);
-        httpClient.DefaultRequestHeaders.Add("Upgrade-Insecure-Requests", "1");
-        httpClient.DefaultRequestHeaders.Add("Sec-Fetch-Dest", "document");
-        httpClient.DefaultRequestHeaders.Add("Sec-Fetch-Mode", "navigate");
-        httpClient.DefaultRequestHeaders.Add("Sec-Fetch-Site", "same-origin");
-        httpClient.DefaultRequestHeaders.Add("Sec-Fetch-User", "?1");
+        var cache = await _readerCache.FindSingle<KdmidRequestCache>(new()
+        {
+            Filter = x => x.City.Code == city.Code && x.KdmidId.Id == kdmidId.Id
+        }, cToken);
+
+        if (cache is null || !cache.Headers.TryGetValue(SessionIdKey, out string? sessionIdValue))
+            throw new InvalidOperationException($"SessionId for '{city.Name}' with '{kdmidId.Id}' was not found.");
+
+        var kdmidHeaders = new Dictionary<string, string>
+        {
+            {"Cookie", $"{SessionIdKey}={sessionIdValue}"},
+            {"Host", uri.Host},
+            {"Origin", uri.GetLeftPart(UriPartial.Authority)},
+            {"Referer", uri.AbsoluteUri},
+            {"Upgrade-Insecure-Requests", "1"},
+            {"Sec-Fetch-Dest", "document"},
+            {"Sec-Fetch-Mode", "navigate"},
+            {"Sec-Fetch-Site", "same-origin"},
+            {"Sec-Fetch-User", "?1"}
+        };
+
+        await _writerCache.Update<KdmidRequestCache>(new(x => x.Headers = kdmidHeaders)
+        {
+            QueryOptions = new()
+            {
+                Filter = x => x.City.Code == city.Code && x.KdmidId.Id == kdmidId.Id
+            }
+        }, cToken);
+
+        foreach (var (key, value) in kdmidHeaders)
+            httpClient.DefaultRequestHeaders.Add(key, value);
 
         var postResponse = await httpClient.PostAsync(uri, stringContent, cToken);
 
@@ -99,6 +148,17 @@ public sealed class KdmidHttpClient(
 
         var stringContent = new StringContent(content, Encoding.UTF8, FormDataMediaType);
 
+        var cache = await _readerCache.FindSingle<KdmidRequestCache>(new()
+        {
+            Filter = x => x.City.Code == city.Code && x.KdmidId.Id == kdmidId.Id
+        }, cToken);
+
+        if (cache is null || cache.Headers.Count == 0)
+            throw new InvalidOperationException($"Cache for '{city.Name}' with '{kdmidId.Id}' was not found.");
+
+        foreach (var (key, value) in cache.Headers)
+            httpClient.DefaultRequestHeaders.Add(key, value);
+
         var postResponse = await httpClient.PostAsync(uri, stringContent, cToken);
 
         if (postResponse.StatusCode != HttpStatusCode.OK)
@@ -116,20 +176,18 @@ public sealed class KdmidHttpClient(
 
         var uri = new Uri(GetBaseUrl(city) + $"SPCalendar.aspx?bjo={kdmidId.Id}");
 
-        if (!_cache.TryGetValue(SessionIdKey, out var sessionIdValue))
-            throw new InvalidOperationException("The SessionId is not found in the cache.");
-
         var stringContent = new StringContent(content, Encoding.UTF8, FormDataMediaType);
 
-        httpClient.DefaultRequestHeaders.Add("Cookie", $"{SessionIdKey}={sessionIdValue}");
-        httpClient.DefaultRequestHeaders.Add("Host", uri.Host);
-        httpClient.DefaultRequestHeaders.Add("Origin", uri.GetLeftPart(UriPartial.Authority));
-        httpClient.DefaultRequestHeaders.Add("Referer", uri.AbsoluteUri);
-        httpClient.DefaultRequestHeaders.Add("Upgrade-Insecure-Requests", "1");
-        httpClient.DefaultRequestHeaders.Add("Sec-Fetch-Dest", "document");
-        httpClient.DefaultRequestHeaders.Add("Sec-Fetch-Mode", "navigate");
-        httpClient.DefaultRequestHeaders.Add("Sec-Fetch-Site", "same-origin");
-        httpClient.DefaultRequestHeaders.Add("Sec-Fetch-User", "?1");
+        var cache = await _readerCache.FindSingle<KdmidRequestCache>(new()
+        {
+            Filter = x => x.City.Code == city.Code && x.KdmidId.Id == kdmidId.Id
+        }, cToken);
+
+        if (cache is null || cache.Headers.Count == 0)
+            throw new InvalidOperationException($"Cache for '{city.Name}' with '{kdmidId.Id}' was not found.");
+
+        foreach (var (key, value) in cache.Headers)
+            httpClient.DefaultRequestHeaders.Add(key, value);
 
         var postResponse = await httpClient.PostAsync(uri, stringContent, cToken);
 

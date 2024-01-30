@@ -45,7 +45,7 @@ public sealed class KdmidRequestService(
         var startPageResponse = await _httpClient.GetStartPage(city, kdmidId, cToken);
         var startPage = _htmlDocument.GetStartPage(startPageResponse);
 
-        var captchaImage = await _httpClient.GetStartPageCaptchaImage(city, startPage.CaptchaCode, cToken);
+        var captchaImage = await _httpClient.GetStartPageCaptchaImage(city, kdmidId, startPage.CaptchaCode, cToken);
 
         const string CaptchaKey = "ctl00%24MainContent%24txtCode=";
         var captchaValue = await _captchaService.SolveIntegerCaptcha(captchaImage, cToken);
