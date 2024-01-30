@@ -6,9 +6,8 @@ using static KdmidScheduler.Registrations;
 var builder = WebApplication.CreateSlimBuilder(args);
 
 builder.Services
-    .AddKdmidInfrastructure()
-    .AddKdmidVpsInfrastructure()
     .AddKdmidCore()
+    .AddKdmidVpsInfrastructure()
     .AddControllers(options => options.Filters.Add<BotExceptionFilter>());
 
 builder.Services.AddCors(options =>

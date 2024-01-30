@@ -20,7 +20,7 @@ namespace KdmidScheduler.Infrastructure;
 
 public static class Registrations
 {
-    public static IServiceCollection AddKdmidInfrastructure(this IServiceCollection services)
+    private static IServiceCollection AddKdmidInfrastructure(this IServiceCollection services)
     {
         services
             .AddLogging()
@@ -57,16 +57,15 @@ public static class Registrations
             x.BaseAddress = new Uri("https://api.anti-captcha.com/");
         });
 
-        services.AddScoped< IPersistenceWriterRepository<KdmidAvailableDates>, MongoDbWriterRepository<KdmidMongoDbContext, KdmidAvailableDates>>();
-
-        services.AddScoped<IKdmidHttpClient, KdmidHttpClient>();
-        services.AddScoped<IKdmidCaptcha, KdmidCaptchaService>();
-        services.AddScoped<IKdmidHtmlDocument, KdmidHtmlDocument>();
-
-        return services;
+        return services
+            .AddScoped<IKdmidHttpClient, KdmidHttpClient>()
+            .AddScoped<IKdmidCaptcha, KdmidCaptchaService>()
+            .AddScoped<IKdmidHtmlDocument, KdmidHtmlDocument>();
     }
+
     public static IServiceCollection AddKdmidAzureInfrastructure(this IServiceCollection services) => services
-        .AddAzureTable<KdmidAzureTableContext>(ServiceLifetime.Transient)
+        .AddKdmidInfrastructure()
+        .AddAzureTable<KdmidAzureTableContext>(ServiceLifetime.Scoped)
         .AddTelegramBot<KdmidBotResponse>(x =>
         {
             x.Services.AddScoped<IPersistenceReaderRepository<KdmidBotCommand>, AzureTableReaderRepository<KdmidAzureTableContext, KdmidBotCommand>>();
@@ -74,7 +73,9 @@ public static class Registrations
             x.AddCommandsStore<Bots.Stores.AzureTable.KdmidBotCommandsStore>();
         });
     public static IServiceCollection AddKdmidVpsInfrastructure(this IServiceCollection services) => services
+        .AddKdmidInfrastructure()
         .AddMongoDb<KdmidMongoDbContext>(ServiceLifetime.Scoped)
+        .AddScoped<IPersistenceWriterRepository<KdmidAvailableDates>, MongoDbWriterRepository<KdmidMongoDbContext, KdmidAvailableDates>>()
         .AddTelegramBot<KdmidBotResponse>(x =>
         {
             x.Services.AddScoped<IPersistenceReaderRepository<KdmidBotCommands>, MongoDbReaderRepository<KdmidMongoDbContext, KdmidBotCommands>>();

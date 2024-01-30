@@ -19,7 +19,7 @@ public sealed class KdmidBelgradeTask(
             KdmidAvailableDates,
             KdmidAvailableDatesSteps,
             KdmidBackgroundStepHandler>
-    (Name, correlationOptions.Value.Id,  logger, serviceScopeFactory, settingsProvider)
+    (Name, correlationOptions.Value.Id, logger, serviceScopeFactory, settingsProvider)
 {
     public const string Name = "Belgrade";
 

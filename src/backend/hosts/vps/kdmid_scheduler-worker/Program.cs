@@ -10,15 +10,14 @@ using Net.Shared.Persistence.Repositories.MongoDb;
 var builder = Host.CreateApplicationBuilder(args);
 
 builder.Services
-    .AddKdmidInfrastructure()
-    .AddKdmidVpsInfrastructure()
     .AddKdmidCore()
+    .AddKdmidVpsInfrastructure()
     .AddBackgroundTasks(x =>
     {
-        x.AddStepsReaderRepository<KdmidAvailableDatesSteps, MongoDbReaderRepository<KdmidMongoDbContext, KdmidAvailableDatesSteps>>();
         x.AddProcessRepository<KdmidAvailableDates, MongoDbProcessRepository<KdmidMongoDbContext, KdmidAvailableDates>>();
+        x.AddProcessStepsRepository<KdmidAvailableDatesSteps, MongoDbReaderRepository<KdmidMongoDbContext, KdmidAvailableDatesSteps>>();
 
-        x.AddTask<KdmidBelgradeTask>(KdmidParisTask.Name);
+        x.AddTask<KdmidBelgradeTask>(KdmidBelgradeTask.Name);
         x.AddTask<KdmidBerlinTask>(KdmidBerlinTask.Name);
         x.AddTask<KdmidBernTask>(KdmidBernTask.Name);
         x.AddTask<KdmidBrusselsTask>(KdmidBrusselsTask.Name);
@@ -32,7 +31,6 @@ builder.Services
         x.AddTask<KdmidRigaTask>(KdmidRigaTask.Name);
         x.AddTask<KdmidSarajevoTask>(KdmidSarajevoTask.Name);
         x.AddTask<KdmidTiranaTask>(KdmidTiranaTask.Name);
-
     });
 
 builder
