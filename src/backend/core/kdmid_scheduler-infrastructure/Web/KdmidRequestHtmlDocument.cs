@@ -105,9 +105,7 @@ public sealed class KdmidRequestHtmlDocument : IKdmidRequestHtmlDocument
         if (error is not null)
             throw new UserInvalidOperationException(error.InnerText);
 
-        var resultTable = _htmlDocument
-            .DocumentNode
-            .SelectSingleNode("//td[@id='center-panel']");
+        var resultTable = _htmlDocument.DocumentNode.SelectSingleNode("//td[@id='center-panel']");
 
         if (resultTable is null)
             return new(string.Empty, new Dictionary<string, string>(0));
@@ -155,10 +153,7 @@ public sealed class KdmidRequestHtmlDocument : IKdmidRequestHtmlDocument
         if (error is not null)
             throw new UserInvalidOperationException(error.InnerText);
 
-        var resultTable = _htmlDocument
-            .DocumentNode
-            .SelectNodes("//td[@id='center-panel']")
-            .FirstOrDefault();
+        var resultTable = _htmlDocument.DocumentNode.SelectSingleNode("//td[@id='center-panel']");
 
         if (resultTable is null)
             return new("The Confirmation page was not found.");

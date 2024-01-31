@@ -1,4 +1,5 @@
-﻿using KdmidScheduler.Abstractions.Interfaces.Infrastructure.Web;
+﻿using KdmidScheduler.Abstractions.Interfaces.Infrastructure.Persistence.Repositories;
+using KdmidScheduler.Abstractions.Interfaces.Infrastructure.Web;
 using KdmidScheduler.Abstractions.Models.Settings;
 using KdmidScheduler.Infrastructure.Bots;
 using KdmidScheduler.Infrastructure.Web;
@@ -80,8 +81,10 @@ public static class Registrations
         .AddKdmidInfrastructure()
         .AddAzureTable<PersistenceInfrastructure.AzureTable.Contexts.KdmidPersistenceContext>(ServiceLifetime.Scoped)
         .AddScoped<AzureTableReaderRepository<PersistenceInfrastructure.AzureTable.Contexts.KdmidPersistenceContext, PersistenceModels.AzureTable.v1.KdmidAvailableDates>>()
+        .AddScoped<IKdmidRequestHttpClientCache, PersistenceInfrastructure.AzureTable.Repositories.Web.KdmidRequestHttpClientCache>()
         .AddScoped<AzureTableReaderRepository<PersistenceInfrastructure.AzureTable.Contexts.KdmidPersistenceContext, PersistenceModels.AzureTable.v1.KdmidRequestCache>>()
         .AddScoped<AzureTableWriterRepository<PersistenceInfrastructure.AzureTable.Contexts.KdmidPersistenceContext, PersistenceModels.AzureTable.v1.KdmidRequestCache>>()
+        .AddScoped<IKdmidResponseRepository, PersistenceInfrastructure.AzureTable.Repositories.KdmidResponseRepository>()
         .AddScoped<AzureTableReaderRepository<PersistenceInfrastructure.AzureTable.Contexts.KdmidPersistenceContext, PersistenceModels.AzureTable.v1.KdmidBotCommands>>()
         .AddScoped<AzureTableWriterRepository<PersistenceInfrastructure.AzureTable.Contexts.KdmidPersistenceContext, PersistenceModels.AzureTable.v1.KdmidBotCommands>>()
         .AddTelegramBot<KdmidBotResponse>(x =>
@@ -92,8 +95,10 @@ public static class Registrations
         .AddKdmidInfrastructure()
         .AddMongoDb<PersistenceInfrastructure.MongoDb.Contexts.KdmidPersistenceContext>(ServiceLifetime.Scoped)
         .AddScoped<MongoDbWriterRepository<PersistenceInfrastructure.MongoDb.Contexts.KdmidPersistenceContext, PersistenceModels.MongoDb.v1.KdmidAvailableDates>>()
+        .AddScoped<IKdmidRequestHttpClientCache, PersistenceInfrastructure.MongoDb.Repositories.Web.KdmidRequestHttpClientCache>()
         .AddScoped<MongoDbReaderRepository<PersistenceInfrastructure.MongoDb.Contexts.KdmidPersistenceContext, PersistenceModels.MongoDb.v1.KdmidRequestCache>>()
         .AddScoped<MongoDbWriterRepository<PersistenceInfrastructure.MongoDb.Contexts.KdmidPersistenceContext, PersistenceModels.MongoDb.v1.KdmidRequestCache>>()
+        .AddScoped<IKdmidResponseRepository, PersistenceInfrastructure.MongoDb.Repositories.KdmidResponseRepository>()
         .AddScoped<MongoDbReaderRepository<PersistenceInfrastructure.MongoDb.Contexts.KdmidPersistenceContext, PersistenceModels.MongoDb.v1.KdmidBotCommands>>()
         .AddScoped<MongoDbWriterRepository<PersistenceInfrastructure.MongoDb.Contexts.KdmidPersistenceContext, PersistenceModels.MongoDb.v1.KdmidBotCommands>>()
         .AddTelegramBot<KdmidBotResponse>(x =>

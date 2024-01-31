@@ -68,7 +68,7 @@ public sealed class KdmidRequestService(
             availableDates.Add(parsedDate, dateString.Value);
         }
 
-        return new AvailableDatesResult(applicationFormData, availableDates);
+        return new AvailableDatesResult(calendarPage.FormData, availableDates);
     }
     public async Task ConfirmChosenDate(City city, KdmidId kdmidId, ChosenDateResult chosenResult, CancellationToken cToken)
     {
