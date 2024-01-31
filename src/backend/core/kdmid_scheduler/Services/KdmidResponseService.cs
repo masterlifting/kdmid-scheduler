@@ -1,37 +1,31 @@
 ﻿using KdmidScheduler.Abstractions.Interfaces.Core.Services;
+using KdmidScheduler.Abstractions.Interfaces.Infrastructure.Persistence.Repositories;
 using KdmidScheduler.Abstractions.Models.Core.v1.Kdmid;
-using KdmidScheduler.Abstractions.Models.Infrastructure.Persistence.MongoDb.v1;
 using KdmidScheduler.Abstractions.Models.Settings;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-using Net.Shared.Abstractions.Models.Settings;
 using Net.Shared.Bots.Abstractions.Interfaces;
 using Net.Shared.Bots.Abstractions.Models.Bot;
 using Net.Shared.Bots.Abstractions.Models.Response;
 using Net.Shared.Extensions.Logging;
 using Net.Shared.Extensions.Serialization.Json;
-using Net.Shared.Persistence.Abstractions.Interfaces.Repositories;
-using Net.Shared.Persistence.Abstractions.Models.Contexts;
 
 using static KdmidScheduler.Abstractions.Constants;
 using static Net.Shared.Bots.Abstractions.Constants;
-using static Net.Shared.Persistence.Abstractions.Constants.Enums;
 
 namespace KdmidScheduler.Services;
 
 public sealed class KdmidResponseService(
     ILogger<KdmidResponseService> logger,
-    IOptions<CorrelationSettings> correlationOptions,
     IOptions<KdmidSettings> kdmidOptions,
     IBotClient botClient,
     IBotCommandsStore botCommandsStore,
     IKdmidRequestService kdmidRequestService,
-    IPersistenceWriterRepository<KdmidAvailableDates> writerRepository
+    IKdmidResponseRepository repository
     ) : IKdmidResponseService
 {
-    private readonly Guid _correlationId = correlationOptions.Value.Id;
 
     private readonly ILogger<KdmidResponseService> _log = logger;
 
@@ -40,7 +34,7 @@ public sealed class KdmidResponseService(
     private readonly IBotClient _botClient = botClient;
     private readonly IBotCommandsStore _botCommandsStore = botCommandsStore;
     private readonly IKdmidRequestService _kdmidRequestService = kdmidRequestService;
-    private readonly IPersistenceWriterRepository<KdmidAvailableDates> _writerRepository = writerRepository;
+    private readonly IKdmidResponseRepository _repository = repository;
 
     public async Task SendAvailableEmbassies(Chat chat, CancellationToken cToken)
     {
@@ -72,7 +66,7 @@ public sealed class KdmidResponseService(
         var commands = await _botCommandsStore.Get(chat.Id, cToken);
 
         var availableCommands = commands
-            .Where(x => x.Name == Abstractions.Constants.KdmidBotCommands.CommandInProcess)
+            .Where(x => x.Name == KdmidBotCommandNames.CommandInProcess)
             .ToArray();
 
         var buttonsData = new Dictionary<string, string>(availableCommands.Length);
@@ -103,22 +97,7 @@ public sealed class KdmidResponseService(
         var city = command.Parameters[BotCommandParametersCityKey].FromJson<City>();
         var kdmidId = command.Parameters[BotCommandParametersKdmidIdKey].FromJson<KdmidId>();
 
-        command = await _botCommandsStore.Create(chatId, Abstractions.Constants.KdmidBotCommands.CommandInProcess, new()
-        {
-            { BotCommandParametersCityKey, command.Parameters[BotCommandParametersCityKey] },
-            { BotCommandParametersKdmidIdKey, command.Parameters[BotCommandParametersKdmidIdKey] }
-        }, cToken);
-
-        await _writerRepository.CreateOne(new KdmidAvailableDates()
-        {
-            Chat = new(chatId, new(string.Empty)),
-            City = city,
-            Command = command,
-            StepId = (int)KdmidProcessSteps.CheckAvailableDates,
-            StatusId = (int)ProcessStatuses.Ready,
-            CorrelationId = _correlationId
-
-        }, cToken);
+        await _repository.CreateCommand(KdmidBotCommandNames.CommandInProcess, chatId, city, kdmidId, cToken);
 
         await _botClient.SendMessage(chatId, new($"The embassy of '{city.Name}' with Id '{kdmidId.Id}' has been added to processing."), cToken);
         await _botClient.SendMessage(_botClient.AdminId, new($"The embassy of '{city.Name}' with Id '{kdmidId.Id}' has been added to the chat '{chatId}'."), cToken);
@@ -128,25 +107,9 @@ public sealed class KdmidResponseService(
         var city = command.Parameters[BotCommandParametersCityKey].FromJson<City>();
         var kdmidId = command.Parameters[BotCommandParametersKdmidIdKey].FromJson<KdmidId>();
 
-        command.Name = Abstractions.Constants.KdmidBotCommands.CommandInProcess;
+        command.Name = KdmidBotCommandNames.CommandInProcess;
 
-        await _botCommandsStore.Update(chatId, command.Id, command, cToken);
-
-        var updateOptions = new PersistenceUpdateOptions<KdmidAvailableDates>(x =>
-        {
-            x.City = city;
-            x.Command = command;
-            x.StepId = (int)KdmidProcessSteps.CheckAvailableDates;
-            x.StatusId = (int)ProcessStatuses.Ready;
-        })
-        {
-            QueryOptions = new()
-            {
-                Filter = x => x.Chat.Id == chatId && x.Command.Id == command.Id
-            }
-        };
-
-        await _writerRepository.Update(updateOptions, cToken);
+        await _repository.UpdateCommand(command, chatId, city, kdmidId, cToken);
 
         await _botClient.SendMessage(chatId, new($"The embassy of '{city.Name}' with Id '{kdmidId.Id}' has been updated."), cToken);
     }
@@ -155,14 +118,7 @@ public sealed class KdmidResponseService(
         var city = command.Parameters[BotCommandParametersCityKey].FromJson<City>();
         var kdmidId = command.Parameters[BotCommandParametersKdmidIdKey].FromJson<KdmidId>();
 
-        await _botCommandsStore.Delete(chatId, command.Id, cToken);
-
-        var deleteOptions = new PersistenceQueryOptions<KdmidAvailableDates>()
-        {
-            Filter = x => x.Chat.Id == chatId && x.Command.Id == command.Id
-        };
-
-        await _writerRepository.Delete(deleteOptions, cToken);
+        await _repository.DeleteCommand(chatId, command.Id, cToken);
 
         await _botClient.SendMessage(chatId, new($"The embassy of '{city.Name}' with Id '{kdmidId.Id}' is deleted."), cToken);
     }
@@ -186,7 +142,7 @@ public sealed class KdmidResponseService(
         foreach (var date in availableDatesResult.Dates)
         {
             var chosenResult = new ChosenDateResult(availableDatesResult.FormData, date.Key, date.Value);
-            var nextCommand = await _botCommandsStore.Create(chat.Id, Abstractions.Constants.KdmidBotCommands.SendConfirmResult, new()
+            var nextCommand = await _botCommandsStore.Create(chat.Id, KdmidBotCommandNames.SendConfirmResult, new()
             {
                 { BotCommandParametersCityKey, command.Parameters[BotCommandParametersCityKey] },
                 { BotCommandParametersKdmidIdKey, command.Parameters[BotCommandParametersKdmidIdKey] },

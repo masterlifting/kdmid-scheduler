@@ -1,8 +1,8 @@
 ﻿using KdmidScheduler.Abstractions.Models.Core.v1.Kdmid;
 
-namespace KdmidScheduler.Abstractions.Interfaces.Infrastructure.Services;
+namespace KdmidScheduler.Abstractions.Interfaces.Infrastructure.Web;
 
-public interface IKdmidHtmlDocument
+public interface IKdmidRequestHtmlDocument
 {
     StartPage GetStartPage(string payload);
     string GetApplicationFormData(string payload);

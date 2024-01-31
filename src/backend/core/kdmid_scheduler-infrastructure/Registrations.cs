@@ -1,9 +1,6 @@
-﻿using KdmidScheduler.Abstractions.Interfaces.Infrastructure.Services;
-using KdmidScheduler.Abstractions.Models.Infrastructure.Persistence.AzureTable.v1;
-using KdmidScheduler.Abstractions.Models.Infrastructure.Persistence.MongoDb.v1;
+﻿using KdmidScheduler.Abstractions.Interfaces.Infrastructure.Web;
 using KdmidScheduler.Abstractions.Models.Settings;
 using KdmidScheduler.Infrastructure.Bots;
-using KdmidScheduler.Infrastructure.Persistence.Contexts;
 using KdmidScheduler.Infrastructure.Web;
 
 using Microsoft.Extensions.Configuration;
@@ -12,9 +9,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Net.Shared;
 using Net.Shared.Bots;
 using Net.Shared.Persistence;
-using Net.Shared.Persistence.Abstractions.Interfaces.Repositories;
 using Net.Shared.Persistence.Repositories.AzureTable;
 using Net.Shared.Persistence.Repositories.MongoDb;
+
+using PersistenceInfrastructure = KdmidScheduler.Infrastructure.Persistence;
+using PersistenceModels = KdmidScheduler.Abstractions.Models.Infrastructure.Persistence;
 
 namespace KdmidScheduler.Infrastructure;
 
@@ -72,42 +71,33 @@ public static class Registrations
         });
 
         return services
-            .AddScoped<IKdmidHttpClient, KdmidHttpClient>()
-            .AddScoped<IKdmidCaptcha, KdmidCaptchaService>()
-            .AddScoped<IKdmidHtmlDocument, KdmidHtmlDocument>();
+            .AddScoped<IKdmidRequestCaptcha, KdmidRequestCaptchaService>()
+            .AddScoped<IKdmidRequestHttpClient, KdmidRequestHttpClient>()
+            .AddScoped<IKdmidRequestHtmlDocument, KdmidRequestHtmlDocument>();
     }
 
     public static IServiceCollection AddKdmidAzureInfrastructure(this IServiceCollection services) => services
         .AddKdmidInfrastructure()
-        .AddAzureTable<KdmidAzureTableContext>(ServiceLifetime.Scoped)
-        .AddScoped<
-            IPersistenceReaderRepository<Abstractions.Models.Infrastructure.Persistence.AzureTable.v1.KdmidRequestCache>, 
-            AzureTableReaderRepository<KdmidAzureTableContext, Abstractions.Models.Infrastructure.Persistence.AzureTable.v1.KdmidRequestCache>>()
-        .AddScoped<
-            IPersistenceWriterRepository<Abstractions.Models.Infrastructure.Persistence.AzureTable.v1.KdmidRequestCache>, 
-            AzureTableWriterRepository<KdmidAzureTableContext, Abstractions.Models.Infrastructure.Persistence.AzureTable.v1.KdmidRequestCache>>()
+        .AddAzureTable<PersistenceInfrastructure.AzureTable.Contexts.KdmidPersistenceContext>(ServiceLifetime.Scoped)
+        .AddScoped<AzureTableReaderRepository<PersistenceInfrastructure.AzureTable.Contexts.KdmidPersistenceContext, PersistenceModels.AzureTable.v1.KdmidAvailableDates>>()
+        .AddScoped<AzureTableReaderRepository<PersistenceInfrastructure.AzureTable.Contexts.KdmidPersistenceContext, PersistenceModels.AzureTable.v1.KdmidRequestCache>>()
+        .AddScoped<AzureTableWriterRepository<PersistenceInfrastructure.AzureTable.Contexts.KdmidPersistenceContext, PersistenceModels.AzureTable.v1.KdmidRequestCache>>()
+        .AddScoped<AzureTableReaderRepository<PersistenceInfrastructure.AzureTable.Contexts.KdmidPersistenceContext, PersistenceModels.AzureTable.v1.KdmidBotCommands>>()
+        .AddScoped<AzureTableWriterRepository<PersistenceInfrastructure.AzureTable.Contexts.KdmidPersistenceContext, PersistenceModels.AzureTable.v1.KdmidBotCommands>>()
         .AddTelegramBot<KdmidBotResponse>(x =>
         {
-            x.Services.AddScoped<IPersistenceReaderRepository<KdmidBotCommand>, AzureTableReaderRepository<KdmidAzureTableContext, KdmidBotCommand>>();
-            x.Services.AddScoped<IPersistenceWriterRepository<KdmidBotCommand>, AzureTableWriterRepository<KdmidAzureTableContext, KdmidBotCommand>>();
-            x.AddCommandsStore<Bots.Stores.AzureTable.KdmidBotCommandsStore>();
+            x.AddCommandsStore<PersistenceInfrastructure.AzureTable.Repositories.Bots.KdmidBotCommandsStore>();
         });
     public static IServiceCollection AddKdmidVpsInfrastructure(this IServiceCollection services) => services
         .AddKdmidInfrastructure()
-        .AddMongoDb<KdmidMongoDbContext>(ServiceLifetime.Scoped)
-        .AddScoped<
-            IPersistenceReaderRepository<Abstractions.Models.Infrastructure.Persistence.MongoDb.v1.KdmidRequestCache>, 
-            MongoDbReaderRepository<KdmidMongoDbContext, Abstractions.Models.Infrastructure.Persistence.MongoDb.v1.KdmidRequestCache>>()
-        .AddScoped<
-            IPersistenceWriterRepository<Abstractions.Models.Infrastructure.Persistence.MongoDb.v1.KdmidRequestCache>, 
-            MongoDbWriterRepository<KdmidMongoDbContext, Abstractions.Models.Infrastructure.Persistence.MongoDb.v1.KdmidRequestCache>>()
-        .AddScoped<
-            IPersistenceWriterRepository<KdmidAvailableDates>, 
-            MongoDbWriterRepository<KdmidMongoDbContext, KdmidAvailableDates>>()
+        .AddMongoDb<PersistenceInfrastructure.MongoDb.Contexts.KdmidPersistenceContext>(ServiceLifetime.Scoped)
+        .AddScoped<MongoDbWriterRepository<PersistenceInfrastructure.MongoDb.Contexts.KdmidPersistenceContext, PersistenceModels.MongoDb.v1.KdmidAvailableDates>>()
+        .AddScoped<MongoDbReaderRepository<PersistenceInfrastructure.MongoDb.Contexts.KdmidPersistenceContext, PersistenceModels.MongoDb.v1.KdmidRequestCache>>()
+        .AddScoped<MongoDbWriterRepository<PersistenceInfrastructure.MongoDb.Contexts.KdmidPersistenceContext, PersistenceModels.MongoDb.v1.KdmidRequestCache>>()
+        .AddScoped<MongoDbReaderRepository<PersistenceInfrastructure.MongoDb.Contexts.KdmidPersistenceContext, PersistenceModels.MongoDb.v1.KdmidBotCommands>>()
+        .AddScoped<MongoDbWriterRepository<PersistenceInfrastructure.MongoDb.Contexts.KdmidPersistenceContext, PersistenceModels.MongoDb.v1.KdmidBotCommands>>()
         .AddTelegramBot<KdmidBotResponse>(x =>
         {
-            x.Services.AddScoped<IPersistenceReaderRepository<KdmidBotCommands>, MongoDbReaderRepository<KdmidMongoDbContext, KdmidBotCommands>>();
-            x.Services.AddScoped<IPersistenceWriterRepository<KdmidBotCommands>, MongoDbWriterRepository<KdmidMongoDbContext, KdmidBotCommands>>();
-            x.AddCommandsStore<Bots.Stores.MongoDb.KdmidBotCommandsStore>();
+            x.AddCommandsStore<PersistenceInfrastructure.MongoDb.Repositories.Bots.KdmidBotCommandsStore>();
         });
 }

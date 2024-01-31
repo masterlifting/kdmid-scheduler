@@ -1,14 +1,14 @@
 ﻿using System.Text;
 
 using HtmlAgilityPack;
-using KdmidScheduler.Abstractions.Interfaces.Infrastructure.Services;
+using KdmidScheduler.Abstractions.Interfaces.Infrastructure.Web;
 using KdmidScheduler.Abstractions.Models.Core.v1.Kdmid;
 
 using Net.Shared.Abstractions.Models.Exceptions;
 
 namespace KdmidScheduler.Infrastructure.Web;
 
-public sealed class KdmidHtmlDocument : IKdmidHtmlDocument
+public sealed class KdmidRequestHtmlDocument : IKdmidRequestHtmlDocument
 {
     private readonly HtmlDocument _htmlDocument = new();
 

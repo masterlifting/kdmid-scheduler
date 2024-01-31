@@ -1,5 +1,4 @@
-﻿using KdmidScheduler.Abstractions.Interfaces.Infrastructure.Models.Persistence;
-
+﻿using KdmidScheduler.Abstractions.Interfaces.Infrastructure.Persistence.Entities;
 using MongoDB.Bson;
 
 using Net.Shared.Bots.Abstractions.Models.Bot;
@@ -7,7 +6,7 @@ using Net.Shared.Persistence.Abstractions.Interfaces.Entities;
 
 namespace KdmidScheduler.Abstractions.Models.Infrastructure.Persistence.MongoDb.v1;
 
-public sealed class KdmidBotCommands : IKdmidBotCommand, IPersistentNoSql
+public sealed class KdmidBotCommands : IKdmidBotCommands, IPersistentNoSql
 {
     public ObjectId Id { get; set; } = ObjectId.Empty;
     public string ChatId { get; init; } = null!;

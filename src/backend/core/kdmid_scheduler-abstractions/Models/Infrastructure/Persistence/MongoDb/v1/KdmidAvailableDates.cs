@@ -2,10 +2,11 @@
 using Net.Shared.Bots.Abstractions.Models.Bot;
 using MongoDB.Bson;
 using KdmidScheduler.Abstractions.Models.Core.v1.Kdmid;
+using KdmidScheduler.Abstractions.Interfaces.Infrastructure.Persistence.Entities;
 
 namespace KdmidScheduler.Abstractions.Models.Infrastructure.Persistence.MongoDb.v1;
 
-public sealed class KdmidAvailableDates : IPersistentNoSql, IPersistentProcess
+public sealed class KdmidAvailableDates : IKdmidRequestAvailableDates, IPersistentNoSql
 {
     public ObjectId Id { get; set; } = ObjectId.Empty;
     public Guid? CorrelationId { get; set; }

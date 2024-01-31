@@ -11,7 +11,7 @@ public static class Constants
     public static readonly string BotCommandParametersAttemptsKey = typeof(Attempts).FullName![(typeof(Attempts).FullName!.IndexOf(".v1") + 1)..];
     public const byte AttemptsLimit = 23;
 
-    public static class KdmidBotCommands
+    public static class KdmidBotCommandNames
     {
         public const string Mine = "mine";
         public const string CommandInProcess = "commandInProcess";

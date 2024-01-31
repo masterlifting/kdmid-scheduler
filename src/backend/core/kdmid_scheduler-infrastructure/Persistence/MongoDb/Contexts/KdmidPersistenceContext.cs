@@ -1,5 +1,4 @@
 ﻿using KdmidScheduler.Abstractions.Models.Infrastructure.Persistence.MongoDb.v1;
-
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -8,14 +7,14 @@ using Net.Shared.Persistence.Contexts;
 
 using static KdmidScheduler.Abstractions.Constants;
 
-namespace KdmidScheduler.Infrastructure.Persistence.Contexts;
+namespace KdmidScheduler.Infrastructure.Persistence.MongoDb.Contexts;
 
-public sealed class KdmidMongoDbContext(ILogger<KdmidMongoDbContext> logger, IOptions<MongoDbConnectionSettings> options) : MongoDbContext(logger, options.Value)
+public sealed class KdmidPersistenceContext(ILogger<KdmidPersistenceContext> logger, IOptions<MongoDbConnectionSettings> options) : MongoDbContext(logger, options.Value)
 {
     public override void OnModelCreating(MongoDbBuilder builder)
     {
-        builder.SetCollection<Abstractions.Models.Infrastructure.Persistence.MongoDb.v1.KdmidRequestCache>();
-        builder.SetCollection<Abstractions.Models.Infrastructure.Persistence.MongoDb.v1.KdmidBotCommands>();
+        builder.SetCollection<KdmidRequestCache>();
+        builder.SetCollection<KdmidBotCommands>();
         builder.SetCollection<KdmidAvailableDates>();
         builder.SetCollection(new KdmidAvailableDatesSteps[]
         {

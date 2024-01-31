@@ -1,18 +1,20 @@
 ﻿using KdmidScheduler.Abstractions.Models.Infrastructure.Persistence.MongoDb.v1;
+using KdmidScheduler.Infrastructure.Persistence.MongoDb.Contexts;
 
 using Net.Shared.Bots.Abstractions.Interfaces;
 using Net.Shared.Bots.Abstractions.Models.Bot;
-using Net.Shared.Persistence.Abstractions.Interfaces.Repositories;
 using Net.Shared.Persistence.Abstractions.Models.Contexts;
+using Net.Shared.Persistence.Repositories.MongoDb;
 
-namespace KdmidScheduler.Infrastructure.Bots.Stores.MongoDb;
+namespace KdmidScheduler.Infrastructure.Persistence.MongoDb.Repositories.Bots;
 
 public sealed class KdmidBotCommandsStore(
-    IPersistenceReaderRepository<KdmidBotCommands> readerRepository,
-    IPersistenceWriterRepository<KdmidBotCommands> writerRepository) : IBotCommandsStore
+    MongoDbReaderRepository<KdmidPersistenceContext, KdmidBotCommands> reader,
+    MongoDbWriterRepository<KdmidPersistenceContext, KdmidBotCommands> writer
+    ) : IBotCommandsStore
 {
-    private readonly IPersistenceReaderRepository<KdmidBotCommands> _readerRepository = readerRepository;
-    private readonly IPersistenceWriterRepository<KdmidBotCommands> _writerRepository = writerRepository;
+    private readonly MongoDbReaderRepository<KdmidPersistenceContext, KdmidBotCommands> _reader = reader;
+    private readonly MongoDbWriterRepository<KdmidPersistenceContext, KdmidBotCommands> _writer = writer;
 
     public Task Create(string chatId, Command command, CancellationToken cToken)
     {
@@ -22,7 +24,7 @@ public sealed class KdmidBotCommandsStore(
             Command = command
         };
 
-        return _writerRepository.CreateOne(entity, cToken);
+        return _writer.CreateOne(entity, cToken);
     }
     public async Task<Command> Create(string chatId, string Name, Dictionary<string, string> Parameters, CancellationToken cToken)
     {
@@ -39,7 +41,7 @@ public sealed class KdmidBotCommandsStore(
             Filter = x => x.ChatId == chatId && x.Command.Id == commandId,
         };
 
-        await _writerRepository.Delete(deleteOptions, cToken);
+        await _writer.Delete(deleteOptions, cToken);
     }
     public async Task Update(string chatId, Guid commandId, Command command, CancellationToken cToken)
     {
@@ -51,7 +53,7 @@ public sealed class KdmidBotCommandsStore(
             }
         };
 
-        await _writerRepository.Update(updateOptions, cToken);
+        await _writer.Update(updateOptions, cToken);
     }
     public async Task Clear(string chatId, CancellationToken cToken)
     {
@@ -60,7 +62,7 @@ public sealed class KdmidBotCommandsStore(
             Filter = x => x.ChatId == chatId,
         };
 
-        await _writerRepository.Delete(deleteOptions, cToken);
+        await _writer.Delete(deleteOptions, cToken);
     }
 
     public async Task<Command> Get(string chatId, Guid commandId, CancellationToken cToken)
@@ -70,7 +72,7 @@ public sealed class KdmidBotCommandsStore(
             Filter = x => x.ChatId == chatId && x.Command.Id == commandId,
         };
 
-        var queryResult = await _readerRepository.FindSingle(queryOptions, cToken);
+        var queryResult = await _reader.FindSingle(queryOptions, cToken);
 
         return queryResult is not null
             ? queryResult.Command
@@ -83,7 +85,7 @@ public sealed class KdmidBotCommandsStore(
             Filter = x => x.ChatId == chatId,
         };
 
-        var data = await _readerRepository.FindMany(queryOptions, cToken);
+        var data = await _reader.FindMany(queryOptions, cToken);
 
         return data.Select(x => x.Command).ToArray();
     }

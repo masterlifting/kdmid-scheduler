@@ -131,7 +131,7 @@ public class KdmidBotApi(
             { BotCommandParametersKdmidIdKey, kdmidId.ToJson() }
         };
 
-        var botCommand = new Command(Guid.NewGuid(), Abstractions.Constants.KdmidBotCommands.CreateCommand, parameters);
+        var botCommand = new Command(Guid.NewGuid(), Abstractions.Constants.KdmidBotCommandNames.CreateCommand, parameters);
 
         await _botResponse.Create(chatId, botCommand, cToken);
 
@@ -143,7 +143,7 @@ public class KdmidBotApi(
 
         var botCommand = _botCommandsStore.Get(chatId, commandIdGuid, cToken).Result;
 
-        botCommand.Name = Abstractions.Constants.KdmidBotCommands.UpdateCommand;
+        botCommand.Name = Abstractions.Constants.KdmidBotCommandNames.UpdateCommand;
 
         var city = _kdmidRequestService.GetSupportedCity(command.CityCode, cToken);
 
@@ -174,7 +174,7 @@ public class KdmidBotApi(
 
         var botCommand = await _botCommandsStore.Get(chatId, commandIdGuid, cToken);
 
-        await _botResponse.Create(chatId, new Command(commandIdGuid, Abstractions.Constants.KdmidBotCommands.DeleteCommand, botCommand.Parameters), cToken);
+        await _botResponse.Create(chatId, new Command(commandIdGuid, Abstractions.Constants.KdmidBotCommandNames.DeleteCommand, botCommand.Parameters), cToken);
     }
     #endregion
 }

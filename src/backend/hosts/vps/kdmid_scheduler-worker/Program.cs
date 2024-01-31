@@ -1,7 +1,7 @@
 ﻿using KdmidScheduler;
 using KdmidScheduler.Abstractions.Models.Infrastructure.Persistence.MongoDb.v1;
 using KdmidScheduler.Infrastructure;
-using KdmidScheduler.Infrastructure.Persistence.Contexts;
+using KdmidScheduler.Infrastructure.Persistence.MongoDb.Contexts;
 using KdmidScheduler.Worker.KdmidBackground.Tasks;
 
 using Net.Shared.Background;
@@ -14,8 +14,8 @@ builder.Services
     .AddKdmidVpsInfrastructure()
     .AddBackgroundTasks(x =>
     {
-        x.AddProcessRepository<KdmidAvailableDates, MongoDbProcessRepository<KdmidMongoDbContext, KdmidAvailableDates>>();
-        x.AddProcessStepsRepository<KdmidAvailableDatesSteps, MongoDbReaderRepository<KdmidMongoDbContext, KdmidAvailableDatesSteps>>();
+        x.AddProcessRepository<KdmidAvailableDates, MongoDbProcessRepository<KdmidPersistenceContext, KdmidAvailableDates>>();
+        x.AddProcessStepsRepository<KdmidAvailableDatesSteps, MongoDbReaderRepository<KdmidPersistenceContext, KdmidAvailableDatesSteps>>();
 
         x.AddTask<KdmidBelgradeTask>(KdmidBelgradeTask.Name);
         x.AddTask<KdmidBerlinTask>(KdmidBerlinTask.Name);

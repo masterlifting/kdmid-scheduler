@@ -1,17 +1,17 @@
 ﻿using KdmidScheduler.Abstractions.Interfaces.Core.Services;
-using KdmidScheduler.Abstractions.Interfaces.Infrastructure.Services;
+using KdmidScheduler.Abstractions.Interfaces.Infrastructure.Web;
 using KdmidScheduler.Abstractions.Models.Core.v1.Kdmid;
 
 namespace KdmidScheduler.Services;
 
 public sealed class KdmidRequestService(
-    IKdmidHttpClient httpClient,
-    IKdmidHtmlDocument htmlDocument,
-    IKdmidCaptcha captchaService) : IKdmidRequestService
+    IKdmidRequestHttpClient httpClient,
+    IKdmidRequestHtmlDocument htmlDocument,
+    IKdmidRequestCaptcha captchaService) : IKdmidRequestService
 {
-    private readonly IKdmidHttpClient _httpClient = httpClient;
-    private readonly IKdmidCaptcha _captchaService = captchaService;
-    private readonly IKdmidHtmlDocument _htmlDocument = htmlDocument;
+    private readonly IKdmidRequestHttpClient _httpClient = httpClient;
+    private readonly IKdmidRequestCaptcha _captchaService = captchaService;
+    private readonly IKdmidRequestHtmlDocument _htmlDocument = htmlDocument;
 
     private static readonly Dictionary<string, City> SupportedCities = new(StringComparer.OrdinalIgnoreCase)
     {
