@@ -105,9 +105,11 @@ public sealed class KdmidRequestHtmlDocument : IKdmidRequestHtmlDocument
         if (error is not null)
             throw new UserInvalidOperationException(error.InnerText);
 
-        var resultTable = _htmlDocument.DocumentNode.SelectSingleNode("//td[@id='center-panel']");
+        var radioButtons = _htmlDocument.DocumentNode
+                .SelectSingleNode("//td[@id='center-panel']")
+                ?.SelectNodes("//input[@type='radio']");
 
-        if (resultTable is null)
+        if (radioButtons is null || radioButtons.Count == 0)
             return new(string.Empty, new Dictionary<string, string>(0));
 
         var pageNodes = _htmlDocument.DocumentNode.SelectNodes("//input");
@@ -132,7 +134,7 @@ public sealed class KdmidRequestHtmlDocument : IKdmidRequestHtmlDocument
 
         var dates = new Dictionary<string, string>(22);
 
-        foreach (var radio in resultTable.SelectNodes("//input[@type='radio']"))
+        foreach (var radio in radioButtons)
         {
             var radioKey = radio.NextSibling.InnerText.Trim();
             var radioValue = radio.GetAttributeValue("value", "");
