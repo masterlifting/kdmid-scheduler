@@ -1,12 +1,10 @@
 ﻿using KdmidScheduler.Abstractions.Interfaces.Core.Services;
 using KdmidScheduler.Abstractions.Models.Infrastructure.Persistence.MongoDb.v1;
 
-using Net.Shared.Extensions.Logging;
 using Net.Shared.Background.Abstractions.Interfaces;
 using Net.Shared.Persistence.Abstractions.Interfaces.Entities.Catalogs;
 
 using static KdmidScheduler.Abstractions.Constants;
-using static Net.Shared.Persistence.Abstractions.Constants.Enums;
 
 namespace KdmidScheduler.Worker.KdmidBackground;
 
@@ -27,18 +25,7 @@ public sealed class KdmidBackgroundStepHandler : IBackgroundTaskStepHandler<Kdmi
 
                     foreach (var item in data)
                     {
-                        try
-                        {
-                            await kdmidResponseService.SendAvailableDates(item.Chat, item.Command, cToken);
-                        }
-                        catch (Exception exception)
-                        {
-                            item.StatusId = (int)ProcessStatuses.Error;
-                            item.Error = exception.Message;
-
-                            var logger = serviceProvider.GetRequiredService<ILogger<KdmidBackgroundStepHandler>>();
-                            logger.Error($"Handling step '{step.Name}' for the '{taskName}' has failed. Reason: {exception.Message}");
-                        }
+                        await kdmidResponseService.SendAvailableDates(item.Chat, item.Command, cToken);
                     }
                 }
                 break;

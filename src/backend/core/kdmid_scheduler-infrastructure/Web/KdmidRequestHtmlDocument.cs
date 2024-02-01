@@ -110,7 +110,7 @@ public sealed class KdmidRequestHtmlDocument : IKdmidRequestHtmlDocument
                 ?.SelectNodes("//input[@type='radio']");
 
         if (radioButtons is null || radioButtons.Count == 0)
-            return new(string.Empty, new Dictionary<string, string>(0));
+            return new(string.Empty, []);
 
         var pageNodes = _htmlDocument.DocumentNode.SelectNodes("//input");
 
@@ -146,7 +146,7 @@ public sealed class KdmidRequestHtmlDocument : IKdmidRequestHtmlDocument
 
         return new CalendarPage(formData, dates);
     }
-    public ConfirmationPage GetConfirmationPage(string page)
+    public string GetConfirmationPage(string page)
     {
         _htmlDocument.LoadHtml(page);
 
@@ -168,8 +168,8 @@ public sealed class KdmidRequestHtmlDocument : IKdmidRequestHtmlDocument
             .FirstOrDefault(x => x.Name == "span")
             ?.InnerText;
 
-        return result is null
-            ? new("The Confirmation page was not recognized.")
-            : new(string.Join(" ", result.Split("\n").Select(x => x.Trim())));
+        return result is not null
+            ? string.Join(" ", result.Split("\n").Select(x => x.Trim()))
+            : throw new UserInvalidOperationException("The confirmation result was not recognized.");
     }
 }

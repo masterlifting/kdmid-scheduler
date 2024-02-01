@@ -4,9 +4,11 @@ namespace KdmidScheduler.Abstractions.Interfaces.Infrastructure.Persistence.Repo
 
 public interface IKdmidRequestHttpClientCache
 {
-    Task SetSessionId(City city, KdmidId kdmidId, string sessionId, CancellationToken cToken);
+    Task SetSessionId(City city, KdmidId kdmidId, string sessionId, ushort keepAlive, CancellationToken cToken);
     Task<string> GetSessionId(City city, KdmidId kdmidId, CancellationToken cToken);
 
     Task<Dictionary<string, string>> GetHeaders(City city, KdmidId kdmidId, CancellationToken cToken);
     Task SetHeaders(City city, KdmidId kdmidId, Dictionary<string, string> headers, CancellationToken cToken);
+
+    Task Clear(City city, KdmidId kdmidId, CancellationToken cToken);
 }

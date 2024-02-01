@@ -6,6 +6,7 @@ using KdmidScheduler.Abstractions.Models.Settings;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
+using Net.Shared.Abstractions.Models.Exceptions;
 using Net.Shared.Bots.Abstractions.Interfaces;
 using Net.Shared.Bots.Abstractions.Models.Bot;
 using Net.Shared.Bots.Abstractions.Models.Response;
@@ -97,7 +98,7 @@ public sealed class KdmidResponseService(
         var city = command.Parameters[BotCommandParametersCityKey].FromJson<City>();
         var kdmidId = command.Parameters[BotCommandParametersKdmidIdKey].FromJson<KdmidId>();
 
-        await _repository.CreateCommand(KdmidBotCommandNames.CommandInProcess, chatId, city, kdmidId, cToken);
+        await _repository.Create(KdmidBotCommandNames.CommandInProcess, chatId, city, kdmidId, cToken);
 
         await _botClient.SendMessage(chatId, new($"The embassy of '{city.Name}' with Id '{kdmidId.Id}' has been added to processing."), cToken);
         await _botClient.SendMessage(_botClient.AdminId, new($"The embassy of '{city.Name}' with Id '{kdmidId.Id}' has been added to the chat '{chatId}'."), cToken);
@@ -109,7 +110,7 @@ public sealed class KdmidResponseService(
 
         command.Name = KdmidBotCommandNames.CommandInProcess;
 
-        await _repository.UpdateCommand(command, chatId, city, kdmidId, cToken);
+        await _repository.Update(command, chatId, city, kdmidId, cToken);
 
         await _botClient.SendMessage(chatId, new($"The embassy of '{city.Name}' with Id '{kdmidId.Id}' has been updated."), cToken);
     }
@@ -118,9 +119,9 @@ public sealed class KdmidResponseService(
         var city = command.Parameters[BotCommandParametersCityKey].FromJson<City>();
         var kdmidId = command.Parameters[BotCommandParametersKdmidIdKey].FromJson<KdmidId>();
 
-        await _repository.DeleteCommand(chatId, command.Id, cToken);
+        await _repository.Clear(chatId, command.Id, cToken);
 
-        await _botClient.SendMessage(chatId, new($"The embassy of '{city.Name}' with Id '{kdmidId.Id}' is deleted."), cToken);
+        await _botClient.SendMessage(chatId, new($"The embassy of '{city.Name}' with Id '{kdmidId.Id}' has been deleted."), cToken);
     }
 
     public Task SendCommandInProcessInfo(Chat chat, Command command, CancellationToken cToken)
@@ -149,12 +150,12 @@ public sealed class KdmidResponseService(
                 { BotCommandParametersChosenResultKey, chosenResult.ToJson() }
             }, cToken);
 
-            buttonsData.Add(nextCommand.Id.ToString(), date.Value);
+            buttonsData.Add(nextCommand.Id.ToString(), date.Key);
         }
 
         if (buttonsData.Count == 0)
         {
-            _log.Warn($"Available dates for '{city.Name}' with Id '{kdmidId.Id}' were not found for the chat '{chat.Id}'.");
+            _log.Debug($"Available dates for '{city.Name}' with Id '{kdmidId.Id}' were not found for the chat '{chat.Id}'.");
         }
         else
         {
@@ -170,15 +171,16 @@ public sealed class KdmidResponseService(
         try
         {
             await _kdmidRequestService.ConfirmChosenDate(city, kdmidId, chosenResult, cToken);
-            await _botClient.SendMessage(new(chat, new($"'{chosenResult.ChosenValue}' for '{city.Name}' with Id '{kdmidId.Id}' has been confirmed.")), cToken);
+            await _botClient.SendMessage(new(chat, new($"'{chosenResult.ChosenKey}' for '{city.Name}' with Id '{kdmidId.Id}' has been confirmed.")), cToken);
+            await _repository.Clear(chat.Id, command.Id, cToken);
+        }
+        catch (UserInvalidOperationException exception)
+        {
+            throw new UserInvalidOperationException($"The confirmation of '{chosenResult.ChosenKey}' for '{city.Name}' with Id '{kdmidId.Id}' was failed for the chat '{chat.Id}'. Reason: {exception.Message}");
         }
         catch
         {
             throw;
-        }
-        finally
-        {
-            await _botCommandsStore.Delete(chat.Id, command.Id, cToken);
         }
     }
 

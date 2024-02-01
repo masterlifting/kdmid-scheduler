@@ -21,15 +21,15 @@ public sealed class KdmidResponseRepository(
     private readonly IBotCommandsStore _commandsStore = commandsStore;
     private readonly AzureTableWriterRepository<KdmidPersistenceContext, KdmidAvailableDates> _writer = writer;
 
-    public Task CreateCommand(string commandName, string chatId, City city, KdmidId kdmidId, CancellationToken cToken)
+    public Task Create(string commandName, string chatId, City city, KdmidId kdmidId, CancellationToken cToken)
     {
         throw new NotImplementedException();
     }
-    public Task UpdateCommand(Command command, string chatId, City city, KdmidId kdmidId, CancellationToken cToken)
+    public Task Update(Command command, string chatId, City city, KdmidId kdmidId, CancellationToken cToken)
     {
         throw new NotImplementedException();
     }
-    public Task DeleteCommand(string chatId, Guid commandId, CancellationToken cToken)
+    public Task Clear(string chatId, Guid commandId, CancellationToken cToken)
     {
         throw new NotImplementedException();
     }

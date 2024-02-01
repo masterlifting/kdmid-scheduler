@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
+
 using KdmidScheduler.Abstractions.Interfaces.Infrastructure.Persistence.Repositories;
 using KdmidScheduler.Abstractions.Interfaces.Infrastructure.Web;
 using KdmidScheduler.Abstractions.Models.Core.v1.Kdmid;
@@ -37,12 +38,36 @@ public sealed class KdmidRequestHttpClient(
         if (response.StatusCode != HttpStatusCode.OK)
             throw new InvalidOperationException($"The response status code from {uri} is {response.StatusCode}.");
 
+        ushort keepAlive = 60;
+        
+        if (response.Headers.TryGetValues("Keep-Alive", out var keepAliveHeaders))
+        {
+            var keepAliveTimeout = keepAliveHeaders.FirstOrDefault(x => x.Contains("timeout"));
+            
+            if (keepAliveTimeout is not null)
+            {
+                keepAliveTimeout = keepAliveTimeout.Split('=')[1];
+
+                if(ushort.TryParse(keepAliveTimeout, out var keepAliveTimeoutValue))
+                {
+                    keepAlive = keepAliveTimeoutValue;
+                }
+            }
+        }
+
+        string sessionId;
+
+        if (!response.Headers.TryGetValues("Set-Cookie", out var cookieHeaders))
+            sessionId = await _cache.GetSessionId(city, kdmidId, cToken);
+
+        sessionId = cookieHeaders!.FirstOrDefault(x => x.Contains("ASP.NET_SessionId"))
+            ?? throw new InvalidOperationException($"SessionId is not found in the response from {uri}.");
+
+        sessionId = sessionId.Split(';')[0].Split('=')[1];
+
+        await _cache.SetSessionId(city, kdmidId, sessionId, keepAlive, cToken);
+
         var captchaImage = await response.Content.ReadAsByteArrayAsync(cToken);
-
-        var sessionId = (response.Headers.GetValues("Set-Cookie").FirstOrDefault()?.Split(';').FirstOrDefault())
-            ?? throw new InvalidOperationException($"The SessionId is not found in the response headers for the {city.Name}.");
-
-        await _cache.SetSessionId(city, kdmidId, sessionId.Split('=')[1], cToken);
 
         return captchaImage;
     }

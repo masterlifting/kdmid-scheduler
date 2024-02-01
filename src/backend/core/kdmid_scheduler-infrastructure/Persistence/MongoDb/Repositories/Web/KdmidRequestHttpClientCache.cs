@@ -16,9 +16,11 @@ public sealed class KdmidRequestHttpClientCache(
     private readonly MongoDbWriterRepository<KdmidPersistenceContext, KdmidRequestCache> _writer = writer;
     private readonly MongoDbReaderRepository<KdmidPersistenceContext, KdmidRequestCache> _reader = reader;
 
-    public async Task SetSessionId(City city, KdmidId kdmidId, string sessionId, CancellationToken cToken)
+    static Expression<Func<KdmidRequestCache, bool>> Filter (City city, KdmidId kdmidId) => x => x.City.Code == city.Code && x.KdmidId.Id == kdmidId.Id;
+
+    public async Task SetSessionId(City city, KdmidId kdmidId, string sessionId, ushort keepAlive, CancellationToken cToken)
     {
-        Expression<Func<KdmidRequestCache, bool>> filter = x => x.City.Code == city.Code && x.KdmidId.Id == kdmidId.Id;
+        var filter = Filter(city, kdmidId);
 
         var isCacheExist = await _reader.IsExists<KdmidRequestCache>(new(filter), cToken);
 
@@ -41,9 +43,7 @@ public sealed class KdmidRequestHttpClientCache(
     }
     public async Task<string> GetSessionId(City city, KdmidId kdmidId, CancellationToken cToken)
     {
-        Expression<Func<KdmidRequestCache, bool>> filter = x => x.City.Code == city.Code && x.KdmidId.Id == kdmidId.Id;
-
-        var cache = await _reader.FindSingle<KdmidRequestCache>(new(filter), cToken);
+        var cache = await _reader.FindSingle<KdmidRequestCache>(new(Filter(city, kdmidId)), cToken);
 
         return string.IsNullOrWhiteSpace(cache?.SessionId)
             ? throw new InvalidOperationException($"SessionId for '{city.Name}' with '{kdmidId.Id}' was not found.")
@@ -52,23 +52,24 @@ public sealed class KdmidRequestHttpClientCache(
 
     public async Task SetHeaders(City city, KdmidId kdmidId, Dictionary<string, string> headers, CancellationToken cToken)
     {
-        Expression<Func<KdmidRequestCache, bool>> filter = x => x.City.Code == city.Code && x.KdmidId.Id == kdmidId.Id;
-
         await _writer.Update<KdmidRequestCache>(new(x => x.Headers = headers)
         {
-            QueryOptions = new(filter)
+            QueryOptions = new(Filter(city, kdmidId))
         }, cToken);
 
     }
     public async Task<Dictionary<string, string>> GetHeaders(City city, KdmidId kdmidId, CancellationToken cToken)
     {
-        Expression<Func<KdmidRequestCache, bool>> filter = x => x.City.Code == city.Code && x.KdmidId.Id == kdmidId.Id;
-
-        var cache = await _reader.FindSingle<KdmidRequestCache>(new(filter), cToken);
+        var cache = await _reader.FindSingle<KdmidRequestCache>(new(Filter(city, kdmidId)), cToken);
 
         if (cache is null || cache.Headers.Count == 0)
             throw new InvalidOperationException($"Headers for '{city.Name}' with '{kdmidId.Id}' was not found.");
 
         return cache.Headers;
+    }
+
+    public async Task Clear(City city, KdmidId kdmidId, CancellationToken cToken)
+    {
+         _ = await _writer.Delete<KdmidRequestCache>(new(Filter(city, kdmidId)), cToken);
     }
 }

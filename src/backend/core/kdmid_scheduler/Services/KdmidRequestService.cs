@@ -2,13 +2,19 @@
 using KdmidScheduler.Abstractions.Interfaces.Infrastructure.Web;
 using KdmidScheduler.Abstractions.Models.Core.v1.Kdmid;
 
+using Microsoft.Extensions.Logging;
+
+using Net.Shared.Extensions.Logging;
+
 namespace KdmidScheduler.Services;
 
 public sealed class KdmidRequestService(
+    ILogger<KdmidRequestService> logger,
     IKdmidRequestHttpClient httpClient,
     IKdmidRequestHtmlDocument htmlDocument,
     IKdmidRequestCaptcha captchaService) : IKdmidRequestService
 {
+    private readonly ILogger<KdmidRequestService> _log = logger;
     private readonly IKdmidRequestHttpClient _httpClient = httpClient;
     private readonly IKdmidRequestCaptcha _captchaService = captchaService;
     private readonly IKdmidRequestHtmlDocument _htmlDocument = htmlDocument;
@@ -46,10 +52,9 @@ public sealed class KdmidRequestService(
         var startPage = _htmlDocument.GetStartPage(startPageResponse);
 
         var captchaImage = await _httpClient.GetStartPageCaptchaImage(city, kdmidId, startPage.CaptchaCode, cToken);
-
-        const string CaptchaKey = "ctl00%24MainContent%24txtCode=";
         var captchaValue = await _captchaService.SolveIntegerCaptcha(captchaImage, cToken);
 
+        const string CaptchaKey = "ctl00%24MainContent%24txtCode=";
         var startPageFormData = startPage.FormData.Replace(CaptchaKey, $"{CaptchaKey}{captchaValue}");
 
         var applicationResponse = await _httpClient.PostApplication(city, kdmidId, startPageFormData, cToken);
@@ -58,14 +63,20 @@ public sealed class KdmidRequestService(
         var calendarResponse = await _httpClient.PostCalendar(city, kdmidId, applicationFormData, cToken);
         var calendarPage = _htmlDocument.GetCalendarPage(calendarResponse);
 
-        var availableDates = new Dictionary<DateTime, string>(calendarPage.Dates.Count);
+        var availableDates = new Dictionary<string, string>(calendarPage.Dates.Count);
 
-        foreach (var dateString in calendarPage.Dates)
+        foreach (var date in calendarPage.Dates)
         {
-            if (!DateTime.TryParse(dateString.Value.Split('|')[1], out var parsedDate))
-                throw new InvalidOperationException($"The date '{dateString.Value}' is not valid.");
+            if (!DateTime.TryParse(date.Value.Split('|')[1], out var _))
+                throw new InvalidOperationException($"The date '{date.Value}' for the '{city.Name}' with the Id '{kdmidId.Id}' is not valid.");
 
-            availableDates.Add(parsedDate, dateString.Value);
+            if(availableDates.ContainsKey(date.Key))
+            {
+                _log.Warn($"The date '{date.Key}' for the '{city.Name}' with the Id '{kdmidId.Id}' is already added to the available dates list.");
+                continue;
+            }
+            else
+                availableDates.Add(date.Key, date.Value);
         }
 
         return new AvailableDatesResult(calendarPage.FormData, availableDates);

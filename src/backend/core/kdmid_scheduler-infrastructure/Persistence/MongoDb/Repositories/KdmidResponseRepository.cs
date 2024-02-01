@@ -19,14 +19,16 @@ namespace KdmidScheduler.Infrastructure.Persistence.MongoDb.Repositories;
 public sealed class KdmidResponseRepository(
     IOptions<CorrelationSettings> correlationOptions,
     IBotCommandsStore commandsStore,
+    IKdmidRequestHttpClientCache requestHttpClientCache,
     MongoDbWriterRepository<KdmidPersistenceContext, KdmidAvailableDates> writer
     ) : IKdmidResponseRepository
 {
     private readonly Guid _correlationId = correlationOptions.Value.Id;
     private readonly IBotCommandsStore _commandsStore = commandsStore;
+    private readonly IKdmidRequestHttpClientCache _requestHttpClientCache = requestHttpClientCache;
     private readonly MongoDbWriterRepository<KdmidPersistenceContext, KdmidAvailableDates> _writer = writer;
 
-    public async Task CreateCommand(string commandName, string chatId, City city, KdmidId kdmidId, CancellationToken cToken)
+    public async Task Create(string commandName, string chatId, City city, KdmidId kdmidId, CancellationToken cToken)
     {
         var command = await _commandsStore.Create(chatId, commandName, new()
         {
@@ -45,7 +47,7 @@ public sealed class KdmidResponseRepository(
 
         }, cToken);
     }
-    public async Task UpdateCommand(Command command, string chatId, City city, KdmidId kdmidId, CancellationToken cToken)
+    public async Task Update(Command command, string chatId, City city, KdmidId kdmidId, CancellationToken cToken)
     {
         await _commandsStore.Update(chatId, command.Id, command, cToken);
 
@@ -60,10 +62,19 @@ public sealed class KdmidResponseRepository(
             QueryOptions = new(x => x.Chat.Id == chatId && x.Command.Id == command.Id)
         }, cToken);
     }
-    public async Task DeleteCommand(string chatId, Guid commandId, CancellationToken cToken)
+    public async Task Clear(string chatId, Guid commandId, CancellationToken cToken)
     {
+        var command = await _commandsStore.Get(chatId, commandId, cToken);
+        
+        if (command is null)
+            return;
+        
         await _commandsStore.Delete(chatId, commandId, cToken);
         await _writer.Delete<KdmidAvailableDates>(new(x => x.Chat.Id == chatId && x.Command.Id == commandId), cToken);
-    }
 
+        var city = command.Parameters[BotCommandParametersCityKey].FromJson<City>();
+        var kdmidId = command.Parameters[BotCommandParametersKdmidIdKey].FromJson<KdmidId>();
+
+        await _requestHttpClientCache.Clear(city, kdmidId, cToken);
+    }
 }

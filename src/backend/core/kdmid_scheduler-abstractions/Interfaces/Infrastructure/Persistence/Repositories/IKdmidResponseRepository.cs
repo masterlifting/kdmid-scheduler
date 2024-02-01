@@ -6,7 +6,7 @@ namespace KdmidScheduler.Abstractions.Interfaces.Infrastructure.Persistence.Repo
 
 public interface IKdmidResponseRepository
 {
-    Task CreateCommand(string commandName, string chatId, City city, KdmidId kdmidId, CancellationToken cToken);
-    Task UpdateCommand(Command command, string chatId, City city, KdmidId kdmidId, CancellationToken cToken);
-    Task DeleteCommand(string chatId, Guid commandId, CancellationToken cToken);
+    Task Create(string commandName, string chatId, City city, KdmidId kdmidId, CancellationToken cToken);
+    Task Update(Command command, string chatId, City city, KdmidId kdmidId, CancellationToken cToken);
+    Task Clear(string chatId, Guid commandId, CancellationToken cToken);
 }

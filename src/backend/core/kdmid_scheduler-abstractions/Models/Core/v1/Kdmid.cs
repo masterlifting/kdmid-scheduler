@@ -31,9 +31,8 @@ public sealed record KdmidId
 public sealed record City(string Code, string Name, int TimeShift);
 public sealed record Attempts(int Day, byte Count);
 
-public sealed record AvailableDatesResult(string FormData, Dictionary<DateTime, string> Dates);
-public sealed record ChosenDateResult(string FormData, DateTime Date, string ChosenValue);
+public sealed record AvailableDatesResult(string FormData, Dictionary<string, string> Dates);
+public sealed record ChosenDateResult(string FormData, string ChosenKey, string ChosenValue);
 
 public sealed record StartPage(string FormData, string CaptchaCode);
-public sealed record CalendarPage(string FormData, IDictionary<string, string> Dates);
-public sealed record ConfirmationPage(string Result);
+public sealed record CalendarPage(string FormData, Dictionary<string, string> Dates);
