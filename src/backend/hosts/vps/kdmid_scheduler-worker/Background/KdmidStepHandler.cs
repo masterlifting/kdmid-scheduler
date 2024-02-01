@@ -6,9 +6,9 @@ using Net.Shared.Persistence.Abstractions.Interfaces.Entities.Catalogs;
 
 using static KdmidScheduler.Abstractions.Constants;
 
-namespace KdmidScheduler.Worker.KdmidBackground;
+namespace KdmidScheduler.Worker.Background;
 
-public sealed class KdmidBackgroundStepHandler : IBackgroundTaskStepHandler<KdmidAvailableDates>
+public sealed class KdmidStepHandler : IBackgroundTaskStepHandler<KdmidAvailableDates>
 {
     public async Task Handle(
         string taskName,

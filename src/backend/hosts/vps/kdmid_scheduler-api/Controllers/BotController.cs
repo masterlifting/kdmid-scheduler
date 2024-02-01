@@ -1,5 +1,5 @@
 ﻿using KdmidScheduler.Abstractions.Interfaces.Core.Services;
-using KdmidScheduler.Abstractions.Models.Core.v1.KdmidApi;
+using KdmidScheduler.Abstractions.Models.Core.v1.KdmidWebApi;
 
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,7 +12,7 @@ public sealed class BotController(IKdmidBotApi api) : ControllerBase
 {
     private readonly IKdmidBotApi _api = api;
 
-    #region Bot
+    #region Client
     [HttpGet("start")]
     public Task Start(CancellationToken cToken) =>
         _api.Listen(cToken);

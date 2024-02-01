@@ -8,7 +8,7 @@ var builder = WebApplication.CreateSlimBuilder(args);
 builder.Services
     .AddKdmidCore()
     .AddKdmidVpsInfrastructure()
-    .AddControllers(options => options.Filters.Add<BotExceptionFilter>());
+    .AddControllers(options => options.Filters.Add<KdmidSchedulerApiExceptionFilter>());
 
 builder.Services.AddCors(options =>
 {

@@ -56,6 +56,9 @@ public sealed class KdmidRequestHttpClientCache(
 
         var cacheItem = cache.MaxBy(x => x.SessionExpires)!;
         
+        if (cacheItem.SessionExpires < DateTime.UtcNow)
+            throw new InvalidOperationException($"SessionId for '{city.Name}' was expired.");
+        
         if(!cache.Any(x => x.KdmidId.Id == kdmidId.Id))
         {
             await _writer.CreateOne<KdmidRequestCache>(new()
@@ -66,9 +69,6 @@ public sealed class KdmidRequestHttpClientCache(
                 SessionExpires = cacheItem.SessionExpires,
             }, cToken);
         }
-
-        if (cacheItem.SessionExpires < DateTime.UtcNow)
-            throw new InvalidOperationException($"SessionId for '{city.Name}' was expired.");
 
         return cacheItem.SessionId;
     }

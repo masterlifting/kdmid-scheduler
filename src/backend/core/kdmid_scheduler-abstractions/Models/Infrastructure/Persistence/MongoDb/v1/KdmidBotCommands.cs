@@ -9,9 +9,12 @@ namespace KdmidScheduler.Abstractions.Models.Infrastructure.Persistence.MongoDb.
 public sealed class KdmidBotCommands : IKdmidBotCommands, IPersistentNoSql
 {
     public ObjectId Id { get; set; } = ObjectId.Empty;
+    
     public string ChatId { get; init; } = null!;
     public Command Command { get; set; } = null!;
-    public string DocumentVersion { get; set; } = "1.0.0";
+    
     public DateTime Created { get; set; } = DateTime.UtcNow;
+    
     public string? Description { get; set; }
+    public string DocumentVersion { get; set; } = "1.0.0";
 }

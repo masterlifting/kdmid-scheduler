@@ -51,7 +51,7 @@ public sealed class KdmidRequestService(
         var startPageResponse = await _httpClient.GetStartPage(city, kdmidId, cToken);
         var startPage = _htmlDocument.GetStartPage(startPageResponse);
 
-        var captchaImage = await _httpClient.GetStartPageCaptchaImage(city, kdmidId, startPage.CaptchaCode, cToken);
+        var captchaImage = await _httpClient.GetCaptchaImage(city, kdmidId, startPage.CaptchaCode, cToken);
         var captchaValue = await _captchaService.SolveIntegerCaptcha(captchaImage, cToken);
 
         const string CaptchaKey = "ctl00%24MainContent%24txtCode=";
@@ -90,6 +90,6 @@ public sealed class KdmidRequestService(
 
         var confirmationResponse = await _httpClient.PostConfirmation(city, kdmidId, formData, cToken);
 
-        _htmlDocument.GetConfirmationPage(confirmationResponse);
+        _ =_htmlDocument.GetConfirmationResult(confirmationResponse);
     }
 }

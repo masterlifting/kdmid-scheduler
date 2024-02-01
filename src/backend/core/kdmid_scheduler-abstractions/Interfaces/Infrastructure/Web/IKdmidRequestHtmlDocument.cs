@@ -7,5 +7,5 @@ public interface IKdmidRequestHtmlDocument
     StartPage GetStartPage(string payload);
     string GetApplicationFormData(string payload);
     CalendarPage GetCalendarPage(string payload);
-    string GetConfirmationPage(string payload);
+    string GetConfirmationResult(string payload);
 }

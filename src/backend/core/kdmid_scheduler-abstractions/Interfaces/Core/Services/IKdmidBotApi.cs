@@ -1,4 +1,4 @@
-﻿using KdmidScheduler.Abstractions.Models.Core.v1.KdmidApi;
+﻿using KdmidScheduler.Abstractions.Models.Core.v1.KdmidWebApi;
 
 namespace KdmidScheduler.Abstractions.Interfaces.Core.Services;
 

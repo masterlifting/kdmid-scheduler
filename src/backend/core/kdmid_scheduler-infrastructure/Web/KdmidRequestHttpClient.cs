@@ -27,7 +27,7 @@ public sealed class KdmidRequestHttpClient(
 
         return await GetContent(response, cToken);
     }
-    public async Task<byte[]> GetStartPageCaptchaImage(City city, KdmidId kdmidId, string captchaCode, CancellationToken cToken)
+    public async Task<byte[]> GetCaptchaImage(City city, KdmidId kdmidId, string captchaCode, CancellationToken cToken)
     {
         var httpClient = _httpClientFactory.CreateClient(Constants.Kdmid);
 
@@ -46,7 +46,7 @@ public sealed class KdmidRequestHttpClient(
         }
         else
         {
-            sessionId = cookieHeaders!.FirstOrDefault(x => x.Contains("ASP.NET_SessionId"))
+            sessionId = cookieHeaders.FirstOrDefault(x => x.Contains("ASP.NET_SessionId"))
                 ?? throw new InvalidOperationException($"SessionId is not found in the response from {uri}.");
 
             sessionId = sessionId.Split(';')[0].Split('=')[1];
@@ -54,9 +54,7 @@ public sealed class KdmidRequestHttpClient(
             await _cache.SetSessionId(city, kdmidId, sessionId, 180, cToken);
         }
 
-        var captchaImage = await response.Content.ReadAsByteArrayAsync(cToken);
-
-        return captchaImage;
+        return await response.Content.ReadAsByteArrayAsync(cToken);
     }
     public async Task<string> PostApplication(City city, KdmidId kdmidId, string content, CancellationToken cToken)
     {

@@ -146,7 +146,7 @@ public sealed class KdmidRequestHtmlDocument : IKdmidRequestHtmlDocument
 
         return new CalendarPage(formData, dates);
     }
-    public string GetConfirmationPage(string page)
+    public string GetConfirmationResult(string page)
     {
         _htmlDocument.LoadHtml(page);
 

@@ -1,6 +1,6 @@
 ﻿using KdmidScheduler.Abstractions.Interfaces.Core.Services;
 using KdmidScheduler.Abstractions.Models.Core.v1.Kdmid;
-using KdmidScheduler.Abstractions.Models.Core.v1.KdmidApi;
+using KdmidScheduler.Abstractions.Models.Core.v1.KdmidWebApi;
 
 using Microsoft.Extensions.Logging;
 
@@ -27,7 +27,7 @@ public class KdmidBotApi(
     private readonly IBotCommandsStore _botCommandsStore = botCommandsStore;
     private readonly IKdmidRequestService _kdmidRequestService = kdmidRequestService;
 
-    #region Bot
+    #region Client
     public async Task Listen(CancellationToken cToken)
     {
         _log.Info("Bot client going to listen.");

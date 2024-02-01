@@ -8,8 +8,8 @@ using static Net.Shared.Abstractions.Constants;
 
 namespace KdmidScheduler.Api;
 
-public sealed class BotExceptionFilter(
-    ILogger<BotExceptionFilter> logger,
+public sealed class KdmidSchedulerApiExceptionFilter(
+    ILogger<KdmidSchedulerApiExceptionFilter> logger,
     IBotClient botClient) : IAsyncExceptionFilter
 {
     private readonly ILogger _log = logger;

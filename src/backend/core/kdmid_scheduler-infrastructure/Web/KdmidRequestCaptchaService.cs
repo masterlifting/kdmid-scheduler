@@ -39,7 +39,10 @@ public sealed class KdmidRequestCaptchaService(
 
             var taskResult = JsonSerializer.Deserialize<Dictionary<string, object>>(responseContent);
 
-            status = taskResult!["status"].ToString();
+            if (taskResult == null || !taskResult.TryGetValue("status", out var statusValue))
+                throw new InvalidOperationException("Captcha solving failed.");
+
+            status = statusValue.ToString();
 
             if (status == "ready")
             {

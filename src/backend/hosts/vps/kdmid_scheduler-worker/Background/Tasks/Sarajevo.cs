@@ -8,20 +8,20 @@ using Net.Shared.Abstractions.Models.Settings;
 using Net.Shared.Background;
 using Net.Shared.Background.Abstractions.Interfaces;
 
-namespace KdmidScheduler.Worker.KdmidBackground.Tasks;
+namespace KdmidScheduler.Worker.Background.Tasks;
 
-public sealed class KdmidBernTask(
-    ILogger<KdmidBernTask> logger,
+public sealed class Sarajevo(
+    ILogger<Sarajevo> logger,
     IOptions<CorrelationSettings> correlationOptions,
     IServiceScopeFactory serviceScopeFactory,
     IBackgroundSettingsProvider settingsProvider
     ) : BackgroundTask<
             KdmidAvailableDates,
             KdmidAvailableDatesSteps,
-            KdmidBackgroundStepHandler>
+            KdmidStepHandler>
     (Name, correlationOptions.Value.Id, logger, serviceScopeFactory, settingsProvider)
 {
-    public const string Name = "Bern";
+    public const string Name = "Sarajevo";
 
-    protected override Expression<Func<KdmidAvailableDates, bool>> DataFilter => x => x.City.Code == "bern";
+    protected override Expression<Func<KdmidAvailableDates, bool>> DataFilter => x => x.City.Code == "sarajevo";
 }

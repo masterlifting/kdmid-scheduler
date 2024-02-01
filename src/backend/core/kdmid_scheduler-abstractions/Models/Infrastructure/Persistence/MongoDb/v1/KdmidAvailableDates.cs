@@ -10,7 +10,6 @@ public sealed class KdmidAvailableDates : IKdmidRequestAvailableDates, IPersiste
 {
     public ObjectId Id { get; set; } = ObjectId.Empty;
     public Guid? CorrelationId { get; set; }
-    public string DocumentVersion { get; set; } = "1.0.0";
 
     public City City { get; set; } = null!;
     public Chat Chat { get; set; } = null!;
@@ -21,8 +20,9 @@ public sealed class KdmidAvailableDates : IKdmidRequestAvailableDates, IPersiste
     public int Attempt { get; set; }
 
     public DateTime Created { get; set; } = DateTime.UtcNow;
-    public DateTime Updated { get; set; }
+    public DateTime Updated { get; set; } = DateTime.UtcNow;
 
     public string? Error { get; set; }
     public string? Description { get; set; }
+    public string DocumentVersion { get; set; } = "1.0.0";
 }

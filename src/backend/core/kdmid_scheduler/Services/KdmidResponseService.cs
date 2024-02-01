@@ -56,14 +56,12 @@ public sealed class KdmidResponseService(
         }
         else
         {
-            var webAppArgs = new WebAppEventArgs(chat, new("Available embassies", 3, webAppData));
+            var webAppArgs = new WebAppEventArgs(chat, new("Available embassies.", 3, webAppData));
             await _botClient.SendWebApp(webAppArgs, cToken);
         }
     }
     public async Task SendMyEmbassies(Chat chat, Command command, CancellationToken cToken)
     {
-        var supportedCities = _kdmidRequestService.GetSupportedCities(cToken);
-
         var commands = await _botCommandsStore.Get(chat.Id, cToken);
 
         var availableCommands = commands
@@ -88,7 +86,7 @@ public sealed class KdmidResponseService(
         }
         else
         {
-            var buttonsArgs = new ButtonsEventArgs(chat, new("My embassies", 2, buttonsData));
+            var buttonsArgs = new ButtonsEventArgs(chat, new("My embassies.", 2, buttonsData));
             await _botClient.SendButtons(buttonsArgs, cToken);
         }
     }
@@ -155,11 +153,11 @@ public sealed class KdmidResponseService(
 
         if (buttonsData.Count == 0)
         {
-            _log.Warn($"Available dates for '{city.Name}' with Id '{kdmidId.Id}' were not found for the chat '{chat.Id}'.");
+            _log.Info($"Available dates for '{city.Name}' with Id '{kdmidId.Id}' were not found for the chat '{chat.Id}'.");
         }
         else
         {
-            await _botClient.SendButtons(new(chat, new($"Available dates for '{city.Name}' with Id '{kdmidId.Id}':", 1, buttonsData)), cToken);
+            await _botClient.SendButtons(new(chat, new($"Available dates for '{city.Name}' with Id '{kdmidId.Id}'.", 1, buttonsData)), cToken);
         }
     }
     public async Task SendConfirmationResult(Chat chat, Command command, CancellationToken cToken)
@@ -230,7 +228,7 @@ public sealed class KdmidResponseService(
         }
         else
         {
-            if (attempts.Day == day && attempts.Count >= AttemptsLimit)
+            if (attempts.Day == day && attempts.Count >= KdmidRequestAttemptsLimit)
                 throw new InvalidOperationException($"Attempts limit for '{city.Name}' with Id '{kdmidId.Id}' was reached for the chat '{chatId}'.");
 
             var attemptsDay = attempts.Day;

@@ -2,7 +2,7 @@
 using KdmidScheduler.Abstractions.Models.Infrastructure.Persistence.MongoDb.v1;
 using KdmidScheduler.Infrastructure;
 using KdmidScheduler.Infrastructure.Persistence.MongoDb.Contexts;
-using KdmidScheduler.Worker.KdmidBackground.Tasks;
+using KdmidScheduler.Worker.Background.Tasks;
 
 using Net.Shared.Background;
 using Net.Shared.Persistence.Repositories.MongoDb;
@@ -17,20 +17,20 @@ builder.Services
         x.AddProcessRepository<KdmidAvailableDates, MongoDbProcessRepository<KdmidPersistenceContext, KdmidAvailableDates>>();
         x.AddProcessStepsRepository<KdmidAvailableDatesSteps, MongoDbReaderRepository<KdmidPersistenceContext, KdmidAvailableDatesSteps>>();
 
-        x.AddTask<KdmidBelgradeTask>(KdmidBelgradeTask.Name);
-        x.AddTask<KdmidBerlinTask>(KdmidBerlinTask.Name);
-        x.AddTask<KdmidBernTask>(KdmidBernTask.Name);
-        x.AddTask<KdmidBrusselsTask>(KdmidBrusselsTask.Name);
-        x.AddTask<KdmidBudapestTask>(KdmidBudapestTask.Name);
-        x.AddTask<KdmidHagueTask>(KdmidHagueTask.Name);
-        x.AddTask<KdmidDublinTask>(KdmidDublinTask.Name);
-        x.AddTask<KdmidHelsinkiTask>(KdmidHelsinkiTask.Name);
-        x.AddTask<KdmidLjubljanaTask>(KdmidLjubljanaTask.Name);
-        x.AddTask<KdmidParisTask>(KdmidParisTask.Name);
-        x.AddTask<KdmidPodgoricaTask>(KdmidPodgoricaTask.Name);
-        x.AddTask<KdmidRigaTask>(KdmidRigaTask.Name);
-        x.AddTask<KdmidSarajevoTask>(KdmidSarajevoTask.Name);
-        x.AddTask<KdmidTiranaTask>(KdmidTiranaTask.Name);
+        x.AddTask<Belgrade>(Belgrade.Name);
+        x.AddTask<Berlin>(Berlin.Name);
+        x.AddTask<Bern>(Bern.Name);
+        x.AddTask<Brussels>(Brussels.Name);
+        x.AddTask<Budapest>(Budapest.Name);
+        x.AddTask<Hague>(Hague.Name);
+        x.AddTask<Dublin>(Dublin.Name);
+        x.AddTask<Helsinki>(Helsinki.Name);
+        x.AddTask<Ljubljana>(Ljubljana.Name);
+        x.AddTask<Paris>(Paris.Name);
+        x.AddTask<Podgorica>(Podgorica.Name);
+        x.AddTask<Riga>(Riga.Name);
+        x.AddTask<Sarajevo>(Sarajevo.Name);
+        x.AddTask<Tirana>(Tirana.Name);
     });
 
 builder
