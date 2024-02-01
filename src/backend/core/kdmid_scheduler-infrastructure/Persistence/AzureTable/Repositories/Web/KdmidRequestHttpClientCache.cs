@@ -14,7 +14,7 @@ public sealed class KdmidRequestHttpClientCache(
     private readonly AzureTableWriterRepository<KdmidPersistenceContext, KdmidRequestCache> _writer = writer;
     private readonly AzureTableReaderRepository<KdmidPersistenceContext, KdmidRequestCache> _reader = reader;
 
-    public Task SetSessionId(City city, KdmidId kdmidId, string sessionId, ushort keepAlive, CancellationToken cToken)
+    public Task SetSessionId(City city, KdmidId kdmidId, string sessionId, ushort sec, CancellationToken cToken)
     {
         throw new NotImplementedException();
     }

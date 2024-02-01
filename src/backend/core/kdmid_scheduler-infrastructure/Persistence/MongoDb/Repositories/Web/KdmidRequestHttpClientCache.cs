@@ -16,38 +16,52 @@ public sealed class KdmidRequestHttpClientCache(
     private readonly MongoDbWriterRepository<KdmidPersistenceContext, KdmidRequestCache> _writer = writer;
     private readonly MongoDbReaderRepository<KdmidPersistenceContext, KdmidRequestCache> _reader = reader;
 
-    static Expression<Func<KdmidRequestCache, bool>> Filter (City city, KdmidId kdmidId) => x => x.City.Code == city.Code && x.KdmidId.Id == kdmidId.Id;
+    static Expression<Func<KdmidRequestCache, bool>> Filter(City city, KdmidId kdmidId) => x => x.City.Code == city.Code && x.KdmidId.Id == kdmidId.Id;
 
-    public async Task SetSessionId(City city, KdmidId kdmidId, string sessionId, ushort keepAlive, CancellationToken cToken)
+    public async Task SetSessionId(City city, KdmidId kdmidId, string sessionId, ushort sec, CancellationToken cToken)
     {
-        var filter = Filter(city, kdmidId);
+        var now = DateTime.UtcNow;
 
-        var isCacheExist = await _reader.IsExists<KdmidRequestCache>(new(filter), cToken);
+        var isCacheExist = await _reader.IsExists<KdmidRequestCache>(new(Filter(city, kdmidId)), cToken);
 
         if (isCacheExist)
         {
-            await _writer.Update<KdmidRequestCache>(new(x => x.SessionId = sessionId)
+            await _writer.Update<KdmidRequestCache>(new(x =>
             {
-                QueryOptions = new(filter)
+                x.Updated = now;
+                x.SessionId = sessionId;
+                x.SessionExpires = now.AddSeconds(sec);
+            })
+            {
+                QueryOptions = new(Filter(city, kdmidId))
             }, cToken);
         }
         else
         {
             await _writer.CreateOne<KdmidRequestCache>(new()
             {
+                Updated = now,
+
                 City = city,
                 KdmidId = kdmidId,
-                SessionId = sessionId
+                SessionId = sessionId,
+                SessionExpires = now.AddSeconds(sec),
             }, cToken);
         };
     }
     public async Task<string> GetSessionId(City city, KdmidId kdmidId, CancellationToken cToken)
     {
-        var cache = await _reader.FindSingle<KdmidRequestCache>(new(Filter(city, kdmidId)), cToken);
+        var cache = await _reader.FindMany<KdmidRequestCache>(new(x => x.City.Code == city.Code), cToken);
 
-        return string.IsNullOrWhiteSpace(cache?.SessionId)
-            ? throw new InvalidOperationException($"SessionId for '{city.Name}' with '{kdmidId.Id}' was not found.")
-            : cache.SessionId;
+        if (cache.Length == 0)
+            throw new InvalidOperationException($"SessionId for '{city.Name}' was not found.");
+
+        var cacheItem = cache.MinBy(x => x.SessionExpires);
+
+        if (cacheItem!.SessionExpires < DateTime.UtcNow)
+            throw new InvalidOperationException($"SessionId for '{city.Name}' was expired.");
+
+        return cacheItem.SessionId;
     }
 
     public async Task SetHeaders(City city, KdmidId kdmidId, Dictionary<string, string> headers, CancellationToken cToken)
@@ -70,6 +84,6 @@ public sealed class KdmidRequestHttpClientCache(
 
     public async Task Clear(City city, KdmidId kdmidId, CancellationToken cToken)
     {
-         _ = await _writer.Delete<KdmidRequestCache>(new(Filter(city, kdmidId)), cToken);
+        _ = await _writer.Delete<KdmidRequestCache>(new(Filter(city, kdmidId)), cToken);
     }
 }

@@ -38,34 +38,21 @@ public sealed class KdmidRequestHttpClient(
         if (response.StatusCode != HttpStatusCode.OK)
             throw new InvalidOperationException($"The response status code from {uri} is {response.StatusCode}.");
 
-        ushort keepAlive = 60;
-        
-        if (response.Headers.TryGetValues("Keep-Alive", out var keepAliveHeaders))
-        {
-            var keepAliveTimeout = keepAliveHeaders.FirstOrDefault(x => x.Contains("timeout"));
-            
-            if (keepAliveTimeout is not null)
-            {
-                keepAliveTimeout = keepAliveTimeout.Split('=')[1];
-
-                if(ushort.TryParse(keepAliveTimeout, out var keepAliveTimeoutValue))
-                {
-                    keepAlive = keepAliveTimeoutValue;
-                }
-            }
-        }
-
         string sessionId;
 
         if (!response.Headers.TryGetValues("Set-Cookie", out var cookieHeaders))
+        {
             sessionId = await _cache.GetSessionId(city, kdmidId, cToken);
+        }
+        else
+        {
+            sessionId = cookieHeaders!.FirstOrDefault(x => x.Contains("ASP.NET_SessionId"))
+                ?? throw new InvalidOperationException($"SessionId is not found in the response from {uri}.");
 
-        sessionId = cookieHeaders!.FirstOrDefault(x => x.Contains("ASP.NET_SessionId"))
-            ?? throw new InvalidOperationException($"SessionId is not found in the response from {uri}.");
+            sessionId = sessionId.Split(';')[0].Split('=')[1];
 
-        sessionId = sessionId.Split(';')[0].Split('=')[1];
-
-        await _cache.SetSessionId(city, kdmidId, sessionId, keepAlive, cToken);
+            await _cache.SetSessionId(city, kdmidId, sessionId, 180, cToken);
+        }
 
         var captchaImage = await response.Content.ReadAsByteArrayAsync(cToken);
 

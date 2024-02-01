@@ -155,7 +155,7 @@ public sealed class KdmidResponseService(
 
         if (buttonsData.Count == 0)
         {
-            _log.Debug($"Available dates for '{city.Name}' with Id '{kdmidId.Id}' were not found for the chat '{chat.Id}'.");
+            _log.Warn($"Available dates for '{city.Name}' with Id '{kdmidId.Id}' were not found for the chat '{chat.Id}'.");
         }
         else
         {
