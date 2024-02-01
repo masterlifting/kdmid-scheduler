@@ -40,8 +40,6 @@ public sealed class KdmidRequestHttpClientCache(
         {
             await _writer.CreateOne<KdmidRequestCache>(new()
             {
-                Updated = now,
-
                 City = city,
                 KdmidId = kdmidId,
                 SessionId = sessionId,
@@ -56,9 +54,20 @@ public sealed class KdmidRequestHttpClientCache(
         if (cache.Length == 0)
             throw new InvalidOperationException($"SessionId for '{city.Name}' was not found.");
 
-        var cacheItem = cache.MinBy(x => x.SessionExpires);
+        var cacheItem = cache.MaxBy(x => x.SessionExpires)!;
+        
+        if(!cache.Any(x => x.KdmidId.Id == kdmidId.Id))
+        {
+            await _writer.CreateOne<KdmidRequestCache>(new()
+            {
+                City = city,
+                KdmidId = kdmidId,
+                SessionId = cacheItem.SessionId,
+                SessionExpires = cacheItem.SessionExpires,
+            }, cToken);
+        }
 
-        if (cacheItem!.SessionExpires < DateTime.UtcNow)
+        if (cacheItem.SessionExpires < DateTime.UtcNow)
             throw new InvalidOperationException($"SessionId for '{city.Name}' was expired.");
 
         return cacheItem.SessionId;
