@@ -9,7 +9,7 @@
 [submodule "src/backend/core/submodules/shared-bots"]
 	path = src/backend/core/submodules/shared-bots
 	url = https://github.com/masterlifting/net-shared-bots
-	branch = dev
+	branch = feature-message_reversing
 [submodule "src/backend/core/submodules/shared-persistence"]
 	path = src/backend/core/submodules/shared-persistence
 	url = https://github.com/masterlifting/net-shared-persistence
