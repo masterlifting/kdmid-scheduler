@@ -28,7 +28,7 @@ public sealed class KdmidSchedulerApiExceptionFilter(
                 };
                 break;
             default:
-                await _botClient.SendMessage(_botClient.AdminId, new(context.Exception.Message), CancellationToken.None);
+                await _botClient.SendText(new(new(null, new(_botClient.AdminId)), new(context.Exception.Message)), CancellationToken.None);
 
                 context.Result = new ObjectResult(new { message = UserErrorMessage })
                 {

@@ -25,7 +25,7 @@ public sealed class KdmidStepHandler : IBackgroundTaskStepHandler<KdmidAvailable
 
                     foreach (var item in data)
                     {
-                        await kdmidResponseService.SendAvailableDates(item.Chat, item.Command, cToken);
+                        await kdmidResponseService.SendAvailableDates(new(null, item.Chat), item.Command, cToken);
                     }
                 }
                 break;

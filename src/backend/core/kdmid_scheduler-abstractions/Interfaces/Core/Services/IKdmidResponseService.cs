@@ -4,17 +4,17 @@ namespace KdmidScheduler.Abstractions.Interfaces.Core.Services;
 
 public interface IKdmidResponseService
 {
-    Task SendAvailableEmbassies(Chat chat, CancellationToken cToken);
-    Task SendMyEmbassies(Chat chat, Command command, CancellationToken cToken);
-    Task SendCreateCommandResult(string chatId, Command command, CancellationToken cToken);
-    Task SendUpdateCommandResult(string chatId, Command command, CancellationToken cToken);
-    Task SendDeleteCommandResult(string chatId, Command command, CancellationToken cToken);
-    
-    Task SendCommandInProcessInfo(Chat chat, Command command, CancellationToken cToken);
-    Task SendConfirmationResult(Chat chat, Command command, CancellationToken cToken);
-    Task SendAvailableDates(Chat chatId, Command command, CancellationToken cToken);
+    Task SendAvailableEmbassies(Message message, CancellationToken cToken);
+    Task SendMyEmbassies(Message message, Command command, CancellationToken cToken);
 
-    Task SendAskResponse(Chat chat, Command command, CancellationToken cToken);
-    Task SendAskResponse(string chatId, Command command, CancellationToken cToken);
-    Task SendAnswerResponse(Chat chat, Command command, CancellationToken cToken);
+    Task SendCreateCommandResult(Message message, Command command, CancellationToken cToken);
+    Task SendUpdateCommandResult(Message message, Command command, CancellationToken cToken);
+    Task SendDeleteCommandResult(Message message, Command command, CancellationToken cToken);
+    
+    Task SendAvailableDates(Message message, Command command, CancellationToken cToken);
+    Task SendConfirmationResult(Message message, Command command, CancellationToken cToken);
+    Task SendInfo(Message message, Command command, CancellationToken cToken);
+
+    Task SendAskResponse(Message message, Command command, CancellationToken cToken);
+    Task SendAnswerResponse(Message message, Command command, CancellationToken cToken);
 }

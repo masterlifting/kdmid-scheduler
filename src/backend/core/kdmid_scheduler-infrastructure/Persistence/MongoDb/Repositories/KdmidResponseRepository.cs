@@ -38,7 +38,7 @@ public sealed class KdmidResponseRepository(
 
         await _writer.CreateOne<KdmidAvailableDates>(new()
         {
-            Chat = new(chatId, new(string.Empty)),
+            Chat = new(chatId),
             City = city,
             Command = command,
             StepId = (int)KdmidProcessSteps.CheckAvailableDates,

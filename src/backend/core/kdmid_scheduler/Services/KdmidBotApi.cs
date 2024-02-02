@@ -133,7 +133,7 @@ public class KdmidBotApi(
 
         var botCommand = new Command(Guid.NewGuid(), KdmidBotCommandNames.CreateCommand, parameters);
 
-        await _botResponse.Create(chatId, botCommand, cToken);
+        await _botResponse.Create(new(null,new(chatId)), botCommand, cToken);
 
         return botCommand.Id.ToString();
     }
@@ -166,7 +166,7 @@ public class KdmidBotApi(
         else
             botCommand.Parameters.Add(BotCommandParametersCityKey, city.ToJson());
 
-        await _botResponse.Create(chatId, botCommand, cToken);
+        await _botResponse.Create(new(null, new(chatId)), botCommand, cToken);
     }
     public async Task DeleteCommand(string chatId, string commandId, CancellationToken cToken)
     {
@@ -174,7 +174,7 @@ public class KdmidBotApi(
 
         var botCommand = await _botCommandsStore.Get(chatId, commandIdGuid, cToken);
 
-        await _botResponse.Create(chatId, new Command(commandIdGuid, KdmidBotCommandNames.DeleteCommand, botCommand.Parameters), cToken);
+        await _botResponse.Create(new(null, new(chatId)), new Command(commandIdGuid, KdmidBotCommandNames.DeleteCommand, botCommand.Parameters), cToken);
     }
     #endregion
 }

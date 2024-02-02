@@ -11,26 +11,22 @@ public sealed class KdmidBotResponse(IKdmidResponseService responseService) : IB
 {
     private readonly IKdmidResponseService _responseService = responseService;
 
-    public Task Create(Chat chat, Command command, CancellationToken cToken) => command.Name switch
+    public Task Create(Message message, Command command, CancellationToken cToken) => command.Name switch
     {
-        Commands.Start => _responseService.SendAvailableEmbassies(chat, cToken),
-        KdmidBotCommandNames.Mine => _responseService.SendMyEmbassies(chat, command, cToken),
-        
-        KdmidBotCommandNames.CommandInProcess => _responseService.SendCommandInProcessInfo(chat, command, cToken),
+        Commands.Start => _responseService.SendAvailableEmbassies(message, cToken),
+        KdmidBotCommandNames.Mine => _responseService.SendMyEmbassies(message, command, cToken),
 
-        Commands.Ask => _responseService.SendAskResponse(chat, command, cToken),
-        Commands.Answer => _responseService.SendAnswerResponse(chat, command, cToken),
+        KdmidBotCommandNames.CreateCommand => _responseService.SendCreateCommandResult(message, command, cToken),
+        KdmidBotCommandNames.UpdateCommand => _responseService.SendUpdateCommandResult(message, command, cToken),
+        KdmidBotCommandNames.DeleteCommand => _responseService.SendDeleteCommandResult(message, command, cToken),
         
-        KdmidBotCommandNames.SendConfirmResult => _responseService.SendConfirmationResult(chat, command, cToken),
-        KdmidBotCommandNames.SendAvailableDates => _responseService.SendAvailableDates(chat, command, cToken),
-        _ => throw new NotSupportedException($"The command '{command.Name}' is not supported.")
-    };
-    public Task Create(string chatId, Command command, CancellationToken cToken) => command.Name switch
-    {
-        Commands.Ask => _responseService.SendAskResponse(chatId, command, cToken),
-        KdmidBotCommandNames.CreateCommand => _responseService.SendCreateCommandResult(chatId, command, cToken),
-        KdmidBotCommandNames.UpdateCommand => _responseService.SendUpdateCommandResult(chatId, command, cToken),
-        KdmidBotCommandNames.DeleteCommand => _responseService.SendDeleteCommandResult(chatId, command, cToken),
+        KdmidBotCommandNames.SendAvailableDates => _responseService.SendAvailableDates(message, command, cToken),
+        KdmidBotCommandNames.SendConfirmResult => _responseService.SendConfirmationResult(message, command, cToken),
+        KdmidBotCommandNames.CommandInProcess => _responseService.SendInfo(message, command, cToken),
+
+        Commands.Ask => _responseService.SendAskResponse(message, command, cToken),
+        Commands.Answer => _responseService.SendAnswerResponse(message, command, cToken),
+        
         _ => throw new NotSupportedException($"The command '{command.Name}' is not supported.")
     };
 }
