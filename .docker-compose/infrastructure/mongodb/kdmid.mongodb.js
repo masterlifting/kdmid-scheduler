@@ -2,15 +2,19 @@
 
 use('kdmid');
 
-var kdmidValues = db.KdmidBotCommands.find({
+const commands = db.KdmidBotCommands.find({
   $where: function () {
-    var cityStr = this.Command.Parameters['v1.City'];
+    var cityStr = this.Command.Parameters['v1.Kdmid.City'];
     if (cityStr) {
       var city = JSON.parse(cityStr);
-      return city.Code === 'Ljubljana';
+      return city.name === 'Ljubljana';
     }
     return false;
   },
+});
+
+commands.forEach(function (doc) {
+  db.KdmidBotCommands.deleteOne({ _id: doc._id });
 });
 
 // kdmidValues.forEach(function (doc) {
