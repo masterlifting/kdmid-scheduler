@@ -3,6 +3,7 @@ using KdmidScheduler.Abstractions.Interfaces.Infrastructure.Persistence.Reposito
 using KdmidScheduler.Abstractions.Models.Core.v1.Kdmid;
 using KdmidScheduler.Abstractions.Models.Settings;
 
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -21,6 +22,7 @@ namespace KdmidScheduler.Services;
 public sealed class KdmidResponseService(
     ILogger<KdmidResponseService> logger,
     IOptions<KdmidSettings> kdmidOptions,
+    IMemoryCache cache,
     IBotClient botClient,
     IBotCommandsStore botCommandsStore,
     IKdmidRequestService kdmidRequestService,
@@ -33,6 +35,7 @@ public sealed class KdmidResponseService(
     private readonly KdmidSettings _kdmidSettings = kdmidOptions.Value;
 
     private readonly IBotClient _botClient = botClient;
+    private readonly IMemoryCache _cache = cache;
     private readonly IBotCommandsStore _botCommandsStore = botCommandsStore;
     private readonly IKdmidRequestService _kdmidRequestService = kdmidRequestService;
     private readonly IKdmidResponseRepository _repository = repository;
@@ -50,14 +53,16 @@ public sealed class KdmidResponseService(
             webAppData.Add(city.Name, uri);
         }
 
+        message.ResponseBehavior = ResponseMessageBehavior.Replace;
+
         if (webAppData.Count == 0)
         {
-            await _botClient.SendText(new(message, new("There are no available embassies.")), cToken);
+            _ = await _botClient.SendText(new(message, new("There are no available embassies.")), cToken);
         }
         else
         {
-            var webAppArgs = new WebAppEventArgs(message, new("Available embassies.", webAppData));
-            await _botClient.SendWebApp(webAppArgs, cToken);
+            var args = new WebAppEventArgs(message, new("Available embassies.", webAppData));
+            _ = await _botClient.SendWebApp(args, cToken);
         }
     }
     public async Task SendMyEmbassies(Message message, Command command, CancellationToken cToken)
@@ -75,19 +80,20 @@ public sealed class KdmidResponseService(
             var city = availableCommand.Parameters[BotCommandParametersCityKey].FromJson<City>();
             var kdmidId = availableCommand.Parameters[BotCommandParametersKdmidIdKey].FromJson<KdmidId>();
 
-            var buttonName = $"{city.Name} ({kdmidId.Id})";
-
-            buttonsData.Add(availableCommand.Id.ToString(), buttonName);
+            if (!buttonsData.ContainsValue(city.Name))
+                buttonsData.Add(availableCommand.Id.ToString(), city.Name);
         }
+
+        message.ResponseBehavior = ResponseMessageBehavior.Replace;
 
         if (buttonsData.Count == 0)
         {
-            await _botClient.SendText(new(message, new("You have no embassies in your list.")), cToken);
+            _ = await _botClient.SendText(new(message, new("You have no embassies in your list.")), cToken);
         }
         else
         {
-            var buttonsArgs = new ButtonsEventArgs(message, new("My embassies.", buttonsData));
-            await _botClient.SendButtons(buttonsArgs, cToken);
+            var args = new ButtonsEventArgs(message, new("My embassies.", buttonsData));
+            _ = await _botClient.SendButtons(args, cToken);
         }
     }
 
@@ -99,7 +105,7 @@ public sealed class KdmidResponseService(
         await _repository.Create(KdmidBotCommandNames.CommandInProcess, message.Chat.Id, city, kdmidId, cToken);
 
         await _botClient.SendText(new(message, new($"The embassy of '{city.Name}' with Id '{kdmidId.Id}' has been added to processing.")), cToken);
-        
+
         var adminMessage = new Message(null, new(_botClient.AdminId));
         await _botClient.SendText(new(adminMessage, new($"The embassy of '{city.Name}' with Id '{kdmidId.Id}' has been added to the chat '{message}'.")), cToken);
     }
@@ -154,7 +160,7 @@ public sealed class KdmidResponseService(
         }
         else
         {
-            await _botClient.SendButtons(new(message, new($"Available dates for '{city.Name}' with Id '{kdmidId.Id}'.", buttonsData, 1)), cToken);
+            await _botClient.SendButtons(new(message, new($"Available dates for '{city.Name}' with Id '{kdmidId.Id}'.", buttonsData, ResponseButtonsColumns.One)), cToken);
         }
     }
     public async Task SendConfirmationResult(Message message, Command command, CancellationToken cToken)
@@ -178,9 +184,15 @@ public sealed class KdmidResponseService(
             throw;
         }
     }
-    public Task SendInfo(Message message, Command command, CancellationToken cToken)
+    public async Task SendInfo(Message message, Command command, CancellationToken cToken)
     {
-        return _botClient.SendText(new(message, new("You have to receive the details of your embassies processes, but it has not been implemented yet.")), cToken);
+        var result = _cache.TryGetValue<Message>((message.Chat.Id, command.Name), out var cachedMessage)
+            ? await _botClient.SendText(new(cachedMessage!, new(command.Id.ToString())), cToken)
+            : await _botClient.SendText(new(message, new(command.Id.ToString())), cToken);
+        
+        result.Message.ResponseBehavior = ResponseMessageBehavior.Replace;
+        
+        _cache.Set((message.Chat.Id, command.Name), result.Message);
     }
 
     public Task SendAskResponse(Message message, Command command, CancellationToken cToken)
