@@ -4,7 +4,7 @@ namespace KdmidScheduler.Abstractions.Interfaces.Core.Services;
 
 public interface IKdmidResponseService
 {
-    Task SendAvailableEmbassies(Message message, CancellationToken cToken);
+    Task SendAvailableEmbassies(Message message, Command command, CancellationToken cToken);
     Task SendMyEmbassies(Message message, Command command, CancellationToken cToken);
 
     Task SendCreateCommandResult(Message message, Command command, CancellationToken cToken);

@@ -13,7 +13,7 @@ public sealed class KdmidBotResponse(IKdmidResponseService responseService) : IB
 
     public Task Create(Message message, Command command, CancellationToken cToken) => command.Name switch
     {
-        Commands.Start => _responseService.SendAvailableEmbassies(message, cToken),
+        Commands.Start => _responseService.SendAvailableEmbassies(message, command, cToken),
         KdmidBotCommandNames.Mine => _responseService.SendMyEmbassies(message, command, cToken),
 
         KdmidBotCommandNames.CreateCommand => _responseService.SendCreateCommandResult(message, command, cToken),

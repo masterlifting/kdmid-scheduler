@@ -40,7 +40,7 @@ public sealed class KdmidResponseService(
     private readonly IKdmidRequestService _kdmidRequestService = kdmidRequestService;
     private readonly IKdmidResponseRepository _repository = repository;
 
-    public async Task SendAvailableEmbassies(Message message, CancellationToken cToken)
+    public Task SendAvailableEmbassies(Message message, Command command, CancellationToken cToken)
     {
         var supportedCities = _kdmidRequestService.GetSupportedCities(cToken);
 
@@ -55,15 +55,9 @@ public sealed class KdmidResponseService(
 
         message.ResponseBehavior = ResponseMessageBehavior.Replace;
 
-        if (webAppData.Count == 0)
-        {
-            _ = await _botClient.SendText(new(message, new("There are no available embassies.")), cToken);
-        }
-        else
-        {
-            var args = new WebAppEventArgs(message, new("Available embassies.", webAppData));
-            _ = await _botClient.SendWebApp(args, cToken);
-        }
+        return webAppData.Count == 0
+            ? _botClient.SendText(new(message, new("There are no available embassies.")), cToken)
+            : _botClient.SendWebApp(new(message, new("Available embassies.", webAppData)), cToken);
     }
     public async Task SendMyEmbassies(Message message, Command command, CancellationToken cToken)
     {
@@ -86,15 +80,11 @@ public sealed class KdmidResponseService(
 
         message.ResponseBehavior = ResponseMessageBehavior.Replace;
 
-        if (buttonsData.Count == 0)
-        {
-            _ = await _botClient.SendText(new(message, new("You have no embassies in your list.")), cToken);
-        }
-        else
-        {
-            var args = new ButtonsEventArgs(message, new("My embassies.", buttonsData));
-            _ = await _botClient.SendButtons(args, cToken);
-        }
+        var result = buttonsData.Count == 0
+            ? _botClient.SendText(new(message, new("You have no embassies in your list.")), cToken)
+            : _botClient.SendButtons(new(message, new("My embassies.", buttonsData)), cToken);
+
+        await result;
     }
 
     public async Task SendCreateCommandResult(Message message, Command command, CancellationToken cToken)
@@ -160,7 +150,19 @@ public sealed class KdmidResponseService(
         }
         else
         {
-            await _botClient.SendButtons(new(message, new($"Available dates for '{city.Name}' with Id '{kdmidId.Id}'.", buttonsData, ResponseButtonsColumns.One)), cToken);
+            if (_cache.TryGetValue<Message>((message.Chat.Id, command.Name, city.Code, kdmidId.Id), out var cachedMessage))
+                try
+                {
+                    await _botClient.DeleteMessage(cachedMessage!, cToken);
+                }
+                catch
+                {
+                    _cache.Remove((message.Chat.Id, command.Name, city.Code, kdmidId.Id));
+                }
+
+            var result = await _botClient.SendButtons(new(message, new($"Available dates for '{city.Name}' with Id '{kdmidId.Id}'.", buttonsData, ResponseButtonsColumns.One)), cToken);
+
+            _cache.Set((result.Message.Chat.Id, command.Name, city.Code, kdmidId.Id), result.Message);
         }
     }
     public async Task SendConfirmationResult(Message message, Command command, CancellationToken cToken)
@@ -189,21 +191,27 @@ public sealed class KdmidResponseService(
         var result = _cache.TryGetValue<Message>((message.Chat.Id, command.Name), out var cachedMessage)
             ? await _botClient.SendText(new(cachedMessage!, new(command.Id.ToString())), cToken)
             : await _botClient.SendText(new(message, new(command.Id.ToString())), cToken);
-        
+
         result.Message.ResponseBehavior = ResponseMessageBehavior.Replace;
-        
+
         _cache.Set((message.Chat.Id, command.Name), result.Message);
     }
 
-    public Task SendAskResponse(Message message, Command command, CancellationToken cToken)
+    public async Task SendAskResponse(Message message, Command command, CancellationToken cToken)
     {
-        Text text = command.Parameters.Count == 0
-            ? new("To send your message to the developer, use the double quotes.")
-            : command.Parameters.TryGetValue(CommandParameters.Message, out var response)
-                ? new(response)
-                : throw new ArgumentException("The message for the developer is not specified.");
+        if (command.Parameters.Count == 0)
+        {
+            await _botClient.SendText(new(message, new("To send your message to the developer, use the double quotes.")), cToken);
+            return;
+        }
 
-        return _botClient.SendText(new(message, text), cToken);
+        if (command.Parameters.TryGetValue(CommandParameters.Message, out var response))
+        {
+            _ = await _botClient.SendText(new(message, new(response)), cToken);
+            _cache.Set((message.Chat.Id, command.Name), message);
+        }
+        else
+            throw new UserInvalidOperationException("The message for the developer is not specified.");
     }
     public Task SendAnswerResponse(Message message, Command command, CancellationToken cToken)
     {
@@ -213,8 +221,17 @@ public sealed class KdmidResponseService(
         if (!command.Parameters.TryGetValue(CommandParameters.Message, out var text))
             throw new ArgumentException("The message for the user is not specified.");
 
-        var responseMessage = new Message(null, new(targetChatId));
-        return _botClient.SendText(new(responseMessage, new(text)), cToken);
+        if (_cache.TryGetValue<Message>((targetChatId, Commands.Ask), out var cachedMessage))
+        {
+            var response = new Message(cachedMessage!.Id, new(targetChatId))
+            {
+                ResponseBehavior = ResponseMessageBehavior.Reply
+            };
+
+            return _botClient.SendText(new(response, new(text)), cToken);
+        }
+        else
+            return _botClient.SendText(new(new(null, new(targetChatId)), new(text)), cToken);
     }
 
     private async Task TryAddAttempt(string chatId, Command command, City city, KdmidId kdmidId, CancellationToken cToken)
