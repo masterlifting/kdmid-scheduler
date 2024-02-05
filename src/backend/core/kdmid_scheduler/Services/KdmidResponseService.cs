@@ -48,7 +48,7 @@ public sealed class KdmidResponseService(
 
         foreach (var city in supportedCities)
         {
-            var uri = new Uri($"{_kdmidSettings.WebAppUrl}/kdmidId?chatId={message.Id}&cityCode={city.Code}");
+            var uri = new Uri($"{_kdmidSettings.WebAppUrl}/kdmidId?chatId={message.Chat.Id}&cityCode={city.Code}");
 
             webAppData.Add(city.Name, uri);
         }
