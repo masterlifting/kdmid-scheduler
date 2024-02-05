@@ -63,7 +63,7 @@ public class KdmidBotApi(
             .ToArray();
 
         _log.Debug($"Cities: {string.Join("\n", result.ToJson())}.");
-    
+
 
         return Task.FromResult(result);
     }
@@ -121,10 +121,6 @@ public class KdmidBotApi(
                 return new CommandGetDto(x.Id.ToString(), city.Name, kdmidId.Id, kdmidId.Cd, kdmidId.Ems, attempts);
             })
             .ToArray();
-
-        _log.Debug($"GetCommands: {result.Length} commands found.");
-
-        return result;
     }
     #endregion
 
@@ -150,7 +146,7 @@ public class KdmidBotApi(
 
         var botCommand = new Command(Guid.NewGuid(), KdmidBotCommandNames.CreateCommand, parameters);
 
-        await _botResponse.Create(new(null,new(chatId)), botCommand, cToken);
+        await _botResponse.Create(new(null, new(chatId)), botCommand, cToken);
 
         return botCommand.Id.ToString();
     }
