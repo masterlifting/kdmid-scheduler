@@ -109,7 +109,7 @@ public class KdmidBotApi(
 
         _log.Debug($"GetCommands: {targetCommands.Length} target commands found.");
 
-        var result = targetCommands
+        return targetCommands
             .Select(x =>
             {
                 var city = x.Parameters[BotCommandParametersCityKey].FromJson<City>();
