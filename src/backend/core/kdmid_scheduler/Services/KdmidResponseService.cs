@@ -216,10 +216,16 @@ public sealed class KdmidResponseService(
     public Task SendAnswerResponse(Message message, Command command, CancellationToken cToken)
     {
         if (!command.Parameters.TryGetValue(CommandParameters.ChatId, out var targetChatId))
+        {
+            _log.Error($"Unspecified parameters: {command.Parameters.ToJson()}.");
             throw new ArgumentException("The chatId for the user is not specified.");
+        }
 
         if (!command.Parameters.TryGetValue(CommandParameters.Message, out var text))
+        {
+            _log.Error($"Unspecified parameters: {command.Parameters.ToJson()}.");
             throw new ArgumentException("The message for the user is not specified.");
+        }
 
         if (_cache.TryGetValue<Message>((targetChatId, Commands.Ask), out var cachedMessage))
         {
