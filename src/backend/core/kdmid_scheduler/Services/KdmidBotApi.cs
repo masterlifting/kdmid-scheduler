@@ -96,7 +96,7 @@ public class KdmidBotApi(
                 && cityStr.FromJson<City>().Code == cityCode)
             .ToArray();
 
-        var result = targetCommands
+        return targetCommands
             .Select(x =>
             {
                 var city = x.Parameters[BotCommandParametersCityKey].FromJson<City>();
@@ -108,10 +108,6 @@ public class KdmidBotApi(
                 return new CommandGetDto(x.Id.ToString(), city.Name, kdmidId.Id, kdmidId.Cd, kdmidId.Ems, attempts);
             })
             .ToArray();
-
-        _log.Debug($"GetCommands: {result.Length} commands found.");
-
-        return result;
     }
     #endregion
 
