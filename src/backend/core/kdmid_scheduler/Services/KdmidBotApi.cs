@@ -62,6 +62,9 @@ public class KdmidBotApi(
             .Select(x => new CityGetDto(x.Code, x.Name))
             .ToArray();
 
+        _log.Debug($"Cities: {string.Join("\n", result.ToJson())}.");
+    
+
         return Task.FromResult(result);
     }
     public async Task<CommandGetDto> GetCommand(string chatId, string commandId, CancellationToken cToken)
@@ -81,13 +84,21 @@ public class KdmidBotApi(
     {
         var commands = await _botCommandsStore.Get(chatId, cToken);
 
+        _log.Debug($"GetCommands: {commands.Length} commands found.");
+
         var commandNames = !string.IsNullOrWhiteSpace(names)
             ? names.Split(',', StringSplitOptions.RemoveEmptyEntries)
             : [];
 
+        _log.Debug($"GetCommands: {commandNames.Length} command names found.");
+
         var city = !string.IsNullOrWhiteSpace(cityCode)
             ? _kdmidRequestService.GetSupportedCity(cityCode!, cToken)
             : null;
+
+        _log.Debug($"GetCommands: city code {cityCode} found.");
+
+        _log.Debug($"GetCommands: city {city} city found.");
 
         var targetCommands = commands
             .Where(x => commandNames.Length == 0 || commandNames.Contains(x.Name, StringComparer.InvariantCultureIgnoreCase))
@@ -95,6 +106,8 @@ public class KdmidBotApi(
                 || x.Parameters.TryGetValue(BotCommandParametersCityKey, out var cityStr)
                 && cityStr.FromJson<City>().Code == cityCode)
             .ToArray();
+
+        _log.Debug($"GetCommands: {targetCommands.Length} target commands found.");
 
         var result = targetCommands
             .Select(x =>
