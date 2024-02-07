@@ -146,7 +146,7 @@ public sealed class KdmidResponseService(
 
         if (buttonsData.Count == 0)
         {
-            _log.Info($"Available dates for '{city.Name}' with Id '{kdmidId.Id}' were not found for the chat '{message.Id}'.");
+            _log.Info($"Available dates for '{city.Name}' with Id '{kdmidId.Id}' were not found for the chat '{message.Chat.Id}'.");
         }
         else
         {
@@ -179,7 +179,7 @@ public sealed class KdmidResponseService(
         }
         catch (UserInvalidOperationException exception)
         {
-            throw new UserInvalidOperationException($"The confirmation of '{chosenResult.ChosenKey}' for '{city.Name}' with Id '{kdmidId.Id}' was failed for the chat '{message.Id}'. Reason: {exception.Message}");
+            throw new UserInvalidOperationException($"The confirmation '{chosenResult.ChosenKey}' for '{city.Name}' with Id '{kdmidId.Id}' was failed. Reason: {exception.Message}");
         }
         catch
         {

@@ -10,7 +10,7 @@ namespace KdmidScheduler.Worker.Background;
 
 public sealed class KdmidStepHandler : IBackgroundTaskStepHandler<KdmidAvailableDates>
 {
-    public async Task Handle(
+    public Task Handle(
         string taskName,
         IServiceProvider serviceProvider,
         IPersistentProcessStep step,
@@ -21,14 +21,19 @@ public sealed class KdmidStepHandler : IBackgroundTaskStepHandler<KdmidAvailable
         {
             case (int)KdmidProcessSteps.CheckAvailableDates:
                 {
-                    var kdmidResponseService = serviceProvider.GetRequiredService<IKdmidResponseService>();
+                    var service = serviceProvider.GetRequiredService<IKdmidResponseService>();
 
-                    foreach (var item in data)
-                    {
-                        await kdmidResponseService.SendAvailableDates(new(null, item.Chat), item.Command, cToken);
-                    }
+                    var serviceTasks = data.Select(x => service.SendAvailableDates(new(null, x.Chat), x.Command, cToken));
+                    
+                    return Task
+                        .WhenAll(serviceTasks)
+                        .ContinueWith(result => {
+                            if (result.IsFaulted)
+                            {
+                                throw result.Exception;
+                            }
+                        }, cToken);
                 }
-                break;
             default:
                 throw new NotSupportedException($"Step '{step.Name}' of the task '{taskName}' is not supported.");
         }
