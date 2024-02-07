@@ -10,18 +10,27 @@ namespace KdmidScheduler.Infrastructure.Web;
 
 public sealed class KdmidRequestHtmlDocument : IKdmidRequestHtmlDocument
 {
+    private readonly SemaphoreSlim _semaphore = new(1, 1);
+
     private readonly HtmlDocument _htmlDocument = new();
 
     public StartPage GetStartPage(string page)
     {
+        _semaphore.Wait();
+
         _htmlDocument.LoadHtml(page);
 
         var error = _htmlDocument.DocumentNode.SelectSingleNode("//div[@class='error_msg']");
 
         if (error is not null)
+        {
+            _semaphore.Release();
             throw new UserInvalidOperationException(error.InnerText);
+        }
 
         var pageNodes = _htmlDocument.DocumentNode.SelectNodes("//input | //img");
+
+        _semaphore.Release();
 
         if (pageNodes is null || pageNodes.Count == 0)
             throw new InvalidOperationException("The Start page was not found.");
@@ -59,14 +68,21 @@ public sealed class KdmidRequestHtmlDocument : IKdmidRequestHtmlDocument
     }
     public string GetApplicationFormData(string page)
     {
+        _semaphore.Wait();
+
         _htmlDocument.LoadHtml(page);
 
         var error = _htmlDocument.DocumentNode.SelectSingleNode("//div[@class='error_msg']");
 
         if (error is not null)
+        {
+            _semaphore.Release();
             throw new UserInvalidOperationException(error.InnerText);
+        }
 
         var pageNodes = _htmlDocument.DocumentNode.SelectNodes("//input");
+
+        _semaphore.Release();
 
         if (pageNodes is null || pageNodes.Count == 0)
             throw new InvalidOperationException("The Application form data was not found.");
@@ -98,21 +114,31 @@ public sealed class KdmidRequestHtmlDocument : IKdmidRequestHtmlDocument
     }
     public CalendarPage GetCalendarPage(string page)
     {
+        _semaphore.Wait();
+
         _htmlDocument.LoadHtml(page);
 
         var error = _htmlDocument.DocumentNode.SelectSingleNode("//div[@class='error_msg']");
 
         if (error is not null)
+        {
+            _semaphore.Release();
             throw new UserInvalidOperationException(error.InnerText);
+        }
 
         var radioButtons = _htmlDocument.DocumentNode
                 .SelectSingleNode("//td[@id='center-panel']")
                 ?.SelectNodes("//input[@type='radio']");
 
         if (radioButtons is null || radioButtons.Count == 0)
+        {
+            _semaphore.Release();
             return new(string.Empty, []);
+        }
 
         var pageNodes = _htmlDocument.DocumentNode.SelectNodes("//input");
+
+        _semaphore.Release();
 
         if (pageNodes is null || pageNodes.Count == 0)
             throw new InvalidOperationException("The Calendar page was not found.");
@@ -148,14 +174,21 @@ public sealed class KdmidRequestHtmlDocument : IKdmidRequestHtmlDocument
     }
     public string GetConfirmationResult(string page)
     {
+        _semaphore.Wait();
+
         _htmlDocument.LoadHtml(page);
 
         var error = _htmlDocument.DocumentNode.SelectSingleNode("//div[@class='error_msg']");
 
         if (error is not null)
+        {
+            _semaphore.Release();
             throw new UserInvalidOperationException(error.InnerText);
+        }
 
         var resultTable = _htmlDocument.DocumentNode.SelectSingleNode("//td[@id='center-panel']");
+        
+        _semaphore.Release();
 
         if (resultTable is null)
             return new("The Confirmation page was not found.");

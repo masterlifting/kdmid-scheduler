@@ -36,9 +36,9 @@ public class KdmidBotApi(
     }
     public async Task Listen(Uri uri, CancellationToken cToken)
     {
-        _log.Info($"Bot client going to listen on {uri}.");
+        _log.Debug($"Bot client going to listen on {uri}.");
         await _botClient.Listen(uri, cToken);
-        _log.Info($"Bot client is listening on {uri}.");
+        _log.Debug($"Bot client is listening on {uri}.");
     }
     public async Task Receive(StreamReader reader, CancellationToken cToken)
     {

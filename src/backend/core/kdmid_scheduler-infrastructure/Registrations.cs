@@ -89,6 +89,11 @@ public static class Registrations
         .AddScoped<AzureTableWriterRepository<PersistenceInfrastructure.AzureTable.Contexts.KdmidPersistenceContext, PersistenceModels.AzureTable.v1.KdmidBotCommands>>()
         .AddTelegramBot<KdmidBotResponse>(x =>
         {
+#if DEBUG
+            x.ClientLifetime = ServiceLifetime.Singleton;
+#else
+            x.ClientLifetime = ServiceLifetime.Scoped;
+#endif
             x.AddCommandsStore<PersistenceInfrastructure.AzureTable.Repositories.Bots.KdmidBotCommandsStore>();
         });
     public static IServiceCollection AddKdmidVpsInfrastructure(this IServiceCollection services) => services
@@ -103,6 +108,11 @@ public static class Registrations
         .AddScoped<MongoDbWriterRepository<PersistenceInfrastructure.MongoDb.Contexts.KdmidPersistenceContext, PersistenceModels.MongoDb.v1.KdmidBotCommands>>()
         .AddTelegramBot<KdmidBotResponse>(x =>
         {
+#if DEBUG
+            x.ClientLifetime = ServiceLifetime.Singleton;
+#else
+            x.ClientLifetime = ServiceLifetime.Scoped;
+#endif
             x.AddCommandsStore<PersistenceInfrastructure.MongoDb.Repositories.Bots.KdmidBotCommandsStore>();
         });
 }
