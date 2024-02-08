@@ -19,7 +19,7 @@ public sealed class BotController(IKdmidBotApi api) : ControllerBase
 
     [HttpGet("listen")]
     public Task Listen(CancellationToken cToken) =>
-        _api.Listen(new($"{Request.Scheme}://{Request.Host}/bot/receive"), cToken);
+        _api.Listen(new($"{Request.Scheme}s://{Request.Host}/bot/receive"), cToken);
 
     [HttpPost("receive")]
     public Task Receive(CancellationToken cToken)
