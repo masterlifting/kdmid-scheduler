@@ -30,7 +30,9 @@ public sealed class KdmidRequestCaptchaService(
 
         content = new StringContent($"{{\"clientKey\": \"{_settings.ApiKey}\", \"taskId\": \"{taskId}\"}}", Encoding.UTF8, "application/json");
 
-        while (status == "processing")
+        var attempts = 15;
+
+        while (status == "processing" && attempts-- > 0)
         {
             await Task.Delay(500, cToken);
 
