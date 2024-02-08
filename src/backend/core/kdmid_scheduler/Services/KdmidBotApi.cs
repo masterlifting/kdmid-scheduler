@@ -30,7 +30,7 @@ public class KdmidBotApi(
     #region Client
     public async Task Listen(CancellationToken cToken)
     {
-        _log.Info("Bot client going to listen.");
+        _log.Debug("Bot client going to listen.");
         await _botClient.Listen(cToken);
         _log.Info("Bot client is listening.");
     }
@@ -38,7 +38,7 @@ public class KdmidBotApi(
     {
         _log.Debug($"Bot client going to listen on {uri}.");
         await _botClient.Listen(uri, cToken);
-        _log.Debug($"Bot client is listening on {uri}.");
+        _log.Info($"Bot client is listening on {uri}.");
     }
     public async Task Receive(StreamReader reader, CancellationToken cToken)
     {
@@ -49,7 +49,7 @@ public class KdmidBotApi(
             throw new InvalidOperationException("Received data is empty.");
 
         await _botClient.Receive(data, cToken);
-        _log.Debug("Bot client received data.");
+        _log.Info("Bot client received data.");
     }
     #endregion
 

@@ -19,7 +19,7 @@ public static class Constants
         public const string UpdateCommand = "updateCommand";
         public const string DeleteCommand = "deleteCommand";
         public const string SendAvailableDates = "sendAvailableDates";
-        public const string SendConfirmResult = "sendConfirmResult";
+        public const string SendConfirmationResult = "sendConfirmResult";
     }
     public enum KdmidProcessSteps
     {

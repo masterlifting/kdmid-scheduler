@@ -29,7 +29,13 @@ public sealed class KdmidResponseRepository(
     {
         throw new NotImplementedException();
     }
-    public Task Clear(string chatId, Guid commandId, CancellationToken cToken)
+
+    public Task<string> GetInfo(string id, Command command, CancellationToken cToken)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task Clear(string chatId, Command command, City city, KdmidId kdmidId, CancellationToken cToken)
     {
         throw new NotImplementedException();
     }

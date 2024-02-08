@@ -21,7 +21,7 @@ public sealed class KdmidBotResponse(IKdmidResponseService responseService) : IB
         KdmidBotCommandNames.DeleteCommand => _responseService.SendDeleteCommandResult(message, command, cToken),
         
         KdmidBotCommandNames.SendAvailableDates => _responseService.SendAvailableDates(message, command, cToken),
-        KdmidBotCommandNames.SendConfirmResult => _responseService.SendConfirmationResult(message, command, cToken),
+        KdmidBotCommandNames.SendConfirmationResult => _responseService.SendConfirmationResult(message, command, cToken),
         KdmidBotCommandNames.CommandInProcess => _responseService.SendInfo(message, command, cToken),
 
         Commands.Ask => _responseService.SendAskResponse(message, command, cToken),

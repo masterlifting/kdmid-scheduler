@@ -10,7 +10,6 @@ using Microsoft.Extensions.Options;
 using Net.Shared.Abstractions.Models.Exceptions;
 using Net.Shared.Bots.Abstractions.Interfaces;
 using Net.Shared.Bots.Abstractions.Models.Bot;
-using Net.Shared.Bots.Abstractions.Models.Response;
 using Net.Shared.Extensions.Logging;
 using Net.Shared.Extensions.Serialization.Json;
 
@@ -115,7 +114,7 @@ public sealed class KdmidResponseService(
         var city = command.Parameters[BotCommandParametersCityKey].FromJson<City>();
         var kdmidId = command.Parameters[BotCommandParametersKdmidIdKey].FromJson<KdmidId>();
 
-        await _repository.Clear(message.Chat.Id, command.Id, cToken);
+        await _repository.Clear(message.Chat.Id, command, city, kdmidId, cToken);
 
         await _botClient.SendText(new(message, new($"The embassy of '{city.Name}' with Id '{kdmidId.Id}' has been deleted.")), cToken);
     }
@@ -134,7 +133,7 @@ public sealed class KdmidResponseService(
         foreach (var date in availableDatesResult.Dates)
         {
             var chosenResult = new ChosenDateResult(availableDatesResult.FormData, date.Key, date.Value);
-            var nextCommand = await _botCommandsStore.Create(message.Chat.Id, KdmidBotCommandNames.SendConfirmResult, new()
+            var nextCommand = await _botCommandsStore.Create(message.Chat.Id, KdmidBotCommandNames.SendConfirmationResult, new()
             {
                 { BotCommandParametersCityKey, command.Parameters[BotCommandParametersCityKey] },
                 { BotCommandParametersKdmidIdKey, command.Parameters[BotCommandParametersKdmidIdKey] },
@@ -175,7 +174,7 @@ public sealed class KdmidResponseService(
         {
             await _kdmidRequestService.ConfirmChosenDate(city, kdmidId, chosenResult, cToken);
             await _botClient.SendText(new(message, new($"'{chosenResult.ChosenKey}' for '{city.Name}' with Id '{kdmidId.Id}' has been confirmed.")), cToken);
-            await _repository.Clear(message.Chat.Id, command.Id, cToken);
+            await _repository.Clear(message.Chat.Id, command, city, kdmidId, cToken);
         }
         catch (UserInvalidOperationException exception)
         {
@@ -188,9 +187,11 @@ public sealed class KdmidResponseService(
     }
     public async Task SendInfo(Message message, Command command, CancellationToken cToken)
     {
+        var info = await _repository.GetInfo(message.Chat.Id, command, cToken);
+
         var result = _cache.TryGetValue<Message>((message.Chat.Id, command.Name), out var cachedMessage)
-            ? await _botClient.SendText(new(cachedMessage!, new(command.Id.ToString())), cToken)
-            : await _botClient.SendText(new(message, new(command.Id.ToString())), cToken);
+            ? await _botClient.SendText(new(cachedMessage!, new(info)), cToken)
+            : await _botClient.SendText(new(message, new(info)), cToken);
 
         result.Message.ResponseBehavior = ResponseMessageBehavior.Replace;
 

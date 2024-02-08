@@ -8,5 +8,6 @@ public interface IKdmidResponseRepository
 {
     Task Create(string commandName, string chatId, City city, KdmidId kdmidId, CancellationToken cToken);
     Task Update(Command command, string chatId, City city, KdmidId kdmidId, CancellationToken cToken);
-    Task Clear(string chatId, Guid commandId, CancellationToken cToken);
+    Task Clear(string chatId, Command command, City city, KdmidId kdmidId, CancellationToken cToken);
+    Task<string> GetInfo(string chatId, Command command, CancellationToken cToken);
 }
