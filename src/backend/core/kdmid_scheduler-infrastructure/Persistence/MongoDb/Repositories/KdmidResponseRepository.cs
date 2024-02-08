@@ -90,13 +90,11 @@ public sealed class KdmidResponseRepository(
 
         var availableDates = await _reader.FindMany<KdmidAvailableDates>(new(x => x.Chat.Id == chatId && x.City.Code == city.Code), cToken);
 
-        var date = DateTime.UtcNow.AddHours(city.TimeShift);
-
         var result = new StringBuilder();
 
         result.Append(city.Name);
         result.Append(" - ");
-        result.Append(date.ToString("dd.MM.yyyy"));
+        result.Append(DateTime.UtcNow.AddHours(city.TimeShift).ToString("dd.MM.yyyy"));
         result.AppendLine();
 
         result.AppendLine();
@@ -122,7 +120,7 @@ public sealed class KdmidResponseRepository(
             }
 
             result.Append("Attempts - ");
-            result.Append(attempts.Day == date.Date.DayOfYear ? attempts.Count : 0);
+            result.Append(attempts.Count);
             result.AppendLine();
 
             result.Append("Last attempt - ");
