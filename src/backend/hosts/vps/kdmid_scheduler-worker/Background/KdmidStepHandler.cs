@@ -24,22 +24,21 @@ public sealed class KdmidStepHandler : IBackgroundTaskStepHandler<KdmidAvailable
             case (int)KdmidProcessSteps.CheckAvailableDates:
                 {
                     var service = serviceProvider.GetRequiredService<IKdmidResponseService>();
-                    var logger = serviceProvider.GetRequiredService<ILogger<KdmidStepHandler>>();
 
-                    return Task.WhenAll(data.Select(x =>
+                    return Task.WhenAll(data.Select(async x =>
                     {
                         try
                         {
-                            return service.SendAvailableDates(new(null, x.Chat), x.Command, cToken);
+                            await service.SendAvailableDates(new(null, x.Chat), x.Command, cToken);
                         }
                         catch (Exception exception)
                         {
+                            var logger = serviceProvider.GetRequiredService<ILogger<KdmidStepHandler>>();
+
                             logger.Error($"Available dates for the task '{taskName}' were failed for the chat '{x.Chat}'. Reason: {exception.Message}");
 
                             x.Error = exception.Message;
                             x.StatusId = (int)ProcessStatuses.Error;
-
-                            return Task.CompletedTask;
                         }
                     }));
                 }
