@@ -55,22 +55,31 @@ export const useKdmidIdentifier = (chatId: string, cityCode: string) => {
   }, [city, getCommandsResponse, isGetCommandsError]);
 
   useEffect(() => {
-    const _commands: IIdentifierCommand[] = [];
+    const paginatedCommands: IIdentifierCommand[] = [];
+    const isentifierCommands = Array.from(identifierData.commandsMap.values()).sort((a, b) => {
+      if (a.command.identifier.id < b.command.identifier.id) {
+        return -1;
+      }
+      if (a.command.identifier.id > b.command.identifier.id) {
+        return 1;
+      }
+      return 0;
+    });
 
     let pageNumber = 1;
 
-    for (const item of Array.from(identifierData.commandsMap.values())) {
+    for (const command of isentifierCommands) {
       if (pageNumber === paginationState.pageNumber) {
-        _commands.push(item);
+        paginatedCommands.push(command);
         break;
       } else {
         pageNumber++;
       }
     }
-    setCommands(_commands);
-  }, [identifierData.commandsMap, paginationState.pageNumber]);
+    setCommands(paginatedCommands);
+  }, [identifierData, paginationState.pageNumber]);
 
-  const onAddNewCommand = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const onNewCommand = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.preventDefault();
 
     const key = guid();
@@ -186,7 +195,7 @@ export const useKdmidIdentifier = (chatId: string, cityCode: string) => {
     city: identifierData.city,
     commands,
     commandsTotalCount,
-    onAddNewCommand,
+    onNewCommand,
     onSetCommand,
     onRemoveCommand,
     onChangeKdmidId,
