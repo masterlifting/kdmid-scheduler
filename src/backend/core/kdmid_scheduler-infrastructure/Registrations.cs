@@ -93,7 +93,7 @@ public static class Registrations
 #if DEBUG
             x.ClientLifetime = ServiceLifetime.Singleton;
 #else
-            x.ClientLifetime = ServiceLifetime.Scoped;
+            x.ClientLifetime = ServiceLifetime.Singleton;
 #endif
             x.AddCommandsStore<PersistenceInfrastructure.AzureTable.Repositories.Bots.KdmidBotCommandsStore>();
         });
@@ -113,7 +113,7 @@ public static class Registrations
 #if DEBUG
             x.ClientLifetime = ServiceLifetime.Singleton;
 #else
-            x.ClientLifetime = ServiceLifetime.Scoped;
+            x.ClientLifetime = ServiceLifetime.Singleton;
 #endif
             x.AddCommandsStore<PersistenceInfrastructure.MongoDb.Repositories.Bots.KdmidBotCommandsStore>();
         });
