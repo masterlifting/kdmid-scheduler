@@ -1,5 +1,9 @@
 /** @format */
 
+export interface IPagination {
+  pageNumber: number;
+}
+
 export interface IError {
   message: string;
 }

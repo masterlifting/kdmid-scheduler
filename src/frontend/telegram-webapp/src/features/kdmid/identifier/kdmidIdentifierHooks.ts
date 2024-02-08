@@ -6,15 +6,21 @@ import { v4 as guid } from 'uuid';
 import { IIdentifier, IIdentifierCommand } from './kdmidIdentifierTypes';
 import { ICity, ICommand } from '../kdmidTypes';
 import { useAppSelector } from '../../../hooks/useAppSelector';
+import { IPagination } from '../../../_types';
 
 export const useKdmidIdentifier = (chatId: string, cityCode: string) => {
   const { cities } = useAppSelector(x => x.kdmidState);
   const city: ICity | undefined = cities.find(x => x.code === cityCode);
 
+  const [paginationState, setPaginstionState] = useState<IPagination>({ pageNumber: 1 });
+
   const [identifierData, setIdentifierData] = useState<IIdentifier>({
     city,
     commandsMap: new Map<string, IIdentifierCommand>(),
   });
+
+  const [commands, setCommands] = useState<IIdentifierCommand[]>([]);
+  const commandsTotalCount = identifierData.commandsMap.size;
 
   const { data: getCommandsResponse, isError: isGetCommandsError } = useGetCommandsQuery({
     chatId: chatId,
@@ -47,6 +53,22 @@ export const useKdmidIdentifier = (chatId: string, cityCode: string) => {
       setIdentifierData({ city, commandsMap });
     }
   }, [city, getCommandsResponse, isGetCommandsError]);
+
+  useEffect(() => {
+    const _commands: IIdentifierCommand[] = [];
+
+    let pageNumber = 1;
+
+    for (const item of Array.from(identifierData.commandsMap.values())) {
+      if (pageNumber === paginationState.pageNumber) {
+        _commands.push(item);
+        break;
+      } else {
+        pageNumber++;
+      }
+    }
+    setCommands(_commands);
+  }, [identifierData.commandsMap, paginationState.pageNumber]);
 
   const onAddNewCommand = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.preventDefault();
@@ -162,12 +184,15 @@ export const useKdmidIdentifier = (chatId: string, cityCode: string) => {
 
   return {
     city: identifierData.city,
-    commands: Array.from(identifierData.commandsMap.values()),
+    commands,
+    commandsTotalCount,
     onAddNewCommand,
     onSetCommand,
     onRemoveCommand,
     onChangeKdmidId,
     onChangeKdmidCd,
     onChangeKdmidEms,
+    paginationState,
+    setPaginstionState,
   };
 };

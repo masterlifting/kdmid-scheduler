@@ -4,6 +4,7 @@ import React from 'react';
 import { InputClass } from '../../../styles/input';
 import { ButtonClass } from '../../../styles/button';
 import { useKdmidIdentifier } from './kdmidIdentifierHooks';
+import { Paginator } from '../../../components/PaginationComponents';
 
 interface IKdmidIdentifierProps {
   chatId: string;
@@ -11,13 +12,24 @@ interface IKdmidIdentifierProps {
 }
 
 export const KdmidIdentifier = ({ chatId, cityCode }: IKdmidIdentifierProps) => {
-  const { city, commands, onAddNewCommand, onSetCommand, onRemoveCommand, onChangeKdmidId, onChangeKdmidCd, onChangeKdmidEms } =
-    useKdmidIdentifier(chatId, cityCode);
+  const {
+    city,
+    commands,
+    commandsTotalCount,
+    onAddNewCommand,
+    onSetCommand,
+    onRemoveCommand,
+    onChangeKdmidId,
+    onChangeKdmidCd,
+    onChangeKdmidEms,
+    paginationState,
+    setPaginstionState,
+  } = useKdmidIdentifier(chatId, cityCode);
 
   return (
     <div className='w-80 absolute rounded-md left-1/2 top-1/3 transform -translate-x-1/2 -translate-y-1/3'>
       <div className='grid grid-cols-[1fr,auto] gap-1 items-center'>
-        <span className='text-md font-bold text-left'>My statements for {city?.name}</span>
+        <span className='text-3xl font-bold text-left'>{city?.name ?? 'Loading...'}</span>
         <button type='button' className={ButtonClass.Success} onClick={onAddNewCommand}>
           New
         </button>
@@ -71,6 +83,7 @@ export const KdmidIdentifier = ({ chatId, cityCode }: IKdmidIdentifierProps) => 
             </div>
           </form>
         ))}
+        <Paginator totalItemsCount={commandsTotalCount} state={paginationState} setPaginatonState={setPaginstionState} />
       </div>
     </div>
   );
