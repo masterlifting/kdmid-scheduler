@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { IPagination } from '../_types';
-import { HoveredTextColor } from '../styles/colors';
 import { ButtonClass } from '../styles/button';
 
 interface IPaginatorProps {
@@ -13,30 +12,26 @@ interface IPaginatorProps {
 
 export const Paginator = ({ totalItemsCount, state, setPaginatonState }: IPaginatorProps) => {
   return (
-    <div className='flex justify-between items-center mt-5'>
-      <span>
+    <div className='mt-1 grid grid-cols-2'>
+      <div className='w-14'>
         {state.pageNumber !== 1 && (
           <button
             type='button'
             className={ButtonClass.Secondary}
             onClick={_ => setPaginatonState({ ...state, pageNumber: state.pageNumber - 1 })}
-          >
-            {'<<<'}
-          </button>
+          ></button>
         )}
-      </span>
+      </div>
 
-      <span>
+      <div className='w-14 ml-auto'>
         {totalItemsCount > state.pageNumber && (
           <button
             type='button'
             className={ButtonClass.Secondary}
             onClick={_ => setPaginatonState({ ...state, pageNumber: state.pageNumber + 1 })}
-          >
-            {'>>>'}
-          </button>
+          ></button>
         )}
-      </span>
+      </div>
     </div>
   );
 };
