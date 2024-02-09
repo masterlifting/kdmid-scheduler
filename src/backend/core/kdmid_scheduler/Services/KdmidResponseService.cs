@@ -265,7 +265,7 @@ public sealed class KdmidResponseService(
             if (attempts.Day != day)
             {
                 attemptsDay = day;
-                attemptsCount = 0;
+                attemptsCount = 1;
             }
 
             attempts = new Attempts(attemptsDay, attemptsCount);
