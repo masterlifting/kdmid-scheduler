@@ -43,22 +43,26 @@ export const KdmidIdentifier = ({ chatId, cityCode }: IKdmidIdentifierProps) => 
         {isVisibleInstruction ? 'Hide' : 'Show'} instructions
       </b>
       <div className={`max-h-0 overflow-hidden transition-all duration-500 ${isVisibleInstruction ? 'max-h-[1000px]' : ''}`}>
-        <span className={`text-sm ${TextColor.Secondary}`}>
+        <span className={`text-xs ${TextColor.Secondary}`}>
           <br />
-          1. Register your service on the kdmid.ru portal
+          1. Register your request on the {'https://{city}.kdmid.ru'}
           <br />
-          2. Activate the received link from your email
+          2. Get and activate the received link from your email.
           <br />
-          3. Extract values of ID, CD, and EMS from the link
+          3. Extract ID, CD, and EMS (optional) values from the link.
           <br />
-          4. Press the 'New' button
+          4. Press the 'New' button above.
           <br />
-          5. Fill out the form below
+          5. Fill out the form below.
           <br />
-          6. Press the 'Create' button
+          6. Press the 'Create' button below.
           <br />
-          Your appointment will be checked every 25 minutes, starting from the time you created the command until the working time
-          of your embassy, and is not more than 23 times per day.
+          <b>
+            Your request will be checked every 25 minutes, from 8:45 AM to 4:45 PM, the working time of the chosen embassy. If
+            there are available dates, you will receive a message in the chat with the buttons for available dates. Press any
+            button to confirm your appointment. After that, after around 1 hour, you'll receive a message with your confirmation
+            on the email from the kdmid. If you get a fail while confirming, it means the button's date has expired.
+          </b>
         </span>
       </div>
       <div>
