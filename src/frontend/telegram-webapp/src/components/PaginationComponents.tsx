@@ -19,8 +19,9 @@ export const Paginator = ({ totalItemsCount, state, setPaginatonState }: IPagina
             type='button'
             className={ButtonClass.Secondary}
             onClick={_ => setPaginatonState({ ...state, pageNumber: state.pageNumber - 1 })}
-            onBlur={e => e.target.blur()}
-          ></button>
+          >
+            {'<'}
+          </button>
         )}
       </div>
 
@@ -30,8 +31,9 @@ export const Paginator = ({ totalItemsCount, state, setPaginatonState }: IPagina
             type='button'
             className={ButtonClass.Secondary}
             onClick={_ => setPaginatonState({ ...state, pageNumber: state.pageNumber + 1 })}
-            onBlur={e => e.target.blur()}
-          ></button>
+          >
+            {'>'}
+          </button>
         )}
       </div>
     </div>
