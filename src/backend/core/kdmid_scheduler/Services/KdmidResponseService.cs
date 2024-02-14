@@ -96,7 +96,7 @@ public sealed class KdmidResponseService(
         await _botClient.SendText(new(message, new($"The embassy of '{city.Name}' with Id '{kdmidId.Id}' has been added to processing.")), cToken);
 
         var adminMessage = new Message(null, new(_botClient.AdminId));
-        await _botClient.SendText(new(adminMessage, new($"The embassy of '{city.Name}' with Id '{kdmidId.Id}' has been added to the chat '{message}'.")), cToken);
+        await _botClient.SendText(new(adminMessage, new($"The embassy of '{city.Name}' with Id '{kdmidId.Id}' has been added to the chat '{message.Chat.Id}'.")), cToken);
     }
     public async Task SendUpdateCommandResult(Message message, Command command, CancellationToken cToken)
     {

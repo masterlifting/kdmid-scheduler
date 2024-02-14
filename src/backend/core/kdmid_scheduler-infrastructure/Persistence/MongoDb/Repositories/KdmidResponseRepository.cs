@@ -102,7 +102,13 @@ public sealed class KdmidResponseRepository(
         foreach (var availableDate in availableDates)
         {
             var kdmidId = availableDate.Command.Parameters[BotCommandParametersKdmidIdKey].FromJson<KdmidId>();
-            var attempts = availableDate.Command.Parameters[BotCommandParametersAttemptsKey].FromJson<Attempts>();
+            
+            Attempts? attempts = null;
+            
+            if(command.Parameters.TryGetValue(BotCommandParametersAttemptsKey, out var attemptsStr))
+            {
+                attempts = attemptsStr.FromJson<Attempts>();
+            }
 
             result.Append("Id - ");
             result.Append(kdmidId.Id);
@@ -120,7 +126,7 @@ public sealed class KdmidResponseRepository(
             }
 
             result.Append("Attempts - ");
-            result.Append(attempts.Count);
+            result.Append(attempts is null ? 0 : attempts.Count);
             result.AppendLine();
 
             result.Append("Last attempt - ");

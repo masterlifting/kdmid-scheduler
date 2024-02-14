@@ -2,6 +2,8 @@
 using KdmidScheduler.Abstractions.Models.Infrastructure.Persistence.MongoDb.v1;
 
 using Net.Shared.Background.Abstractions.Interfaces;
+using Net.Shared.Bots.Abstractions.Interfaces;
+using Net.Shared.Bots.Abstractions.Models.Bot;
 using Net.Shared.Extensions.Logging;
 using Net.Shared.Persistence.Abstractions.Interfaces.Entities.Catalogs;
 
@@ -27,18 +29,22 @@ public sealed class KdmidStepHandler : IBackgroundTaskStepHandler<KdmidAvailable
 
                     return Task.WhenAll(data.Select(async x =>
                     {
+                        var message = new Message(null, x.Chat);
+
                         try
                         {
-                            await service.SendAvailableDates(new(null, x.Chat), x.Command, cToken);
+                            await service.SendAvailableDates(message, x.Command, cToken);
                         }
                         catch (Exception exception)
                         {
-                            var logger = serviceProvider.GetRequiredService<ILogger<KdmidStepHandler>>();
-
-                            logger.Error($"Available dates for the task '{taskName}' were failed for the chat '{x.Chat}'. Reason: {exception.Message}");
-
                             x.Error = exception.Message;
                             x.StatusId = (int)ProcessStatuses.Error;
+
+                            var logger = serviceProvider.GetRequiredService<ILogger<KdmidStepHandler>>();
+                            logger.Error($"Available dates for the task '{taskName}' were failed for the chat '{x.Chat.Id}'. Reason: {exception.Message}");
+                            
+                            var bot = serviceProvider.GetRequiredService<IBotClient>();
+                            _ = await  bot.SendText(new(message, new($"Available dates for the task '{taskName}' were failed. Reason: {exception.Message}")), cToken);
                         }
                     }));
                 }
