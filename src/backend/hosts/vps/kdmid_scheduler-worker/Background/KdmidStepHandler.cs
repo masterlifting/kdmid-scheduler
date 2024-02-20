@@ -2,7 +2,6 @@
 using KdmidScheduler.Abstractions.Models.Infrastructure.Persistence.MongoDb.v1;
 
 using Net.Shared.Background.Abstractions.Interfaces;
-using Net.Shared.Bots.Abstractions.Interfaces;
 using Net.Shared.Bots.Abstractions.Models.Bot;
 using Net.Shared.Extensions.Logging;
 using Net.Shared.Persistence.Abstractions.Interfaces.Entities.Catalogs;
@@ -42,9 +41,6 @@ public sealed class KdmidStepHandler : IBackgroundTaskStepHandler<KdmidAvailable
 
                             var logger = serviceProvider.GetRequiredService<ILogger<KdmidStepHandler>>();
                             logger.Error($"Available dates for the task '{taskName}' were failed for the chat '{x.Chat.Id}'. Reason: {exception.Message}");
-                            
-                            var bot = serviceProvider.GetRequiredService<IBotClient>();
-                            _ = await  bot.SendText(new(message, new($"Available dates for the task '{taskName}' were failed. Reason: {exception.Message}")), cToken);
                         }
                     }));
                 }
