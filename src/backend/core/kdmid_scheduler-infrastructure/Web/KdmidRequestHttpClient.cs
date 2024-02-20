@@ -20,6 +20,7 @@ public sealed class KdmidRequestHttpClient(
     public async Task<string> GetStartPage(City city, KdmidId kdmidId, CancellationToken cToken)
     {
         var httpClient = _httpClientFactory.CreateClient(Constants.Kdmid);
+        httpClient.Timeout = TimeSpan.FromSeconds(45);
 
         var uri = GetRequestUri(city, kdmidId);
 
@@ -30,6 +31,7 @@ public sealed class KdmidRequestHttpClient(
     public async Task<byte[]> GetCaptchaImage(City city, KdmidId kdmidId, string captchaCode, CancellationToken cToken)
     {
         var httpClient = _httpClientFactory.CreateClient(Constants.Kdmid);
+        httpClient.Timeout = TimeSpan.FromSeconds(45);
 
         var uri = GetBaseUrl(city) + captchaCode;
 
