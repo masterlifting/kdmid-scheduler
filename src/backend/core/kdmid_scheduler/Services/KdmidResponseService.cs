@@ -187,11 +187,13 @@ public sealed class KdmidResponseService(
     }
     public async Task SendInfo(Message message, Command command, CancellationToken cToken)
     {
-        var info = await _repository.GetInfo(message.Chat.Id, command, cToken);
+        //var info = await _repository.GetInfo(message.Chat.Id, command, cToken);
+
+        const string DepricatedMessage = "The 'Russian Embassy bot' is currently on the reconstruction. I will notify you when the work is completed. Thank you for your understanding.";
 
         var result = _cache.TryGetValue<Message>((message.Chat.Id, command.Name), out var cachedMessage)
-            ? await _botClient.SendText(new(cachedMessage!, new(info)), cToken)
-            : await _botClient.SendText(new(message, new(info)), cToken);
+            ? await _botClient.SendText(new(cachedMessage!, new(DepricatedMessage)), cToken)
+            : await _botClient.SendText(new(message, new(DepricatedMessage)), cToken);
 
         result.Message.ResponseBehavior = ResponseMessageBehavior.Replace;
 

@@ -10,8 +10,8 @@ new HostBuilder()
     .ConfigureFunctionsWorkerDefaults((_, builder) =>
     {
         builder.Services
-            .AddKdmidInfrastructure()
-            .AddKdmidAzureInfrastructure()
+            //.AddKdmidInfrastructure()
+            //.AddKdmidAzureInfrastructure()
             .AddKdmidCore();
     })
     .Build()
